@@ -1,0 +1,19 @@
+<link rel="import" href="bower_components/polymer/polymer-element.html">
+
+<script>
+class MyPolymerElement extends Polymer.Element {
+    static get is() { return 'inner-elem'; }
+    connectedCallback() {
+        this.innerHTML =`
+            <스타일> 
+            p {color : orange; }
+            </ style>
+            <p> 아래의 버튼은 나에게도 맞춤 요소 <span id = 'spn'style = 'color : blue'> </ span>에 있습니다.). </ p>
+            <button id = 'btn'>BTN</ button>
+            `;
+        
+    }
+}
+
+window.customElements.define(MyPolymerElement.is, MyPolymerElement);
+</script>

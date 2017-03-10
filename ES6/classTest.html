@@ -1,0 +1,57 @@
+<html>
+<head>
+    
+</head>
+<body>
+    <h2>ES6 테스트</h2>
+
+    <script>
+"use strict";
+        // class MyElement extends HTMLElement {
+        //     constructor() {
+        //         //this.lo = "local";
+        //         var abc = 1;
+        //     }
+
+        // };
+
+        // window.customElements.define('my-element', MyElement);
+
+var MyElement = class MyElement extends HTMLElement {
+    constructor() {                   
+      super();                         //  construct the original item to be extended, here it is the HTMLElement
+    }
+
+    connectedCallback() {
+        this.innerHTML =`
+            <스타일> 
+            p {color : orange; }
+            </ style>
+            <p> 아래의 버튼은 나에게도 맞춤 요소 <span id = 'spn'style = 'color : blue'> </ span>에 있습니다.). </ p>
+            <button id = 'btn'>BTN</ button>
+            `;
+        
+    }
+
+    speak() {
+        console.log(this.name + ' barks.');
+    }
+};
+
+window.customElements.define('my-element', MyElement);
+
+var p = new MyElement();
+p.speak();
+
+
+    </script>
+
+    <my-element id="my"></my-element>
+
+    <script>
+        var my = document.querySelector("#my");
+        my.speak();
+        console.log('-End');
+    </script>
+</body>
+</html>
