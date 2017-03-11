@@ -31,3 +31,6 @@ polymer build --js-compile
 sudo -s                             : OSX 에서 설치시 root 권한 얻기
 npm install -g polymer-cli@next     : 설치
 polymer --version                   : 버전확인
+
+# polymer 설치
+bower install Polymer/polymer#2.0.0-rc.2
