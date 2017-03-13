@@ -1,6 +1,6 @@
-<link rel="import" href="bower_components/polymer/polymer-element.html">
-<link rel="import" href="bower_components/polymer/lib/elements/dom-repeat.html">
-<link rel="import" href="/polymerTest/inner-elem.html">
+<link rel="import"  href="https://polygit.org/polymer+2.0.0-rc.2/components/polymer/polymer-element.html">
+<link rel="import" href="https://polygit.org/polymer+2.0.0-rc.2/components/polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="inner-elem.html">
 
 <dom-module id="table-elem">
 
@@ -68,7 +68,7 @@
 
             var a = this.shadowRoot.querySelector("#employeeTemp");
             var b = this.shadowRoot.querySelectorAll("*");
-            var c = a._content;
+            var c = a._content;     // 내부 컨텐츠 접근
             var e = c.querySelector("#inin");
             e.appendChild(this.p);
 
