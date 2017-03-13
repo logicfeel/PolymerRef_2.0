@@ -1,0 +1,97 @@
+
+
+<h2>테스트 json table</h2>
+
+<script>
+    "use strict";
+
+    var orgJson = {
+        tables : [
+            {
+                name: "body",
+                colume :[
+                    {
+                        name: "key1",
+                        type: String,
+                        title: "설명"
+                    },
+                    {
+                        name: "key2",
+                        type: Number,
+                        title: "조회수"
+                    }
+                ]
+            }
+        ],
+        dataRow : {
+            // this.tables[0].name,
+            // "head": [
+            //     ["AAA1", "BBB1"]
+            // ],
+
+            "body": [
+                ["AAA1", "BBB1"],
+                ["AAA2", "BBB2"],
+            ]      
+        }
+    };
+
+    /**
+     * this.dataSet 의 자료를 로딩함
+     * 기본 접근 기능만 로딩함
+     * @param {*} json 입력 JSON 데이터
+     */
+    function dataSetting(json) {
+        // TODO: 입력된 데이터 구조를 표준화 형태로 맞춤
+        var _ds ={};
+        _ds.tables = json.tables;
+        // _ds.dr = json.dataRow;
+        _ds.dr = {};
+        for (var prop in  json.dataRow) {
+
+            if ( json.dataRow.hasOwnProperty(prop)){
+                _ds.dr[prop] = [];
+
+                for (var i = 0; i < json.dataRow[prop].length; i++ ) {
+                    _ds.dr[prop][i] = {};
+                    // 배열 데이터 일괄 삽입
+                    _ds.dr[prop][i] = json.dataRow[prop][i];    
+
+                    // key 별 값 삽입
+                    for (var ii = 0; ii < json.dataRow[prop][i].length; ii++ ) {
+                        var _colName = _ds.tables[0].colume[ii].name;
+                        _ds.dr[prop][i][_colName] = json.dataRow[prop][i][ii];
+                        // console.log(_colName + ':' + ii);
+                    }
+                }
+                // console.log(prop + ':t');
+            }
+        }
+        // this.dataSet = _ds;
+        return _ds;
+    }
+        
+    var arr = [1, 3, {a: 3}];
+    var arrr = [{a:11}, {b:22}, {c:33}];
+    var arr2 = arr[2];
+    arr.abc = 'a';
+
+    arr.abc = arr[2];
+    arr.abc2 = arr2;
+
+    // pop() 할경우 클러저 생김
+    //arr[0].aaa = '2';
+
+    var temp = dataSetting(orgJson);
+
+    var objtest = {
+        0: "abc0",
+        1: "abc1",
+        2: "abc2",
+        key: "abc0"
+    };
+
+
+    console.log('-End');
+
+</script>

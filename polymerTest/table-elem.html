@@ -2,6 +2,21 @@
 <link rel="import" href="https://polygit.org/polymer+2.0.0-rc.2/components/polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="inner-elem.html">
 
+
+
+
+    <script>
+    // 메소드에서의 호출
+    function callFunc(a, b) {
+        //alert('callFunc 호출');
+
+        console.log('callFunc.. 호출:' + a + ',' + b +' | this:' + this.bind);
+        return 'RTN';
+    }
+    </script>
+
+
+
 <dom-module id="table-elem">
 
   <template>
@@ -25,9 +40,31 @@
         </template>
     </template>
 
+
+
+
+
     <script>
+
     class MyTableElement extends Polymer.Element {
         static get is() { return 'table-elem'; }
+
+        static get properties() {
+            return {
+                owner: {
+                    type: String,
+                    value: 'Daniel'
+                },
+                evt: {
+                    type: String,
+                    computed: '_callFunc()'
+                },
+                bind: {
+                    type: String
+                }
+            };
+        }
+
         // connectedCallback() {
         //     // this.innerHTML =`
         //     //     <스타일> 
@@ -37,6 +74,7 @@
         //     //     <button id = 'btn'>BTN</ button>
         //     //     `;
         // }
+        
         child(e) {
             console.log('child.');
             //return p.outerHTML;
@@ -72,19 +110,54 @@
             var e = c.querySelector("#inin");
             e.appendChild(this.p);
 
+
+            if (this.bind !== "" ) {     // && typeof this.evt === Function
+                
+                
+                // callFunc() 함수 body 전달 받음
+                // var fn = Function(this.bind);
+                // fn.apply(null, [1,2,3]);
+                
+                // var ff = "callFunc";
+                // Function.prototype.apply(this.bind);
+                
+                if (typeof window[this.bind] === "function") {
+
+                    window[this.bind].apply(this, [1,2,3]);
+                    
+                    console.log('if inner Func');
+                }
+
+                console.log('if Func');    
+            } else {
+                console.log('if Not Func');    
+            }
+
             console.log('connectedCallback.');
         }
 
-      toggleSelection(e) {
-        var item = this.$.employeeList.itemForElement(e.target);
-        // this.$.in.selector.select(item);  //appendChild(p);
-        // this.$.selector.select(item);
-        console.log('toggleSelection.');
-      }
+        _callFunc(a) {
+            //alert('_callFunc 호출');
+            console.log('_callFunc 호출');
+            return 'RTN';   // 리턴 전달됨
+        }
+
+        toggleSelection(e) {
+            var item = this.$.employeeList.itemForElement(e.target);
+            // this.$.in.selector.select(item);  //appendChild(p);
+            // this.$.selector.select(item);
+            console.log('toggleSelection.');
+        }
 
     }
 
     window.customElements.define(MyTableElement.is, MyTableElement);
+
+
     </script>
 
+
+
 </dom-module>
+
+
