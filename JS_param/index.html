@@ -1,0 +1,34 @@
+
+
+<h2>T:파라메터 => JS 전달 테스트</h2>
+<div></div>
+
+<script>
+
+function getParamJson (url) {
+    // var tmp  = window.location.toString();
+    
+    var tmp     =   url || window.location;
+    var tmp2    = [];
+    var arrParam = {};
+
+    tmp = String(tmp).split('?'); // ? 이후가 배열에 담김
+
+    if (typeof tmp[1] === "string") {
+        tmp=tmp[1].split('&');      // 변수를 각각을 배열로 담고
+
+        // 배열에 담기
+        for(k in tmp) {
+            tmp2 = tmp[k].split('='); //키와 값분리
+            arrParam[tmp2[0]] = tmp2[1];
+        }
+    }
+    return arrParam;
+}
+
+var test  = getParamJson();
+
+console.log('-End-');
+</script>
+
+<script src="paramTest.js?inner=vvv"></script>
