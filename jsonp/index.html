@@ -1,18 +1,61 @@
 <div></div>
 <script>
+
     (function() {
-        var script = document.createElement("script");
-        script.type = "text/javascript";
-        script.src = "http://logicfeel.iptime.org/json/json.json";
-        document.head.appendChild(script);
-    }())
+        'use strict';
+        
+        function loadJSONP(url) {
+            var script = document.createElement("script");
+            script.type = "text/javascript";
+            // script.src = "http://logicfeel.iptime.org/json/json.json?callback=load";
+            script.src = url;
+            document.head.appendChild(script);
+
+        }
+        window.loadJSONP = loadJSONP;
+
+        /**
+         * 
+         * 클라이언트 측>
+         * 
+         *  callback({name: "server load"})
+         * 
+         * 원리 : 위 형식이 오바라이딩 된다
+         *  1. 경로에서 문자열을 가져 옴
+         *  2. 동적스크립트에 추가함
+         *     다르게 : <script src="http://logicfeel.iptime.org/json/json.json">
+         *  3. 임의로 지정한 callback() 함수를 실행
+         *  4. 정의한 함수를 실행함
+         * 
+         **/
+        
+        //  // 서버측 (asp) >
+        //   <%
+        //   Dim callbackName
+        //   callbackName = Request("callback")
+        //   If Len(callbackName) = 0 then 
+        //      callbackName = "callback"
+        //   End if
+        //   %><%=callbackName%>({name: "server load"})
+        /**
+         * ? callback=load  파라메터로 로딩할 파일명을 변경 가능함
+         **/
+
+    }());
     
+    this.loadJSONP("http://logicfeel.iptime.org/json/json.asp");
+
     function callback(data) {
         var div = document.querySelector("div");
         div.innerText = data.name;
     }
 
+</script>
 
+<script>
+    {a:1}
+</script>
 
-
+<script>
+    for 
 </script>
