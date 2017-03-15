@@ -16,36 +16,116 @@
 </div>
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<script src="logicTable.js"></script>
+<script src="logicTable.js?v1"></script>
 <script>
-    /**
-     * 테이블 생성 및 객체 제어
-     **/
-    var setElem = document.querySelector('#t');
-    var oTable = new LogicTable();
 
-    oTable.setHead(["번호", "제목", "글쓴이"]);
-    oTable.set    
-    var b = document.createElement('b');
-    b.innerText = "진하게";
-    var c = document.querySelector("#inner_div");
-    var d = c.cloneNode(true);
+    // (function() {
 
-    var e = document.createElement('button');
-    e.innerText = "버튼임";
+        // 데이터셋 샘플 (head 와 body 가 있는 경우)
+        var orgJson = {
+            tables : [                      // * 필수
+                {
+                    name: "head",           // * 필수
+                    colume :[               // * 필수
+                        {
+                            name: "key1",
+                            type: String,
+                            title: "번호"
+                        },
+                        {
+                            name: "key2",
+                            type: String,
+                            title: "제목"
+                        },
+                        {
+                            name: "key3",
+                            type: String,
+                            title: "글쓴이"
+                        }
+                    ]
+                },
+                {
+                    name: "body",
+                    colume :[
+                        {
+                            name: "key1",
+                            type: Number,
+                            title: "번호"
+                        },
+                        {
+                            name: "key2",
+                            type: String,
+                            title: "제목"
+                        },
+                        {
+                            name: "key3",
+                            type: String,
+                            title: "글쓴이"
+                        }
+                    ]
+                }
+            ],
+            dataRow : {                     // * 필수
+                "head": [
+                    ["순번", "타이틀", "작성자"]
+                ],        
+                "body": [
+                    [1, "제목입니다.1", "토토"],
+                    [2, "제목입니다.2", "김아가"]
+                ]      
+            }
+        };
 
-    oTable.setBody(
-        [
-            ["1", "내용입니다.", "세리"],
-            ["2", "방과후 ㅎ...", b],
-            [e, "방과후 어딜 돌아 댕기는거야 아가야.....", d]
-        ]
-    );
-    oTable.setCSS("table", "table table-hover table-bordered");
-    oTable.setCSS("table thead td", "warning");
+        /**
+         * 동적 테이블 사용 방법
+         */
+        
+        // 공통 여역
+        var setElem = document.querySelector('#t');
+        var oTable = new LogicTable();
 
-    // oTable.init();
-    setElem.appendChild(oTable.table);
+        // 방법1 : 수동으로 저작하여 생성
+        (function() {
+            oTable.setHead(["번호", "제목", "글쓴이"]);
+            var b = document.createElement('b');
+            b.innerText = "진하게";
+            var c = document.querySelector("#inner_div");
+            var d = c.cloneNode(true);
+            var e = document.createElement('button');
+            e.innerText = "버튼임";
+            oTable.setBody(
+                [
+                    ["1", "내용입니다.", "세리"],
+                    ["2", "방과후 ㅎ...", b],
+                    [e, "방과후 어딜 돌아 댕기는거야 아가야.....", d]
+                ]
+            );
+            oTable.setCSS("table", "table table-hover table-bordered");
+            oTable.setCSS("table thead td", "warning");
+            setElem.appendChild(oTable.container);
+        }());
+
+        // 방법2 : 데이터셋 기반 설정 기존과 :: 단계적으로 붙일 경우 (기존에 붙여짐)
+        (function() {
+            // oTable.init();
+            // oTable.loadDataSet(orgJson);
+            // oTable.bind();
+            // oTable.setCSS("table", "table table-hover table-bordered");
+            // oTable.setCSS("table thead td", "warning");        
+            // setElem.appendChild(oTable.container);
+        }());
+
+        // 방법3 : 데이터셋 기반 설정 :: 함축적함수 bind(pJSON)
+        (function() {
+            // oTable.bind(orgJson);
+            // oTable.setCSS("table", "table table-hover table-bordered");
+            // oTable.setCSS("table thead td", "warning");        
+            // setElem.appendChild(oTable.container);
+        }());
+
+        // oTable.init();
+
+    // }());
 
 </script>
 
