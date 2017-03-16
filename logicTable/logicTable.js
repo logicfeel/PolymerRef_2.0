@@ -111,7 +111,7 @@ function LogicTable() {
     LogicTable.prototype._customElem = function(pElem) {
         var elem = null;
 
-        if (typeof pElem === "string") {
+        if (typeof pElem === "string" || typeof pElem === "number") {
             elem = document.createTextNode(pElem);
         } else if (pElem instanceof Element) {
             elem = pElem;
@@ -339,7 +339,24 @@ function LogicTable() {
         console.log('bindDataSet');
     }
 
+
+    // ################################
+    // 3월16일 개발 ~
+
+    // 데이터셋 수정
+    // 테이블명, ROW, [Key | 번호]
+
+    LogicTable.prototype.update = function(pDTCurser) {
+        
+        console.log('update');
+    }
+
 }
+
+// Logic Utils
+// 공통 유틸리티
+var logicUtils = logicUtils || {};
+
 
 
 

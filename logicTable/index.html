@@ -16,7 +16,7 @@
 </div>
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<script src="logicTable.js?v1"></script>
+<script src="logicTable.js?v2"></script>
 <script>
 
     // (function() {
@@ -84,6 +84,12 @@
         var setElem = document.querySelector('#t');
         var oTable = new LogicTable();
 
+
+        // setElem.onchange = chg;
+        // function chg(e) {
+        //     console.log('setElem 변경');
+        // }
+
         // 방법1 : 수동으로 저작하여 생성
         (function() {
             oTable.setHead(["번호", "제목", "글쓴이"]);
@@ -116,12 +122,30 @@
         }());
 
         // 방법3 : 데이터셋 기반 설정 :: 함축적함수 bind(pJSON)
-        (function() {
+        // (function() {
             // oTable.bind(orgJson);
             // oTable.setCSS("table", "table table-hover table-bordered");
-            // oTable.setCSS("table thead td", "warning");        
+            // oTable.setCSS("table thead td", "warning");                    
             // setElem.appendChild(oTable.container);
-        }());
+        // }());
+
+        // 방법3-1 : 데이터셋 기반 설정 + 데이터셋 수정
+        // (function() {
+            // oTable.bind(orgJson);
+            // oTable.setCSS("table", "table table-hover table-bordered");
+            // oTable.setCSS("table thead td", "warning");                                
+            // setElem.appendChild(oTable.container);
+
+            // 수정접근 방법
+            // 컬럼 수정 => 타입 tables 타입과 같이야함
+            // oTable.update(oTable.dataSet.dr.body[0][1], value);
+            // oTable.update(body[0][1], value);
+            // oTable.update(body[0].key1, value);
+            // 레코드 수정 => 타입 배열
+            // oTable.update(body[0], value);
+        // }());
+
+
 
         // oTable.init();
 
