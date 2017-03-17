@@ -366,8 +366,8 @@ var fnName = {
  * 
  * [메인/public]
  * 초기화 : init
- * 등록 : regster
  * 설정 : Set
+ * 등록 : regster
  * 수정 : modify
  * 삭제 : remove
  * CSS설정(추가/수정/삭제) : css
@@ -375,37 +375,93 @@ var fnName = {
  * 스키마 검사 : isSchemaCheck
  * 
  * [템플릿]
- * 템플릿 등록 : regTemplate
- * 템플릿 제거 : removeTemplate
+ * {속성}
+ * hashTable            : 해쉬테이블 (키:값)
+ * {메소드}
+ * registerTemplate     : 템플릿 등록
+ * unregisterTemplate   : 템플릿 해제
+ * getTemplate          : 템플릿 받기
  * 
  * [레코드셋]
- * 레코드 삽입(생성) : createRecord
- * 레코드 수정(갱신) : updateRecord
- * 레코드 삭제 : deleteRecord
- * 레코드 초기화 : initRecord
- * 레코드 키 등록 : regRecordKey
- * 레코드 바인딩 : bindRecord
- * 레코드 [전체] 바인딩 : bindAllRecord
- * 레코드 테이블 idx 얻기 : getTableIndex
- * 레코드 테이블 설정 : setDataSet
+ * {속성}
+ * dataRecordQueue      : dr 큐
+ * {메소드}
+ * setDataSet           : 레코드 테이블 설정
+ * createRecord         : 레코드 삽입(생성)
+ * updateRecord         : 레코드 수정(갱신)
+ * deleteRecord         : 레코드 삭제
+ * initRecord           : 레코드 초기화
+ * regRecordKey         : 레코드 키 등록
+ * getTableIndex        : 레코드 테이블 idx 얻기
+ *
+ * 
+ * bindRecord           : 레코드 바인딩
+ * bindAppendRecord     : 추가/삽입 바인딩
+ * bindReplaceRecord    : 교체 바인딩
+ * bindRemoveRecord     : 제거 바인딩
+ * pushQueue            : 큐 넣기
+ * popQueue             : 큐 빼기
+ 
  * 
  * [컨테이너]
- * 컨테이너 초기화 : initContainer
- * 컨테이너 생성(추가) : createContainer
- * 요소 생성 : createElements
- * Row 컨테이너 요소 생성(tr생성) : createRecordElement
- * column 컨테이너 요소 생성(td생성) : createColumnElement
- * 요소 등록(붙임) : appendElements
- * 요소 교체 : replaceElements
- * 요소 제거 : removeElements
- * 요소 선택 : SelectorElements
- * 컨테이너 얻기 : getContainer
- * 
- * 컨테이너 등록 : regContainer ?
- * 상단 컨테이너 : ? 
- * 내용 컨테이너 : ?
- * 하단 컨테이너 : ?
+ * {속성}
+ * name                 : 컨테이너 이름
+ * {메소드}
+ * initContainer        : 컨테이너 초기화 
+ * createContainer      : 컨테이너 생성(추가)
+ * appendContainer      : 컨테이너 붙임
+ * replaceContainer     : 컨테이너 교체
+ * removeContainer      : 컨테이너 삭제
+ * createElements       : 요소 생성
+ * createRecordElement  : Row 컨테이너 요소 생성(tr생성)
+ * createColumnElement  : column 컨테이너 요소 생성(td생성)
+ * appendElements       : 요소 등록(붙임)
+ * replaceElements      : 요소 교체
+ * removeElements       : 요소 제거
+ * selectorElements     : 요소 선택
+ * getContainer         : 컨테이너 얻기
+ 
+ 
+ ## 기존 등록 흐름 ##
+ #########################################################
+  
+  setHead -> 
+       _setContent 
+               (유무검사) _createContainer
+               이중배열화
+               for _createTr
+                   _createTd(배열)
+                       for  _customElem(값)
+  
+  setBody -> _setContent
+  
+    bindRecord
 
+        bindAppendRecord : 템플릿을 불러오고 컨테이너 생성 후 컨테이너 붙임
+            getTemplate
+            createContainer(대상객체[], 템플릿) :: 레코드기준
+                for createRecordElement : 레코드
+                    for createColumnElement : 컬럼
+                        createElements : 요소 생성
+            appendContainer(대상객체[], 템플릿, 붙임위치) 
+               appendElements(요소들 [, 위치])
+
+        bindReplaceRecord
+            createContainer(대상객체[], 템플릿) :: 레코드기준
+                for createRecordElement : 레코드
+                    for createColumnElement : 컬럼
+                        createElements : 요소 생성
+            replaceContainer(대상객체[], 템플릿, 붙임위치) :: 레코드기준
+                selectorElements
+                replaceElements(요소들, 위치)
+
+        bindRemoveRecord
+            removeContainer(선택요소)
+                SelectorElements
+                removeElements(위치)
+       
+ ###########################################################              
+  
  * 요소 셍성
  * 
  * 
@@ -413,6 +469,28 @@ var fnName = {
  * 
  */
 
+
+function dynamicElement() {
+}
+
+
+function logicTable() {
+    Parent.call(this);
+}
+logicTable.prototype =  Object.create(dynamicElement.prototype);
+logicTable.prototype.constructor = Child;
+
+
+
+// OOP 상속 (Object.create + call 방식) 가장 좋은 예
+function Parent() {
+}
+
+function Child() {
+    Parent.call(this);
+}
+Child.prototype =  Object.create(Parent.prototype);
+Child.prototype.constructor = Child;
 
 
 
