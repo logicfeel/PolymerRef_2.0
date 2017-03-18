@@ -261,16 +261,16 @@ function LogicTable() {
         try { 
             ds.tables = pJSON.tables;
             ds.dr = {};
-            // for-3
+        
             for (var prop in  pJSON.dataRow) {
                 if ( pJSON.dataRow.hasOwnProperty(prop)){
                     ds.dr[prop] = [];                                                   // #1 테이블 = 벼열타입
-                    // for-2
+
                     for (var i = 0; i < pJSON.dataRow[prop].length; i++ ) {
                         ds.dr[prop][i] = {};                                            // #2 테이블.Row = 객체타입
                         ds.dr[prop][i] = pJSON.dataRow[prop][i];                        // #3 테이블.Row.컬럼들 일괄 삽입 = 배열(객체에 혼합됨)
 
-                        // 컬럼명(key)에 각각 값 삽입 : for-1
+                        // 컬럼명(key)에 각각 값 삽입
                         for (var ii = 0; ii < pJSON.dataRow[prop][i].length; ii++ ) {
                             tableIdx = this._getTableIndex(prop, ds.tables);
                             // 예외처리
@@ -366,7 +366,6 @@ var fnName = {
  * 
  * [메인/public]
  * init                 : 초기화
- * loadDataSet          : 데이터셋 로딩
  * set                  : 설정
  * register             : 등록
  * modify               : 수정
@@ -375,25 +374,20 @@ var fnName = {
  * bind                 : 바인딩
 
  * 
- * [데이터셋]
+ * [레코드셋]
+ * {속성}
+ * dataRecordQueue      : dr 큐
  * {메소드}
- * init                 : 레코드셋 초기화
- * initRecord           : 레코드 초기화
- * setDataSet           : 레코드셋 설정
- * setTables            : 데이터 테이블 설정
- * setRecord            : 레코드 설정
+ * setDataSet           : 레코드 테이블 설정
  * createRecord         : 레코드 삽입(생성)
  * updateRecord         : 레코드 수정(갱신)
  * deleteRecord         : 레코드 삭제
+ * initRecord           : 레코드 초기화
  * regRecordKey         : 레코드 키 등록
  * getTableIndex        : 레코드 테이블 idx 얻기
  * isSchemaCheck        : 스키마 검사
  *
  * [바인딩]
- * {속성}
- * dataRecordQueue      : dr 큐
- * {메소드}
- * init                 : 테이블 바인딩 초기화
  * bindRecord           : 레코드 바인딩
  * bindAppendRecord     : 추가/삽입 바인딩
  * bindReplaceRecord    : 교체 바인딩
@@ -405,7 +399,6 @@ var fnName = {
  * {속성}
  * hashTable            : 해쉬테이블 (키:값)
  * {메소드}
- * init                 : 템플릿 초기화
  * registerTemplate     : 템플릿 등록
  * unregisterTemplate   : 템플릿 해제
  * getTemplate          : 템플릿 받기
@@ -414,13 +407,13 @@ var fnName = {
  * {속성}
  * name                 : 컨테이너 이름
  * {메소드}
- * init                 : 컨테이너 초기화 
+ * initContainer        : 컨테이너 초기화 
  * createContainer      : 컨테이너 생성(추가)
  * appendContainer      : 컨테이너 붙임
  * replaceContainer     : 컨테이너 교체
  * removeContainer      : 컨테이너 삭제
  * createElements       : 요소 생성
- * createRecordElement  : row 컨테이너 요소 생성(tr생성)
+ * createRecordElement  : Row 컨테이너 요소 생성(tr생성)
  * createColumnElement  : column 컨테이너 요소 생성(td생성)
  * appendElements       : 요소 등록(붙임)
  * replaceElements      : 요소 교체
@@ -476,336 +469,85 @@ var fnName = {
  * 
  */
 
+// 동적 요소 빌더
+function DynamicElement() {
+    DynamicElement.prototype.init = function() {}
+    DynamicElement.prototype.set = function() {}
+    DynamicElement.prototype.register = function() {}
+    DynamicElement.prototype.modify = function() {}
+    DynamicElement.prototype.remove = function() {}
+    DynamicElement.prototype.css = function() {}
+    DynamicElement.prototype.bind = function() {}
+    DynamicElement.prototype.css = function() {}
+}
+
+// 동적 테이블 빌더
+function LogicTable() {
+    DynamicElement.call(this);  // 부모생성자
+}
+LogicTable.prototype =  Object.create(DynamicElement.prototype);
+LogicTable.prototype.constructor = Child;
+
+// 데이터셋
+function DataSet() {
+    DataSet.prototype.setDataSet = function() {}
+    DataSet.prototype.createRecord = function() {}
+    DataSet.prototype.updateRecord = function() {}
+    DataSet.prototype.deleteRecord = function() {}
+    DataSet.prototype.initRecord = function() {}
+    DataSet.prototype.regRecordKey = function() {}
+    DataSet.prototype.getTableIndex = function() {}
+    DataSet.prototype.isSchemaCheck = function() {}
+}
+
+// 테이블 바인딩
+function TableBinding() {
+    TableBinding.prototype.bindRecord = function() {}
+    TableBinding.prototype.bindAppendRecord = function() {}
+    TableBinding.prototype.bindReplaceRecord = function() {}
+    TableBinding.prototype.bindRemoveRecord = function() {}
+    TableBinding.prototype.pushQueue = function() {}
+    TableBinding.prototype.popQueue = function() {}
+}
+
+// 템플릿
+function Template() {
+    Template.prototype.registerTemplate = function() {}
+    Template.prototype.unregisterTemplate = function() {}
+    Template.prototype.getTemplate = function() {}
+}
+
+function TableTemplate() {
+    Container.call(this);  // 상속(부모생성자 호출)
 
 
-(function(){
-    "use strict";
+}
+TableTemplate.prototype =  Object.create(Template.prototype);
+TableTemplate.prototype.constructor = Child;
 
-    // 동적 요소 빌더 Class
-    function DynamicElement() {
+// 요소 컨테이너
+function Container() {}
 
-        this.DS = new DataSet();
-        this.B  = new TableBinding();
-        this.C  = new TableContainer();
-        this.T  = new TableTemplate();
-
-        // 초기화
-        DynamicElement.prototype.init = function() {
-            DS.init();
-            B.init();
-            C.init();
-            T.init();
-        }
-        
-        // 데이터셋 로딩
-        DynamicElement.prototype.loadDataSet = function(pDataSet) {
-            DS.setDataSet(pDataSet);
-        }
-
-        // 설정
-        // DynamicElement.prototype.set = function() {}
-
-        // 등록
-        DynamicElement.prototype.register = function() {}
-
-        // 수정
-        DynamicElement.prototype.modify = function() {}
-
-        // 삭제
-        DynamicElement.prototype.remove = function() {}
-
-        // CSS설정(추가/수정/삭제)
-        DynamicElement.prototype.CSS = function() {}
-
-        // 바인딩
-        DynamicElement.prototype.bind = function() {}
-    }
-
-
-    // 동적 테이블 빌더 Class
-    function LogicTable() {
-        DynamicElement.call(this);  // 부모생성자
-    }
-    LogicTable.prototype =  Object.create(DynamicElement.prototype);
-    LogicTable.prototype.constructor = LogicTable;
-
-    // 데이터셋 Class
-    function DataSet() {
-
-        // 데이터셋
-        this.dataSet = {}
-
-        // 배열 차원 검사 (최대 제한값 10 설정됨)
-        // 첫번째 배열만 검사 (배열의 넢이가 같은 겨우만)
-        // _getArrayLevel(pElem) 사용법
-        function _getArrayLevel(pElem, pDepts) {
-            var MAX     = 10;
-            var level   = 0;
-            
-            pDepts = pDepts || 0;
-
-            if (pElem instanceof Array && MAX > pDepts) {
-                level++;
-                pDepts++;
-                level = level + this._getArrayLevel(pElem[0], pDepts);  // 재귀로 깊이 찾기
-            }
-            return level;
-        }
-
-        // 초기화
-        DataSet.prototype.init = function() {
-            this.dataSet = {
-                tables: [],
-                dataRow: {}
-            };
-        }
-
-        // 레코드셋 초기화
-        DataSet.prototype.initRecord = function() {}
-
-        // 데이터셋 설정
-
-        DataSet.prototype.setDataSet = function(pDataSet) {
-              this.setTables(pDataSet.tables);
-              this.setRecord(pDataSet.dataRow);
-        }
-
-        // 레코드 삽입(생성)
-        DataSet.prototype.setTables = function(pDataTables) {
-
-            try { 
-                this.dataSet.tables = pDataTable;
-            } catch (e) {
-                console.log(e);
-            } finally { 
-                this.init();    // 실패시 다시 초기화
-            } 
-        }
-
-        // 레코드 삽입(생성)
-        // pDataRow = {}
-        DataSet.prototype.setRecord = function(pDataRow) {
-            var isSuccess = false;
-            try { 
-                // for-3    
-                for (var prop in  pDataRow) {
-                    if ( pDataRow.hasOwnProperty(prop)){
-                        this.dataSet.dr
-                        isSuccess = this.createRecord(prop, pDataRow[prop]);
-                        
-                        if (!isSuccess) {    // 예외처리
-                            throw new Error('레코드 등록 오류 :' + prop);
-                        }
-                    }
-                }
-            } catch (e) {
-                console.log(e);
-            } finally { 
-                this.init();    // 실패시 다시 초기화
-            }          
-        }
-
-        // 레코드 삽입(생성)
-        DataSet.prototype.createRecord = function(pTables, pRecords) {
-            var arrLevel    = 0;
-            var record_key  = {};
-
-            this.dataSet.dr = this.dataSet.dr || {};
-            
-            // TODO : try 로직 필요
-
-            // TODO: tables 정보 여부 활인 로직 
-            
-            // TODO : tables 컬럼갯수와 레코드 갯수 확인
-
-            // 이중배열 구조 맞추기
-            arrLevel = _getArrayLevel()
-            if ( pRecords === 1) {
-
-            } else if (pRecords === 0) {
-                pRecords = [[pRecords]];  
-            }
-            // for-2 :: 레코드 배열
-            for (var i = 0; i < pRecords.length; i++) {
-                this.dataSet.dr[pTables] = this.dataSet.dr[pTables] || [];
-                record_key = this.regRecordKey(pTables, pRecords[i]);
-                this.dataSet.dr[pTables].push(record_key);
-            }
-            return true;
-        }
-
-        // 레코드 수정(갱신)
-        DataSet.prototype.updateRecord = function() {}
-
-        // 레코드 삭제
-        DataSet.prototype.deleteRecord = function() {}
-
-        // 레코드 키 등록
-        DataSet.prototype.regRecordKey = function(pTables, pRecord) {
-            var record      = {};
-            var tableIdx    = null;
-            var columnName  = "";
-            // TODO: pRecord 의 배열 검사
-
-            record = pRecord;   // 객체 <= 배열 주입
-
-            // for-1 레코드
-            for (var i = 0; i < pRecord.length; i++ ) {
-                tableIdx = this.getTableIndex(pTables);
-       
-                if (tableIdx === null) {    // 예외처리
-                    throw new Error('데이터셋 tables index 오류 :' + prop);
-                }
-                columnName = this.dataSet.tables[tableIdx].colume[i].name; 
-                record[columnName] = pRecord[i];    // #4 테이블.Row.key = 컬럼 연결
-            }
-            
-            return record;
-        }
-
-        // 레코드 테이블 idx 얻기
-        DataSet.prototype.getTableIndex = function(pTableName) {
-            var tables = this.dataSet.tables;
-
-            for(var i = 0; i < tables.length; i++) {
-                if (tables[i].name === pTableName) {
-                    return i;
-                }
-            }
-            return null;
-        }
-
-        // 스키마 검사
-        DataSet.prototype.isSchemaCheck = function() {}
-    }
-
-    // 테이블 바인딩 Class
-    function TableBinding() {
-
-        // dataRecord 큐
-        this.dataRecordQueue = [];    
-
-        // 테이블 바인딩 초기화
-        TableBinding.prototype.init = function() {
-            this.dataRecordQueue = [];
-        }
-
-        // 레코드 바인딩
-        TableBinding.prototype.bindRecord = function() {}
-
-        // 추가/삽입 바인딩
-        TableBinding.prototype.bindAppendRecord = function() {}
-
-        // 교체 바인딩
-        TableBinding.prototype.bindReplaceRecord = function() {}
-
-        // 제거 바인딩
-        TableBinding.prototype.bindRemoveRecord = function() {}
-
-        // 큐 넣기
-        TableBinding.prototype.pushQueue = function() {}
-
-        // 큐 빼기
-        TableBinding.prototype.popQueue = function() {}
-    }
-
-    // 템플릿 Class
-    function Template() {
-
-        this.template = [];
-
-        // 템플릿 초기화
-        Template.prototype.init = function() {
-            this.template = [];
-        }
-
-        // 템플릿 등록
-        Template.prototype.registerTemplate = function() {}
-
-        // 템플릿 해제
-        Template.prototype.unregisterTemplate = function() {}
-
-        // 템플릿 받기
-        Template.prototype.getTemplate = function() {}
-    }
-
-    // 테이블 템플릿 Class
-    function TableTemplate() {
+// 테이블 컨테이너
+function TableContainer() {
         Container.call(this);  // 상속(부모생성자 호출)
-
-
-    }
-    TableTemplate.prototype =  Object.create(Template.prototype);
-    TableTemplate.prototype.constructor = TableTemplate;
-
-    // 요소 컨테이너 Class
-    function Container() {
-        this.container = null;
-    }
-
-    // 테이블 컨테이너 Class
-    function TableContainer() {
-            Container.call(this);  // 상속(부모생성자 호출)
-            
-            var _table      = null;
-            var _thead      = null;
-            var _tbody      = null;
-            var _tfooter    = null;
-            var _areaTop    = null;
-            var _areaBottom = null;
-
-            // 컨테이너 초기화 
-            TableContainer.prototype.init = function() {
-                if (this.container) this.container.innerHTML = '';
-                this.container  = null;
-                _table          = null;
-                _thead          = null;
-                _tbody          = null;
-                _tfooter        = null;
-                _areaTop        = null;
-                _areaBottom     = null;
-            }
-
-            // 컨테이너 생성(추가)
-            TableContainer.prototype.createContainer = function() {}
-
-            // 컨테이너 붙임
-            TableContainer.prototype.appendContainer = function() {}
-
-            // 컨테이너 교체
-            TableContainer.prototype.replaceContainer = function() {}
-
-            // 컨테이너 삭제
-            TableContainer.prototype.removeContainer = function() {}
-
-            // 요소 생성
-            TableContainer.prototype.createElements = function() {}
-
-            // row 컨테이너 요소 생성(tr생성)
-            TableContainer.prototype.createRecordElement = function() {}
-
-            // column 컨테이너 요소 생성(td생성)
-            TableContainer.prototype.createColumnElement = function() {}
-
-            // 요소 등록(붙임)
-            TableContainer.prototype.appendElements = function() {}
-
-            // 요소 교체
-            TableContainer.prototype.replaceElements = function() {}
-
-            // 요소 제거
-            TableContainer.prototype.removeElements = function() {}
-
-            // 요소 선택
-            TableContainer.prototype.selectorElements = function() {}
-
-            // 컨테이너 얻기
-            TableContainer.prototype.getContainer = function() {}
-    }
-    LogicTable.prototype =  Object.create(Container.prototype);
-    LogicTable.prototype.constructor = LogicTable;
-
-}());
+        
+        TableContainer.prototype.initContainer = function() {}
+        TableContainer.prototype.createContainer = function() {}
+        TableContainer.prototype.appendContainer = function() {}
+        TableContainer.prototype.replaceContainer = function() {}
+        TableContainer.prototype.removeContainer = function() {}
+        TableContainer.prototype.createElements = function() {}
+        TableContainer.prototype.createRecordElement = function() {}
+        TableContainer.prototype.createColumnElement = function() {}
+        TableContainer.prototype.appendElements = function() {}
+        TableContainer.prototype.replaceElements = function() {}
+        TableContainer.prototype.removeElements = function() {}
+        TableContainer.prototype.selectorElements = function() {}
+        TableContainer.prototype.getContainer = function() {}
+}
+LogicTable.prototype =  Object.create(DynamicElement.prototype);
+LogicTable.prototype.constructor = Child;
 
 // #######################################################
 // OOP 상속 (Object.create + call 방식) 가장 좋은 예
