@@ -16,7 +16,7 @@
 </div>
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<script src="logicTable.js?v2"></script>
+<script src="logicTable.js?v3"></script>
 <script>
 
     // (function() {
@@ -146,6 +146,17 @@
         // }());
 
 
+        // (function() {
+            var oTables = new LogicTables(); 
+            oTables.init();
+            oTables.loadDataSet(orgJson);
+            oTables.register({
+                "body": [
+                    ["1", "내용입니다.", "세리"],
+                    ["2", "방과후 ㅎ...", "k"]
+                ]
+            });            
+        // }());
 
         // oTable.init();
 

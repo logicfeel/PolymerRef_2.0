@@ -481,6 +481,7 @@ var fnName = {
 (function(){
     "use strict";
 
+    // *************************************
     // 동적 요소 빌더 Class
     function DynamicElement() {
 
@@ -491,22 +492,28 @@ var fnName = {
 
         // 초기화
         DynamicElement.prototype.init = function() {
-            DS.init();
-            B.init();
-            C.init();
-            T.init();
+            this.DS.init();
+            this.B.init();
+            this.C.init();
+            this.T.init();
         }
         
         // 데이터셋 로딩
         DynamicElement.prototype.loadDataSet = function(pDataSet) {
-            DS.setDataSet(pDataSet);
+            this.DS.setDataSet(pDataSet);
         }
 
         // 설정
         // DynamicElement.prototype.set = function() {}
 
         // 등록
-        DynamicElement.prototype.register = function() {}
+        // Object 타입 {"aa": [[,]] }
+        // TODO: 등록 위치 지정 필요
+        // pCursorRow 삽입할 위치 미지정시 null 입력되어 맨뒤에 삽입됨
+        DynamicElement.prototype.register = function(pDataRow, pCursorRow) {
+            pRowCursor = pRowCursor || null;
+            this.DS.setRecord(pDataRow);
+        }
 
         // 수정
         DynamicElement.prototype.modify = function() {}
@@ -518,22 +525,29 @@ var fnName = {
         DynamicElement.prototype.CSS = function() {}
 
         // 바인딩
-        DynamicElement.prototype.bind = function() {}
+        DynamicElement.prototype.bind = function() {
+            this.B.bindRecord();
+        }
     }
 
-
+    // *************************************
     // 동적 테이블 빌더 Class
-    function LogicTable() {
+    function LogicTables() {
         DynamicElement.call(this);  // 부모생성자
     }
-    LogicTable.prototype =  Object.create(DynamicElement.prototype);
-    LogicTable.prototype.constructor = LogicTable;
+    LogicTables.prototype =  Object.create(DynamicElement.prototype);
+    LogicTables.prototype.constructor = LogicTables;
 
+    // REVIEW: 전역모둘 설정
+    window.LogicTables = LogicTables;
+
+    // *************************************
     // 데이터셋 Class
     function DataSet() {
 
         // 데이터셋
-        this.dataSet = {}
+        this.dataSet = {};
+        this.autoTables = false;
 
         // 배열 차원 검사 (최대 제한값 10 설정됨)
         // 첫번째 배열만 검사 (배열의 넢이가 같은 겨우만)
@@ -574,23 +588,29 @@ var fnName = {
         DataSet.prototype.setTables = function(pDataTables) {
 
             try { 
-                this.dataSet.tables = pDataTable;
+                this.dataSet.tables = pDataTables;
             } catch (e) {
+                this.init();    // 실패시 다시 초기화
                 console.log(e);
             } finally { 
-                this.init();    // 실패시 다시 초기화
             } 
         }
+
+        // 자동 DS.talbes 삽입
+        DataSet.prototype.SetAutoTables = function(pDataRow) {
+            // TODO: 
+        }
+        
 
         // 레코드 삽입(생성)
         // pDataRow = {}
         DataSet.prototype.setRecord = function(pDataRow) {
             var isSuccess = false;
             try { 
-                // for-3    
+                // for-3 : tables 배열
                 for (var prop in  pDataRow) {
                     if ( pDataRow.hasOwnProperty(prop)){
-                        this.dataSet.dr
+                        // this.dataSet.dr
                         isSuccess = this.createRecord(prop, pDataRow[prop]);
                         
                         if (!isSuccess) {    // 예외처리
@@ -599,9 +619,9 @@ var fnName = {
                     }
                 }
             } catch (e) {
+                this.init();    // 실패시 다시 초기화
                 console.log(e);
             } finally { 
-                this.init();    // 실패시 다시 초기화
             }          
         }
 
@@ -619,13 +639,13 @@ var fnName = {
             // TODO : tables 컬럼갯수와 레코드 갯수 확인
 
             // 이중배열 구조 맞추기
-            arrLevel = _getArrayLevel()
+            arrLevel = _getArrayLevel();
             if ( pRecords === 1) {
-
+                pRecords = [pRecords];  
             } else if (pRecords === 0) {
                 pRecords = [[pRecords]];  
             }
-            // for-2 :: 레코드 배열
+            // for-2 :: row 배열
             for (var i = 0; i < pRecords.length; i++) {
                 this.dataSet.dr[pTables] = this.dataSet.dr[pTables] || [];
                 record_key = this.regRecordKey(pTables, pRecords[i]);
@@ -649,7 +669,7 @@ var fnName = {
 
             record = pRecord;   // 객체 <= 배열 주입
 
-            // for-1 레코드
+            // for-1 column 배열
             for (var i = 0; i < pRecord.length; i++ ) {
                 tableIdx = this.getTableIndex(pTables);
        
@@ -679,11 +699,13 @@ var fnName = {
         DataSet.prototype.isSchemaCheck = function() {}
     }
 
+    // *************************************
     // 테이블 바인딩 Class
     function TableBinding() {
 
         // dataRecord 큐
-        this.dataRecordQueue = [];    
+        // 명령, 테이블, row [, column]
+        this.dataRecordQueue = [{CRUD: ""}];    
 
         // 테이블 바인딩 초기화
         TableBinding.prototype.init = function() {
@@ -691,7 +713,9 @@ var fnName = {
         }
 
         // 레코드 바인딩
-        TableBinding.prototype.bindRecord = function() {}
+        TableBinding.prototype.bindRecord = function() {
+
+        }
 
         // 추가/삽입 바인딩
         TableBinding.prototype.bindAppendRecord = function() {}
@@ -709,6 +733,7 @@ var fnName = {
         TableBinding.prototype.popQueue = function() {}
     }
 
+    // *************************************
     // 템플릿 Class
     function Template() {
 
@@ -729,20 +754,23 @@ var fnName = {
         Template.prototype.getTemplate = function() {}
     }
 
+    // *************************************
     // 테이블 템플릿 Class
     function TableTemplate() {
-        Container.call(this);  // 상속(부모생성자 호출)
+        Template.call(this);  // 상속(부모생성자 호출)
 
 
     }
     TableTemplate.prototype =  Object.create(Template.prototype);
     TableTemplate.prototype.constructor = TableTemplate;
 
+    // *************************************
     // 요소 컨테이너 Class
     function Container() {
         this.container = null;
     }
 
+    // *************************************
     // 테이블 컨테이너 Class
     function TableContainer() {
             Container.call(this);  // 상속(부모생성자 호출)
@@ -802,9 +830,10 @@ var fnName = {
             // 컨테이너 얻기
             TableContainer.prototype.getContainer = function() {}
     }
-    LogicTable.prototype =  Object.create(Container.prototype);
-    LogicTable.prototype.constructor = LogicTable;
+    TableContainer.prototype =  Object.create(Container.prototype);
+    TableContainer.prototype.constructor = TableContainer;
 
+    console.log('IIFE');
 }());
 
 // #######################################################
@@ -812,7 +841,7 @@ var fnName = {
 function Parent() {
 }
 
-function Child() {
+function Child(a, c) {
     Parent.call(this);
 }
 Child.prototype =  Object.create(Parent.prototype);
