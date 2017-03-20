@@ -395,7 +395,7 @@ var fnName = {
  * GetSchema            : 현재 ds의 xml 스키마를 string 형으로 리턴
  * GetXML  (GetJSON)    : 현재 ds의 xml 문서를 string 형으로 리턴
  * AcceptChanges        : 로드 이후 변경내용 수옹 (HasChanges=false)
- * GetChanges           : 로드 이후 변경내용 DataSet 객체 리턴
+ * GetChanges           : 로드 이후 변경내용 Data 객체 리턴
  * HasChanges           : 변화 여부 Boolean
  * Merge                : dataset 의 병합 
  * Readschema           : XML 스키마를 읽고 DataSet을 채운다
@@ -403,8 +403,6 @@ var fnName = {
  * RejectChanges        : 변경내용 롤백
  * WriteSchema          : 현재 ds의 xml 스키마를 xmlWriter 형으로 리턴
  * WriteXML             : 현재 ds의 xml 문서를 xmlWriter 형으로 리턴
- * 
- * Load
  * 
  * {관련테이블}
  * DataTable 
