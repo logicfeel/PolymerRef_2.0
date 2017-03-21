@@ -46,9 +46,26 @@ after.push({key:20, value:"abcd...2"});
 after.push({key:30, value:"abcd...3"});
 after.push({key:40, value:"abcd...4"});
 
+var Quere = [];
 //------------
-// 맨뒤 삽입
+// !! clone 는 처리 앞에
+// !! ref 는 처리 뒤에 중요!!
+// 삽입 (맨뒤)
 before.push({key:50, value:"여긴 르랜젝션 맨뒤삽입..."});
+Quere[0] = {"I": {ref: before[4], clone: null, cuser_idx: null}};
+
+// 삽입 (중간)
+before.splice(2, 0, {key:60, value:"여긴 르랜젝션 중간삽입..."});
+Quere[1] = {"I": {ref: before[2], clone: null, cuser_idx: 2}};
+
+// 삭제 (순서중요)
+Quere[2] = {"D": {ref: null, clone: before[4], cuser_idx: 4}};
+before.splice(4, 1);
+
+// 수정
+Quere[3] = {"U": {ref: null, clone: before[3], cuser_idx: 3}};
+before.splice(3, 1, {key:300, value:"abcd...33"});
+Quere[3]["U"].ref = before[3];   // 수정함
 
 // var Qbody = {
 //     ref: null,      // 참조 또는 삭제 데이터값
@@ -62,24 +79,33 @@ QQuere[0] = {           // 마지막 등록
         "I" : [
                 before[4]   
           ],
-        ref_idx : null,     //      <- 뒤에서 중간 삽입을 통한  위치 조정됨
-        ref : function() {
-            return 4;
-        }        
+        cuser_idx : null     //      <- 뒤에서 중간 삽입을 통한  위치 조정됨
+       
 };
 
 // 중간 삽입
-before.splice(2, 0, {key:60, value:"여긴 르랜젝션 중간삽입..."});
+
 
 QQuere[1] = {           // 중간 등록
         "I" : [
                 before[2]
           ],
-        ref_idx : 2,
-        ref : function() {
-            return 2;
-        }
+        cuser_idx : 2
 };
+
+// 데이터셋 commit / rollback 큐 스키마
+var dsQuereSchma = [
+    {
+        "I": {ref: Object, clone: null, cuser_idx: null}
+    },
+    {
+        "D": {ref: null, clone: Object, cuser_idx: 2}
+    },
+    {
+        "U": {ref: Object, clone: Object, cuser_idx: 3}
+    },
+];
+
     
     // {
     //     "D" : [
@@ -110,45 +136,79 @@ QQuere[1] = {           // 중간 등록
 
 
 // 롤백 로직
-function RollBack(pQQuere) {
-    if (typeof pQQuere !== "undefined" &&  pQQuere !== null && "sort" in pQQuere) {
-        for(var i = 0;  i < pQQuere.length; i++) {
+function RollBack(pQuere) {
+    if (typeof pQuere !== "undefined" &&  pQuere !== null && "sort" in pQuere) {
+        for(var i = 0;  i < pQuere.length; i++) {
             
-            if ("I" in pQQuere[i]) {
-                var idx = pQQuere[i].ref_idx;
+            if ("I" in pQuere[i]) {
+                var idx = before.indexOf(pQuere[i]["I"].ref);
+                // pQQuere[i].ref_idx;
                 before.splice(idx, 1);
                 console.log('rollbak :: insert -> delete ..')    
             }
+
+            // TODO: if 묶을필요 테스트후
+            if ("D" in pQuere[i]) {
+                var idx = pQuere[i]["D"].cuser_idx;
+                // pQQuere[i].ref_idx;
+                before.splice(idx, 0, pQuere[i]["D"].clone);
+                console.log('rollbak :: delete -> insert ..')    
+            }
             
-          console.log('rollbak func..')
+            if ("U" in pQuere[i]) {
+                var idx = before.indexOf(pQuere[i]["U"].ref);
+                // pQQuere[i].ref_idx;
+                before.splice(idx, 1);
+
+                // var idx = pQuere[i]["U"].cuser_idx;
+                // pQQuere[i].ref_idx;
+                before.splice(idx, 0, pQuere[i]["U"].clone);
+                console.log('rollbak :: delete -> insert ..')    
+            }
+            
+        //   console.log('rollbak func..')
         }
     }
 }
 
-function Commit(pQQuere) {
-    if (typeof pQQuere !== "undefined" &&  pQQuere !== null && "sort" in pQQuere) {
-        for(var i = 0;  i < pQQuere.length; i++) {
+function Commit(pQuere) {
+    if (typeof pQuere !== "undefined" &&  pQuere !== null && "sort" in pQuere) {
+        for(var i = 0;  i < pQuere.length; i++) {
             
-            if ("I" in pQQuere[i]) {
-                var idx = pQQuere[i].ref_idx;
-                // if (after.length <= idx) {
-                    after.push(before[idx]);
-                // } else {
+            if ("I" in pQuere[i]) {
+                var idx = before.indexOf(pQuere[i]["I"].ref);
+                after.splice(idx, 0, pQuere[i]["I"].ref);
 
-                // }
                 console.log('commit :: insert ..')    
             }
+
+            if ("D" in pQuere[i]) {
+                var idx = pQuere[i]["D"].cuser_idx;
+                after.splice(idx, 1);
+                console.log('commit :: delete ..')    
+            }
+
+            if ("U" in pQuere[i]) {
+                var idx = pQuere[i]["U"].cuser_idx;
+                after.splice(idx, 1);
+                
+                // idx = before.indexOf(pQuere[i]["U"].ref);
+                after.splice(idx, 0, pQuere[i]["U"].ref);
+
+                console.log('commit :: update ..')    
+            }
             
-            console.log('Commit func..')
+            // console.log('Commit func..')
         }
     }    
 }
 
 
-// RollBack(QQuere);
- Commit(QQuere);
+RollBack(Quere);
 
-QQuere[0].ref();
+// Commit(Quere);
+
+// QQuere[0].ref();
 // 조회 로직
 
 // var kkk = [1,2,3,4,5];
