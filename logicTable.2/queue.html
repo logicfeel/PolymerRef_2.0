@@ -1,0 +1,159 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+    
+
+<h2>T. 큐 테스트 (수정 참조 관련)</h2>
+
+<div id="t"></div>
+<div id="inner_div">
+    <ol>
+        <li>aaaa</li>
+        <li>bbbb</li>
+    </ol>
+</div>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="logicTable.js?v2"></script>
+<script>
+
+function ArraySub() {
+    this.name = "ArraySub";
+    // sort()  배열의 공통 메소드
+}
+ArraySub.prototype =  Object.create(Array.prototype); // Array 상속
+ArraySub.prototype.constructor = ArraySub;
+ArraySub.prototype.parent = Array.prototype;
+
+
+var before = new ArraySub();
+
+// as.push({key:10, value:"abcd...1", ref:null});
+// as.push({key:20, value:"abcd...2", ref:null});
+// as.push({key:30, value:"abcd...3", ref:null});
+// as.push({key:40, value:"abcd...4", ref:as[2]});
+
+before.push({key:10, value:"abcd...1"});
+before.push({key:20, value:"abcd...2"});
+before.push({key:30, value:"abcd...3"});
+before.push({key:40, value:"abcd...4"});
+// ##############################
+var after = new ArraySub();
+after.push({key:10, value:"abcd...1"});
+after.push({key:20, value:"abcd...2"});
+after.push({key:30, value:"abcd...3"});
+after.push({key:40, value:"abcd...4"});
+
+//------------
+// 맨뒤 삽입
+before.push({key:50, value:"여긴 르랜젝션 맨뒤삽입..."});
+
+// var Qbody = {
+//     ref: null,      // 참조 또는 삭제 데이터값
+//     command: "I"    // I, U, D
+// };
+
+var cnt = 0;
+// cnt += 1;
+var QQuere = [];
+QQuere[0] = {           // 마지막 등록
+        "I" : [
+                before[4]   
+          ],
+        ref_idx : null,     //      <- 뒤에서 중간 삽입을 통한  위치 조정됨
+        ref : function() {
+            return 4;
+        }        
+};
+
+// 중간 삽입
+before.splice(2, 0, {key:60, value:"여긴 르랜젝션 중간삽입..."});
+
+QQuere[1] = {           // 중간 등록
+        "I" : [
+                before[2]
+          ],
+        ref_idx : 2,
+        ref : function() {
+            return 2;
+        }
+};
+    
+    // {
+    //     "D" : [
+    //             {key:40, value:"abcd...4"}
+    //         ],
+    //     r_idx : 3
+    // },
+    // {
+    //     "U" : [
+    //         {
+    //             "I" : [
+    //                     {type:"key"}
+    //             ],
+    //             r_idx : null // 계산도 가능
+    //         },
+    //         {
+    //             "D" : [
+    //                     {type:"value"}
+    //                 ],
+    //             r_idx : 3
+    //         }
+    //         ],
+    //     r_idx : null // ?
+    // },
+
+
+// 복제 가능 있어야함 ROW 복제 기능 필요 Delete 백업에 필요
+
+
+// 롤백 로직
+function RollBack(pQQuere) {
+    if (typeof pQQuere !== "undefined" &&  pQQuere !== null && "sort" in pQQuere) {
+        for(var i = 0;  i < pQQuere.length; i++) {
+            
+            if ("I" in pQQuere[i]) {
+                var idx = pQQuere[i].ref_idx;
+                before.splice(idx, 1);
+                console.log('rollbak :: insert -> delete ..')    
+            }
+            
+          console.log('rollbak func..')
+        }
+    }
+}
+
+function Commit(pQQuere) {
+    if (typeof pQQuere !== "undefined" &&  pQQuere !== null && "sort" in pQQuere) {
+        for(var i = 0;  i < pQQuere.length; i++) {
+            
+            if ("I" in pQQuere[i]) {
+                var idx = pQQuere[i].ref_idx;
+                // if (after.length <= idx) {
+                    after.push(before[idx]);
+                // } else {
+
+                // }
+                console.log('commit :: insert ..')    
+            }
+            
+            console.log('Commit func..')
+        }
+    }    
+}
+
+
+// RollBack(QQuere);
+ Commit(QQuere);
+
+QQuere[0].ref();
+// 조회 로직
+
+// var kkk = [1,2,3,4,5];
+console.log('-End-');
+</script>
+
+</body>
+</html>

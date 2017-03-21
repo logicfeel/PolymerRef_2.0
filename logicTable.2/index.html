@@ -166,6 +166,83 @@
 
     // }());
 
+function method() {
+    this.Abc = "1";
+    method.prototype.adding = function(a) {
+        return this.Abc;
+    }
+}
+var list = [[1,3,4,5], [11,13,14,15]];
+
+var obj = {a:1};
+// var obj = {};
+// obj[0] = list[0];
+obj[0] = list[0][0];
+
+
+var obj2 = [];
+obj2[0] = 10;
+obj2[1] = 20;
+
+obj2.abc = "abc";
+
+//method.
+// obj = list[0];
+
+function ArrTest() {
+    this.cssStyle = "A";
+    ArrTest.prototype.css = function() {
+        console.log('arrTest ..');
+    }
+}
+ArrTest.prototype =  Object.create(Array.prototype);
+ArrTest.prototype.constructor = ArrTest;
+
+
+var a = new ArrTest();
+a.push('abc');
+
+
+var dt = new DataTable("TTT");
+var dc1 = new DataColumn("p1_name", "string");
+var dc2 = new DataColumn("p2_name", "string");
+var dc3 = new DataColumn("p3_name", "string");
+var dc4 = new DataColumn("p4_name", "string");
+var dc5 = new DataColumn("p5_name", "string");
+var dc6 = new DataColumn("p6_name", "string");
+
+dt.columns.add(dc1);
+dt.columns.add(dc2);
+dt.columns.add(dc3);
+dt.columns.add(dc4);
+dt.columns.add(dc5);
+dt.columns.add(dc6);
+
+
+//dt.columns.removeAt(1);
+
+// var obj = {
+//     get foo() {
+//         return 'getter';
+//     }
+// };
+
+// document.write(dt.columns.b);
+var arr = [10,20,30,40, 50];
+
+// 30번 삭제시 idx 2
+arr.splice(2, 1);
+
+// Object.getOwnPropertyDescriptors(before)
+// 큐 연결 테스트
+var arrQuere = {
+    aaa: "12",
+    bbb: {inner: "inner~"}
+};
+arrQuere.ccc = arrQuere.bbb;
+
+//arrQuere
+
 </script>
 
 </body>

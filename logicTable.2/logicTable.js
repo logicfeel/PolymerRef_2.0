@@ -112,30 +112,40 @@ function DataSet(pName) {
 }
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-function DataTable(pTableName, pSchema) {
+// DataTable dt = new DataTable("결과");
+// DataColumn name_dc = new DataColumn("name",typeof(String));
+// dt.Columns.Add(name_dc);
+// dt.columns[0] + 벼열 + 객체
+function DataTable(pTableName) {
     
-    this.columns    = [];
+    // this.columns    = this.DataColumn;
+    this.columns    = new DataColumn();
+    
     this.rows       = [];
-    tableName       = pTableName;
+    this.tableName       = pTableName;
 
-    if (pSchema !== null) {
-        this.load(pSchema);
-    }
+    // if (pSchema !== null) {
+    //     this.load(pSchema);
+    // }
 
     // DataTable 로딩
     DataTable.prototype.load = function(pSchema) {
         var columns = {};
 
-        if ("columns" in pSchema) {
-            
-            this.columns = new DataColumn(pSchema["columns"])
+        if ("column" in pSchema) {
+            for(var i = 0; i < pSchema["column"].length; i++) {
+                // this.columns = new DataColumn(pSchema["column"]);
             }
         }
     }
 
-    DataTable.prototype.add = function() {}
-    DataTable.prototype.clear = function() {}
-    DataTable.prototype.select = function() {}
+    // DataTable.prototype.add = function() {}
+    DataTable.prototype.clear = function() {
+
+    }
+    DataTable.prototype.select = function() {
+        console.log('DataTable. select');
+    }
 
     // TODO : 나중에
     DataSet.prototype.clone = function() {}
@@ -147,7 +157,82 @@ function DataTable(pTableName, pSchema) {
     DataSet.prototype.rejectChanges = function() {}
 }
 
+
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// .Net 사용/접근법
+// DataTable dt = new DataTable("결과");
+// DataColumn name_dc = new DataColumn("name",typeof(String));
+// dt.Columns.Add(name_dc);
+// 정적과 동적의미가 
+
+
+function DataColumn(pName, pType, pConfigs) {
+
+    this.columnName     = pName || null;
+    this.dataType       = pType || null;
+
+    this.caption        = pConfigs ? (pConfigs.caption ? pConfigs.caption : null ) : null;
+    this.defaultValue   = pConfigs ? (pConfigs.defaultValue ? pConfigs.defaultValue : null ) : null;
+    this.unique         = pConfigs ? (pConfigs.unique ? pConfigs.unique : null ) : null;
+    
+    // get / set 방식 프로퍼티 (function 연동)
+    // 키 레퍼런스 만듬
+    var bValue = 38;
+    Object.defineProperty(this, 'b', {
+    get: function() { return bValue; },
+    set: function(newValue) { bValue = newValue; },
+    enumerable: true,
+    configurable: true
+    });        
+
+    DataColumn.prototype.add = function(pDataColumn) {
+        // TODO: 타입 검사 필요
+        this.push(pDataColumn);
+    }
+
+    // 문자열의 index 리턴
+    // Test :  dt.columns.indexOf("p2_name")
+    DataColumn.prototype.indexOf = function(pStr) {
+        for (var i = 0; i < this.length; i++) {
+            if (this[i].columnName === pStr) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    // 컬럼명 기준 삭제
+    DataColumn.prototype.remove = function(pColumnName) {
+        var index = -1;
+        index = this.indexOf(pColumnName);
+        this.removeAt(index);
+    }
+    
+    // index 기준 삭제
+    // REVIEW: 전역으로 사용 가능 대상 
+    DataColumn.prototype.removeAt = function(pIdx) {
+        this.splice(pIdx, 1);
+    }
+    
+    // REVIEW: 필요시 구현
+    DataColumn.prototype.contains = function() {}    
+}
+DataColumn.prototype =  Object.create(Array.prototype); // Array 상속
+DataColumn.prototype.constructor = DataColumn;
+DataColumn.prototype.parent = DataColumn.prototype;
+
+
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// .Net 사용법    
+// SqlDataReader sdr = scom.ExecuteReader();
+// DataRow dr = null;
+// while (sdr.Read())
+// {
+//     dr = dt.NewRow();
+//     dr["name"] = sdr["m_name"];
+//     dr["msg"] = sdr["m_msg"];
+//     dt.Rows.Add(dr);
+// }
 function DataRow() {
 
     this.item = null;
@@ -158,23 +243,6 @@ function DataRow() {
 
     // 변경 적용 관련     
     DataRow.prototype.acceptChanges = function() {}
-}
-
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-function DataColumn(pConfigs) {
-    
-    this.caption        = pConfigs.caption || null;
-    this.columnName     = pConfigs.columnName || null;
-    this.dataType       = pConfigs.dataType || null;
-    this.defaultValue   = pConfigs.defaultValue || null;
-    this.unique         = pConfigs.unique || null;
-
-    DataColumn.prototype.add = function() {}
-    DataColumn.prototype.contains = function() {}
-    DataColumn.prototype.indexOf = function() {}
-    DataColumn.prototype.remove = function() {}
-    DataColumn.prototype.removeAt = function() {}
-
 }
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
