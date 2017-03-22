@@ -1,8 +1,3 @@
-// 트랜젝션 큐
-// call 방식으로 외부처리
-// target 지정하는 방식, fn 방식
-// pOriginal (*필수), pTarget(선택)
-
 /**
  * 트랜젝션 큐
  *  - 방식
@@ -11,7 +6,7 @@
  *  - 주의사항
  *      + idx 값을 사용할때는 커밋 완료된 기점 기준으로 사용
  *         (문장이 길어지면 중간 커밋후 진행)
- * 
+ * @name    TransQueue
  * @version 1.0.0
  * @param {Array} pOriginal (*필수) 원본 배열
  * @param {Array} pTarget 선택

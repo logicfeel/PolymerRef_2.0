@@ -6,64 +6,67 @@
 
 // 공통 함수
 var Common = Common || {};
+(function() {
 
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// function Connection() {
-//     Connection.prototype.mothod = function() {}
-// }
+    //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    // function Connection() {
+    //     Connection.prototype.mothod = function() {}
+    // }
 
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// function Command() {
-    
-//     this.parameters = [];
-    
-//     Command.prototype.mothod = function() {}
-// }
+    //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    // function Command() {
+        
+    //     this.parameters = [];
+        
+    //     Command.prototype.mothod = function() {}
+    // }
 
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// function JsonCommand() {
-//     Command.call(this);  // 상속(부모생성자 호출)
+    //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    // function JsonCommand() {
+    //     Command.call(this);  // 상속(부모생성자 호출)
 
-//        JsonAdapter.prototype.mothod = function() {}
-// }
-// JsonAdapter.prototype =  Object.create(Command.prototype);
-// JsonAdapter.prototype.constructor = JsonAdapter;
+    //        JsonAdapter.prototype.mothod = function() {}
+    // }
+    // JsonAdapter.prototype =  Object.create(Command.prototype);
+    // JsonAdapter.prototype.constructor = JsonAdapter;
 
 
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// function DataAdapter() {
+    //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    // function DataAdapter() {
 
-//     this.insertCommand = null;
-//     this.updateCommand = null;
-//     this.deleteCommand = null;
-//     this.selectCommand = null;
+    //     this.insertCommand = null;
+    //     this.updateCommand = null;
+    //     this.deleteCommand = null;
+    //     this.selectCommand = null;
 
-//     DataAdapter.prototype.fill = function() {}
-// }
+    //     DataAdapter.prototype.fill = function() {}
+    // }
 
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// function JsonAdapter() {
-//     DataAdapter.call(this);  // 상속(부모생성자 호출)
+    //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    // function JsonAdapter() {
+    //     DataAdapter.call(this);  // 상속(부모생성자 호출)
 
-//        JsonAdapter.prototype.mothod = function() {}
-// }
-// JsonAdapter.prototype =  Object.create(DataAdapter.prototype);
-// JsonAdapter.prototype.constructor = JsonAdapter;
+    //        JsonAdapter.prototype.mothod = function() {}
+    // }
+    // JsonAdapter.prototype =  Object.create(DataAdapter.prototype);
+    // JsonAdapter.prototype.constructor = JsonAdapter;
 
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// function AjaxAdapter() {
-//     DataAdapter.call(this);  // 상속(부모생성자 호출)
+    //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    // function AjaxAdapter() {
+    //     DataAdapter.call(this);  // 상속(부모생성자 호출)
 
-//        AjaxAdapter.prototype.mothod = function() {}
-// }
-// AjaxAdapter.prototype =  Object.create(DataAdapter.prototype);
-// AjaxAdapter.prototype.constructor = AjaxAdapter;
+    //        AjaxAdapter.prototype.mothod = function() {}
+    // }
+    // AjaxAdapter.prototype =  Object.create(DataAdapter.prototype);
+    // AjaxAdapter.prototype.constructor = AjaxAdapter;
+
+}());
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 function DataSet(pName) {
     var dataRecordQueue = null;
 
-    this.tables = null;
+    this.tables = new DataTable();
     this.dt = this.tables;      // Ref
     this.dataSetName = pName;
 
@@ -117,12 +120,12 @@ function DataSet(pName) {
 // dt.Columns.Add(name_dc);
 // dt.columns[0] + 벼열 + 객체
 function DataTable(pTableName) {
-    
-    this.columns    = new DataColumn();
-    
-    this.rows       = new DataRow();
 
-    this.tableName       = pTableName;
+    var _changesQueu    = new TransQueue();
+
+    this.columns    = new DataColumn();
+    this.rows       = new DataRow();
+    this.tableName  = pTableName;
 
     // if (pSchema !== null) {
     //     this.load(pSchema);
@@ -139,29 +142,35 @@ function DataTable(pTableName) {
         }
     }
 
-    // DataTable.prototype.add = function() {}
-    DataTable.prototype.clear = function() {
+    DataTable.prototype.add = function(pDataTable) {
+        this.push(pDataTable);
+    }
 
+    DataTable.prototype.clear = function() {
+        
+        _transQueue.init();    // 큐 초기화
     }
     DataTable.prototype.select = function() {
         console.log('DataTable. select');
     }
     // 
     DataTable.prototype.newRow = function() {
-        return new DataRow();
+        return new DataRow(this.columns);
         // console.log('DataTable. newRow');
     }
 
     // TODO : 나중에
-    DataSet.prototype.clone = function() {}
-    DataSet.prototype.copy = function() {}
+    DataTable.prototype.clone = function() {}
+    DataTable.prototype.copy = function() {}
 
     // 변경 적용 관련 
-    DataSet.prototype.acceptChanges = function() {}
-    DataSet.prototype.getChanges = function() {}
-    DataSet.prototype.rejectChanges = function() {}
+    DataTable.prototype.acceptChanges = function() {}
+    DataTable.prototype.getChanges = function() {}
+    DataTable.prototype.rejectChanges = function() {}
 }
-
+DataTable.prototype =  Object.create(Array.prototype); // Array 상속
+DataTable.prototype.constructor = DataTable;
+DataTable.prototype.parent = Array.prototype;
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // .Net 사용/접근법
@@ -188,7 +197,7 @@ function DataColumn(pName, pType, pConfigs) {
     set: function(newValue) { bValue = newValue; },
     enumerable: true,
     configurable: true
-    });        
+    });
 
     //**************************
     // DataColumnCollection 클래스 참조
@@ -247,23 +256,113 @@ DataColumn.prototype.parent = Array.prototype;
 //     dr["msg"] = sdr["m_msg"];
 //     dt.Rows.Add(dr);
 // }
-function DataRow() {
+function DataRow(pDataColumn) {
 
-    this.item = null;
+    this.item = [];
     
+    if (pDataColumn instanceof DataColumn) {
+        for (var i = 0; i < pDataColumn.length; i++) {
+
+            // get, set방식
+            this.item.splice(i, 0, null);
+            this.splice(i, 0, this.item[i]);
+            var cName = pDataColumn[i].columnName;
+            var cValue = this.item[i];
+            var defind = {cName, }
+
+            Object.defineProperty(this, cName, {
+                get: function() { return cValue; },
+                set: function(newValue) { cValue = newValue; },
+                enumerable: true,
+                configurable: true
+            });
+            
+
+            // // XXX: 스코프 문제 해결해야함
+            // (function(scope) {
+            //     var initData = {1:1};
+            //     scope.push(initData);
+            //  scope[pDataColumn[i].columnName] = initData;
+            // }(this));
+
+            // // get /set방식
+            // var bValue = 38;
+            // Object.defineProperty(this, 'b', {
+            //     get: function() { return bValue; },
+            //     set: function(newValue) { bValue = newValue; },
+            //     enumerable: true,
+            //     configurable: true
+            // });
+            
+            // 객체 참조 속성 방식
+
+
+        }
+
+        // HACK: 임시 테스트용
+        Object.defineProperty(this, [0], {
+            get: function() { return this.item[0]; },
+            set: function(newValue) { this.item[0] = newValue; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(this, "p1_name", {
+            get: function() { return this.item[0]; },
+            set: function(newValue) { this.item[0] = newValue; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(this, [1], {
+            get: function() { return this.item[1]; },
+            set: function(newValue) { this.item[1] = newValue; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(this, "p2_name", {
+            get: function() { return this.item[1]; },
+            set: function(newValue) { this.item[1] = newValue; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(this, [2], {
+            get: function() { return this.item[2]; },
+            set: function(newValue) { this.item[2] = newValue; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(this, "p3_name", {
+            get: function() { return this.item[2]; },
+            set: function(newValue) { this.item[2] = newValue; },
+            enumerable: true,
+            configurable: true
+        });
+
+
+    }
+
     //**************************
     // DataRowCollection  클래스 참조
-    this.item = [];
 
-    DataRow.prototype.add = function() {}
+    DataRow.prototype.add = function(pRow) {}
+    
     DataRow.prototype.clear = function() {}
+    
     DataRow.prototype.contains = function() {}
+    
     DataRow.prototype.copyTo = function() {}
+    
     DataRow.prototype.equals = function() {}
+    
     DataRow.prototype.find = function() {}
+    
     DataRow.prototype.indexOf = function() {}
-    DataRow.prototype.insertAt = function() {}
-    DataRow.prototype.remove = function() {}    // rollback 안됨
+    
+    DataRow.prototype.insertAt = function(pRow, pIdx) {
+
+    }
+    
+    // rollback 안됨 (비추천) 바로 commit 됨
+    DataRow.prototype.remove = function() {}    
 
     //**************************
     // 내부
@@ -310,9 +409,38 @@ function LogicBuilder(pContainer) {
         this.DS.load(pDataSet);
     }
 
-    LogicBuilder.prototype.register = function() {}
-    LogicBuilder.prototype.modify = function() {}
-    LogicBuilder.prototype.remove = function() {}
+    LogicBuilder.prototype.register = function(pTableName, pRow, pIdx) {
+        var table = null;
+        if (this.DS.tables[pTableName]) {
+            table = new DataTable(pTableName);
+        }
+        // this.DS.tables[pTableName];
+        if (pIdx) {
+            table.rows.insertAt(pRow, pIdx);
+        } else {
+            table.rows.add(pRow);
+        }
+        
+    }
+
+    LogicBuilder.prototype.modify = function(pTableName, pRow, pIdx) {
+
+    }
+    
+    LogicBuilder.prototype.remove = function(pTableName, pIdx) {
+        
+    }
+
+    // DS 전체 바인딩
+    LogicBuilder.prototype.bind = function() {
+        this.bind();
+    }
+
+    // DS 등록/수정/삭제 대상만 바인딩 -> 커밋 처리
+    LogicBuilder.prototype.bindChanges = function() {
+        this.bind();
+    }
+
 }
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -320,7 +448,7 @@ function LogicTable(pContainer) {
 
     // 컨테이너명 지정
     pContainer = pContainer || TableTemplateContainer;
-    DynamicElement.call(this, pContainer);  // 상속(부모생성자 호출)
+    LogicBuilder.call(this, pContainer);  // 상속(부모생성자 호출)
 
     // Get 과 Set
     LogicTable.prototype.css = function() {}
