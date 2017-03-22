@@ -8,6 +8,11 @@
  *  - 방식
  *      + callback 방식
  *      + pTarget 전달 방식
+ *  - 주의사항
+ *      + idx 값을 사용할때는 커밋 완료된 기점 기준으로 사용
+ *         (문장이 길어지면 중간 커밋후 진행)
+ * 
+ * @version 1.0.0
  * @param {Array} pOriginal (*필수) 원본 배열
  * @param {Array} pTarget 선택
  */
@@ -19,7 +24,7 @@ function TransQueue(pOriginal, pTarget) {
     var _original   = pOriginal || null;
     var _target     = pTarget || null;
     
-    // REVIEW : 테스트 완료후 제거해야함
+    // REVIEW : 테스트 시 주석제거후 사용
     this.queue = _queue;
     
     if (isArray(pOriginal)) {
@@ -36,12 +41,23 @@ function TransQueue(pOriginal, pTarget) {
         }
     }
     
-    // 큐 초기화
+    /**
+     * 큐 초기화
+     */
     this.init = function() {
+        _queue = null;
         _queue = [];
+        
+        // 테스트 참조 초기화
+        this.queue = null;
+        this.queue = _queue;
+        
+        console.log('init :: 큐초기화됨 ..');    
     }
     
-    // 큐 커밋
+    /**
+     * 큐 커밋
+     */
     this.commit = function() {
 
         var idx = null;
@@ -74,11 +90,13 @@ function TransQueue(pOriginal, pTarget) {
             }
         }
         this.init();
-        console.log('commit :: 내부 ..');    
+        // console.log('commit :: 내부 ..');    
  
     };
 
-    // 큐 롤백 (원본 복구됨)
+    /**
+     * 큐 롤백 (원본 복구됨)
+     */
     this.rollback = function() {
 
         var idx = null;
@@ -108,14 +126,12 @@ function TransQueue(pOriginal, pTarget) {
         this.init();
     };
 
-    // 등록
-
     /**
      * 등록 : INSERT
      * @param {Object} pRowObject   대상 Row 객체
-     * @param {Number} pCursorIdx   레코드 idx 없을시 null 삽입 
+     * @param {Number} pCursorIdx   [선택] 레코드 idx 없을시 null 삽입 
      *                              (키 입력시 커밋 완료된 데이터만 가능!!)
-     * @param {Function} callback   !Target 방식 사용시 불필요
+     * @param {Function} callback   [선택]  !Target 방식 사용시 불필요
      */
     this.insert = function(pRowObject, pCursorIdx, callback) {
         
@@ -148,7 +164,7 @@ function TransQueue(pOriginal, pTarget) {
     /**
      * 삭제 : DELETE
      * @param {Number} pCursorIdx   레코드 idx 필수 (커밋 완료된 데이터만 가능!!)
-     * @param {Function} callback   !Target 방식 사용시 불필요
+     * @param {Function} callback   [선택] !Target 방식 사용시 불필요
      */
     this.delete = function(pCursorIdx, callback) {
         
@@ -187,7 +203,7 @@ function TransQueue(pOriginal, pTarget) {
      * 내부적으로 (delete -> insert 처리됨)
      * @param {Object} pRowObject   대상 Row 객체
      * @param {Number} pCursorIdx   레코드 idx 필수 (커밋 완료된 데이터만 가능!!)
-     * @param {Function} callback   !Target 방식 사용시 불필요
+     * @param {Function} callback   [선택] !Target 방식 사용시 불필요
      */
     this.update = function(pRowObject, pCursorIdx, callback) {
 
@@ -224,7 +240,40 @@ function TransQueue(pOriginal, pTarget) {
     };
 
     /**
-     * 조회 : SELECT
+     * 변경대상 조회 : SELECT
      */
-    this.select = function() {};
+    this.select = function() {
+        var rows = [];
+
+        for(var i = 0;  i < _queue.length; i++) {
+            
+            if ("I" in _queue[i]) {
+                rows.push(
+                    {
+                        cmd: "I",
+                        row: _queue[i]["I"].ref,
+                        idx: _queue[i]["I"].cursor_idx
+                    }
+                );
+            } else if ("D" in _queue[i]) {
+                rows.push(
+                    {
+                        cmd: "D",
+                        row: _queue[i]["D"].clone,
+                        idx: _queue[i]["D"].cursor_idx
+                    }
+                );
+            } else if ("U" in _queue[i]) {
+                rows.push(
+                    {
+                        cmd: "U",
+                        row: _queue[i]["U"].clone,
+                        idx: _queue[i]["U"].cursor_idx
+                    }
+                );
+            }
+        }
+        
+        return rows;
+    };
 }

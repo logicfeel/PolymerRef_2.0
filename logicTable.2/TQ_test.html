@@ -26,14 +26,19 @@ tq.insert({key:30, value:"abcd...3"});
 tq.insert({key:40, value:"abcd...4"});
 
 tq.insert({key:50, value:"중간abcd...4"}, 2);
-tq.commit();
-
-tq.delete(1);
-// tq.rollback();
-tq.commit();
-
-tq.update({key:300, value:"abcd...33"}, 2);
 // tq.commit();
-tq.rollback();
+
+// tq.delete(1);
+// // tq.rollback();
+// tq.commit();
+
+// tq.update({key:300, value:"abcd...33"}, 2);
+// tq.commit();
+// tq.rollback();
+
+tq.select();
+
+document.write('큐.length:');
+document.write(tq.queue.length);
 
 </script>
