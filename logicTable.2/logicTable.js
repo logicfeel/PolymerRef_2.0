@@ -118,10 +118,10 @@ function DataSet(pName) {
 // dt.columns[0] + 벼열 + 객체
 function DataTable(pTableName) {
     
-    // this.columns    = this.DataColumn;
     this.columns    = new DataColumn();
     
-    this.rows       = [];
+    this.rows       = new DataRow();
+
     this.tableName       = pTableName;
 
     // if (pSchema !== null) {
@@ -145,6 +145,11 @@ function DataTable(pTableName) {
     }
     DataTable.prototype.select = function() {
         console.log('DataTable. select');
+    }
+    // 
+    DataTable.prototype.newRow = function() {
+        return new DataRow();
+        // console.log('DataTable. newRow');
     }
 
     // TODO : 나중에
@@ -185,10 +190,18 @@ function DataColumn(pName, pType, pConfigs) {
     configurable: true
     });        
 
+    //**************************
+    // DataColumnCollection 클래스 참조
+    this.item = [];
+    
     DataColumn.prototype.add = function(pDataColumn) {
         // TODO: 타입 검사 필요
         this.push(pDataColumn);
     }
+    
+    DataColumn.prototype.clear = function() {}    
+    // REVIEW: 필요시 구현
+    DataColumn.prototype.contains = function() {}    
 
     // 문자열의 index 리턴
     // Test :  dt.columns.indexOf("p2_name")
@@ -214,12 +227,13 @@ function DataColumn(pName, pType, pConfigs) {
         this.splice(pIdx, 1);
     }
     
-    // REVIEW: 필요시 구현
-    DataColumn.prototype.contains = function() {}    
+    //**************************
+    // 내부
+
 }
 DataColumn.prototype =  Object.create(Array.prototype); // Array 상속
 DataColumn.prototype.constructor = DataColumn;
-DataColumn.prototype.parent = DataColumn.prototype;
+DataColumn.prototype.parent = Array.prototype;
 
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -236,35 +250,69 @@ DataColumn.prototype.parent = DataColumn.prototype;
 function DataRow() {
 
     this.item = null;
+    
+    //**************************
+    // DataRowCollection  클래스 참조
+    this.item = [];
 
     DataRow.prototype.add = function() {}
-    DataRow.prototype.remove = function() {}
+    DataRow.prototype.clear = function() {}
+    DataRow.prototype.contains = function() {}
+    DataRow.prototype.copyTo = function() {}
+    DataRow.prototype.equals = function() {}
     DataRow.prototype.find = function() {}
+    DataRow.prototype.indexOf = function() {}
+    DataRow.prototype.insertAt = function() {}
+    DataRow.prototype.remove = function() {}    // rollback 안됨
+
+    //**************************
+    // 내부
+    DataRow.prototype.delete = function() {}
 
     // 변경 적용 관련     
     DataRow.prototype.acceptChanges = function() {}
+    DataRow.prototype.rejectChanges = function() {}
+    
+    //**************************
+    // 사용자 추가
+
 }
+DataRow.prototype =  Object.create(Array.prototype); // Array 상속
+DataRow.prototype.constructor = DataRow;
+DataRow.prototype.parent = Array.prototype;
+
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-function DynamicElement(pContainer) {
+/**
+ * 네이밍 변경
+ * 데이터 셋을 요소 기반으로 캐스팅해서 사용
+ * [역활]
+ *  - 데이터셋 로딩 (스키마, 데이터)
+ *  - 데이터 제어 (등록, 수정, 삭제)
+ *  - 변경내용 데이터셋 조회 (전체, 테이블선택)
+ *  - 바인딩(전체, 변경내용)
+ *      + 데이터셋 -> 컨테이너의 바인딩 처리
+ * 
+ */
+function LogicBuilder(pContainer) {
     pContainer = pContainer || Container;
     this.DS = null;
     this.C  = new pContainer();
     
     // 초기화
-    DynamicElement.prototype.init = function(pContainer) {
+    LogicBuilder.prototype.init = function(pContainer) {
         this.DS = new DataSet();
         this.C  = new pContainer();
     }
     
     // DataSet 로딩
-    DynamicElement.prototype.load = function(pDataSet) {
+    LogicBuilder.prototype.load = function(pDataSet) {
         this.DS.load(pDataSet);
     }
 
-    DynamicElement.prototype.register = function() {}
-    DynamicElement.prototype.modify = function() {}
-    DynamicElement.prototype.remove = function() {}
+    LogicBuilder.prototype.register = function() {}
+    LogicBuilder.prototype.modify = function() {}
+    LogicBuilder.prototype.remove = function() {}
 }
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -277,9 +325,9 @@ function LogicTable(pContainer) {
     // Get 과 Set
     LogicTable.prototype.css = function() {}
 }
-LogicTable.prototype =  Object.create(DynamicElement.prototype);
+LogicTable.prototype =  Object.create(LogicBuilder.prototype);
 LogicTable.prototype.constructor = LogicTable;
-LogicTable.prototype.parent = DynamicElement.prototype;
+LogicTable.prototype.parent = LogicBuilder.prototype;
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 function Elements() {

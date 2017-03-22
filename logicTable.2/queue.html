@@ -46,7 +46,7 @@ after.push({key:20, value:"abcd...2"});
 after.push({key:30, value:"abcd...3"});
 after.push({key:40, value:"abcd...4"});
 
-var Quere = [];
+var Quere = []; // 리네임 오타 => queue
 //------------
 // !! clone 는 처리 앞에
 // !! ref 는 처리 뒤에 중요!!
@@ -59,8 +59,10 @@ before.splice(2, 0, {key:60, value:"여긴 르랜젝션 중간삽입..."});
 Quere[1] = {"I": {ref: before[2], clone: null, cuser_idx: 2}};
 
 // 삭제 (순서중요)
-Quere[2] = {"D": {ref: null, clone: before[4], cuser_idx: 4}};
-before.splice(4, 1);
+// Quere[2] = {"D": {ref: null, clone: before[4], cuser_idx: 4}};
+// before.splice(4, 1);
+Quere[2] = {"D": {ref: null, clone: before[5], cuser_idx: 5}};
+before.splice(5, 1);
 
 // 수정
 Quere[3] = {"U": {ref: null, clone: before[3], cuser_idx: 3}};
@@ -132,7 +134,10 @@ var dsQuereSchma = [
     // },
 
 
-// 복제 가능 있어야함 ROW 복제 기능 필요 Delete 백업에 필요
+
+Quere[3] = {"U": {ref: null, clone: before[3], cuser_idx: 3}};
+before.splice(3, 1, {key:300, value:"abcd...33"});
+Quere[3]["U"].ref = before[3];   // 수정함
 
 
 // 롤백 로직
@@ -204,12 +209,18 @@ function Commit(pQuere) {
 }
 
 
-RollBack(Quere);
+// RollBack(Quere);
 
-// Commit(Quere);
+Commit(Quere);
 
 // QQuere[0].ref();
 // 조회 로직
+
+// var Tsplice = [10,20,30,40,50,60];
+var Tsplice = [];
+Tsplice.splice(0,0, "10");
+Tsplice.splice(1,0, "20");
+Tsplice.splice(1,0, "30");
 
 // var kkk = [1,2,3,4,5];
 console.log('-End-');

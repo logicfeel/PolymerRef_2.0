@@ -1,0 +1,39 @@
+
+<script src="Transqueue.js?v2"></script>
+<h2>TransQueue 테스트</h2>
+
+<div></div>
+
+<script>
+
+function ArraySub() {
+    this.name = "ArraySub";
+    // sort()  배열의 공통 메소드
+}
+ArraySub.prototype =  Object.create(Array.prototype); // Array 상속
+ArraySub.prototype.constructor = ArraySub;
+ArraySub.prototype.parent = Array.prototype;
+
+var before = new ArraySub();
+var after = new ArraySub();
+
+var tq = new TransQueue(before, after);
+
+
+tq.insert({key:10, value:"abcd...1"});
+tq.insert({key:20, value:"abcd...2"});  // <- 삭제 테스트함
+tq.insert({key:30, value:"abcd...3"});
+tq.insert({key:40, value:"abcd...4"});
+
+tq.insert({key:50, value:"중간abcd...4"}, 2);
+tq.commit();
+
+tq.delete(1);
+// tq.rollback();
+tq.commit();
+
+tq.update({key:300, value:"abcd...33"}, 2);
+// tq.commit();
+tq.rollback();
+
+</script>
