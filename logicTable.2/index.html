@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <script src="LogicArray.js?v5"></script>
 <script src="TransQueue.js?v1"></script>
-<script src="logicTable.js?v6"></script>
+<script src="logicTable.js?v7"></script>
 <script>
 
 function ArrTest() {
@@ -53,10 +53,9 @@ a.push('abc');
 
 var ds = new DataSet("T_DataSet");
 
-// 데이터셋을 통해서 이용
-ds.tables.Add("테이블명");
-
-// 데이터 테이블 직접 이용
+// 데이터셋을 통해서 이용 : 1방식
+var dt = ds.tables.add("L_table");
+// 데이터 테이블 직접 이용 : 2방식
 // var dt = new DataTable("thead"); 
 
 var dc1 = new DataColumn("p1_name", "string");

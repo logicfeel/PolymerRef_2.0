@@ -68,7 +68,7 @@ var Common = Common || {};
 function DataSet(pName) {
     var dataRecordQueue = null;
 
-    this.tables = new DataTable();
+    this.tables = new DataTableCollection();
     this.dt = this.tables;      // Ref
     this.dataSetName = pName;
 
@@ -115,9 +115,45 @@ function DataSet(pName) {
     DataSet.prototype.rejectChanges = function() {};
     DataSet.prototype.hasChanges = function() {};    
 }
-(function() {   // prototype 상속 & 내부 로딩
+(function() {   // prototype 상속
     // DataSet();
 }());
+
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+function DataTableCollection() {
+
+    this._items = [];
+
+    DataTableCollection.prototype.add = function(pTableName) {
+        var dataTable = new DataTable(pTableName);
+        // pTableName
+        // this.push(tableData);
+
+        // if (pTableName && typeof pTableName === "string") {
+            this.pushAttr(dataTable, pTableName);
+        // }
+        return  dataTable;
+    };
+
+    DataTableCollection.prototype.clear = function() {};
+    
+    DataTableCollection.prototype.contains = function() {};
+    
+    DataTableCollection.prototype.copyTo = function() {};
+    
+    DataTableCollection.prototype.equals = function() {};
+    
+    DataTableCollection.prototype.indexOf = function() {};
+    
+    // rollback 안됨 (비추천) 바로 commit 됨
+    DataTableCollection.prototype.remove = function() {};
+}
+(function() {   // prototype 상속
+    DataTableCollection.prototype =  Object.create(LArray.prototype); // Array 상속
+    DataTableCollection.prototype.constructor = DataRow;
+    DataTableCollection.prototype.parent = LArray.prototype;
+}());
+
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // DataTable dt = new DataTable("결과");
@@ -134,11 +170,12 @@ function DataTable(pTableName) {
     this.rows       = new DataRowCollection();
     this.tableName  = pTableName;
     
-    this._items = [];
+    // 인스턴스화 필요 !! (중요)
+    // this._items = [];
 
-    if (pTableName && typeof pTableName === "string") {
-        this.pushAttr(null, pTableName);
-    }
+    // if (pTableName && typeof pTableName === "string") {
+    //     this.pushAttr(null, pTableName);
+    // }
 
     // DataTable 로딩
     DataTable.prototype.load = function(pSchema) {
@@ -179,7 +216,7 @@ function DataTable(pTableName) {
     DataTable.prototype.getChanges = function() {};
     DataTable.prototype.rejectChanges = function() {};    
 }
-(function() {   // prototype 상속 & 내부 로딩
+(function() {   // prototype 상속
     DataTable.prototype =  Object.create(LArray.prototype); // Array 상속
     DataTable.prototype.constructor = DataTable;
     DataTable.prototype.parent = LArray.prototype;
@@ -245,7 +282,7 @@ function DataColumn(pName, pType, pConfigs) {
     // 내부    
 
 }
-(function() {   // prototype 상속 & 내부 로딩
+(function() {   // prototype 상속
     DataColumn.prototype =  Object.create(Array.prototype); // Array 상속
     DataColumn.prototype.constructor = DataColumn;
     DataColumn.prototype.parent = Array.prototype;
@@ -280,7 +317,7 @@ function DataRowCollection() {
     // rollback 안됨 (비추천) 바로 commit 됨
     DataRowCollection.prototype.remove = function() {};
 }
-(function() {   // prototype 상속 & 내부 로딩
+(function() {   // prototype 상속
     DataRowCollection.prototype =  Object.create(LArray.prototype); // Array 상속
     DataRowCollection.prototype.constructor = DataRow;
     DataRowCollection.prototype.parent = LArray.prototype;
@@ -324,7 +361,7 @@ function DataRow(pDataColumn) {
     // 사용자 추가 
 
 }
-(function() {   // prototype 상속 & 내부 로딩
+(function() {   // prototype 상속
     DataRow.prototype =  Object.create(LArray.prototype); // Array 상속
     DataRow.prototype.constructor = DataRow;
     DataRow.prototype.parent = LArray.prototype;
@@ -396,7 +433,7 @@ function LogicBuilder(pContainer) {
         this.bind();
     };    
 }
-(function() {   // prototype 상속 & 내부 로딩
+(function() {   // prototype 상속
     // LogicBuilder();
 }());
 
@@ -410,7 +447,7 @@ function LogicTable(pContainer) {
     // Get 과 Set
     LogicTable.prototype.css = function() {};
 }
-(function() {   // prototype 상속 & 내부 로딩
+(function() {   // prototype 상속
     LogicTable.prototype =  Object.create(LogicBuilder.prototype);
     LogicTable.prototype.constructor = LogicTable;
     LogicTable.prototype.parent = LogicBuilder.prototype;
@@ -428,7 +465,7 @@ function Elements() {
     Elements.prototype.createColumnElement = function() {};
 }
 
-(function() {   // prototype 상속 & 내부 로딩
+(function() {   // prototype 상속
     // Elements();
 }());
 
@@ -450,7 +487,7 @@ function Container() {
     Container.prototype.removeContainer = function() {};
     Container.prototype.getContainer = function() {};
 }
-(function() {   // prototype 상속 & 내부 로딩
+(function() {   // prototype 상속
     // Container();
 }());
 
@@ -460,7 +497,7 @@ function TemplateContainer() {
 
     TemplateContainer.prototype.mothod = function() {};
 }
-(function() {   // prototype 상속 & 내부 로딩
+(function() {   // prototype 상속
     TemplateContainer.prototype =  Object.create(Container.prototype);
     TemplateContainer.prototype.constructor = TemplateContainer;
     TemplateContainer.prototype.parent = Container.prototype;
@@ -480,7 +517,7 @@ function TableTemplateContainer() {
     // 인스턴스 속성/메소드 정의
     TableTemplateContainer.prototype.mothod = function() {};
 }
-(function() {   // prototype 상속 & 내부 로딩
+(function() {   // prototype 상속
     TableTemplateContainer.prototype =  Object.create(TemplateContainer.prototype);
     TableTemplateContainer.prototype.constructor = TableTemplateContainer;
     TableTemplateContainer.prototype.parent = TemplateContainer.prototype;
