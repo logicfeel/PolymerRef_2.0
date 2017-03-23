@@ -12,8 +12,9 @@
 
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<script src="TransQueue.js?v2"></script>
-<script src="logicTable.js?v3"></script>
+<script src="LogicArray.js?v5"></script>
+<script src="TransQueue.js?v1"></script>
+<script src="logicTable.js?v6"></script>
 <script>
 
 function ArrTest() {
@@ -30,6 +31,9 @@ var a = new ArrTest();
 a.push('abc');
 
 
+(function() {
+}());
+
 // var dt = new DataTable("TTT");
 // var dc1 = new DataColumn("p1_name", "string");
 // var dc2 = new DataColumn("p2_name", "string");
@@ -45,11 +49,15 @@ a.push('abc');
 // dt.columns.add(dc5);
 // dt.columns.add(dc6);
 
+// var lt = new LogicTable("T_DataSet");
 
+var ds = new DataSet("T_DataSet");
 
-var lt = new LogicTable();
+// 데이터셋을 통해서 이용
+ds.tables.Add("테이블명");
 
-var dt = new DataTable("thead");
+// 데이터 테이블 직접 이용
+// var dt = new DataTable("thead"); 
 
 var dc1 = new DataColumn("p1_name", "string");
 var dc2 = new DataColumn("p2_name", "string");
@@ -59,7 +67,29 @@ dt.columns.add(dc1);
 dt.columns.add(dc2);
 dt.columns.add(dc3);
 
-var dr = dt.newRow();
+var dr = null;
+dr = dt.newRow();
+dr["p1_name"] = '1번내용';
+dr["p2_name"] = '2번내용';
+dr["p3_name"] = '3번내용';
+dt.rows.add(dr);
+dr = dt.newRow();
+dr["p1_name"] = '10번내용';
+dr["p2_name"] = '20번내용';
+dr["p3_name"] = '30번내용';
+dt.rows.add(dr);
+dr2 = dt.newRow();
+
+
+
+/**
+ * rows 는 정적 메소드
+ */
+// var dr1 = dt.newRow();
+// dr1["p1_name"] = '11번내용';
+// dr1["p2_name"] = '22번내용';
+// dr1["p3_name"] = '33번내용';
+// dt.rows.add(dr1);
 
 
 // dt.register("tbody", [10, 20, 30, 40]);
@@ -73,7 +103,6 @@ var dr = dt.newRow();
 // 테이블 추가 :
 // DataSet.Tables.Add("테이블명");
 // 자주쓰는 속성 : Columns , Rows
-
 // 컬럼생성
 // DataTable dt = new DataTable("테이블명");
 // DataColumn dc1 = new DataColumn("필드명1", typeof(int));     //int type
