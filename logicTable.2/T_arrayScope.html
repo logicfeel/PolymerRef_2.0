@@ -1,0 +1,98 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+<h2>T. 배열과 스코프 관계 테스트</h2>
+
+
+<script>
+
+function ArrayTest() {
+    // var _kk = [];
+    var _kk = {a:10};
+    var _bb = 30;
+    this.kk = _kk;
+    this.vv = _kk;
+
+    this.push(_kk);     // 최초에 참조값 => 이후 덮어씀 => 참조 없어짐 현상
+
+
+    var prop = [10,20,30];
+    var keys = ['10','20','30'];
+
+    for(var i = 0; i < prop.length; i++) {
+
+        // Object.defineProperty(this, [i], {
+        // get: function() { return prop[i]; },
+        // set: function(newValue) { _bb = prop[i]; },
+        // enumerable: true,
+        // configurable: true
+        // // writable: true 이 불가능한 이유는 set get 이 지워지기 때문
+        // }); 
+        Object.defineProperty(this, [i], props(i));
+        Object.defineProperty(this, keys[i], props(i));
+
+    }
+
+    function props(ii) {
+        var obj = 
+        {
+        get: function() { return prop[ii]; },
+        set: function(newValue) { prop[ii] = newValue; },
+        enumerable: true,
+        configurable: true
+        // writable: true 이 불가능한 이유는 set get 이 지워지기 때문
+        };
+        return obj;
+    }
+
+
+    // recycling same object
+    function withValue(value) {
+    var d = withValue.d || (
+        withValue.d = {
+        enumerable: false,
+        writable: false,
+        configurable: false,
+        value: null
+        }
+    );
+    d.value = value;
+    return d;
+    }
+    Object.defineProperty(this, 'key1', withValue('static'));
+
+}
+
+
+ArrayTest.prototype =  Object.create(Array.prototype); // Array 상속
+ArrayTest.prototype.constructor = ArrayTest;
+ArrayTest.prototype.parent = Array.prototype;
+
+    // get / set 방식 프로퍼티 (function 연동)
+    // 키 레퍼런스 만듬
+    var bValue = 38;
+    Object.defineProperty(this, 'b', {
+    get: function() { return bValue; },
+    set: function(newValue) { bValue = newValue; },
+    enumerable: true,
+    configurable: true
+    // writable: true 이 불가능한 이유는 set get 이 지워지기 때문
+    });   
+
+/**
+ * 원리는 단순한듯 함 갑승ㄹ 대입할때  배열 세부 정보에 직접 이볅하면 해당 값이 
+ * "덮어씌어짐" 때문이다.
+ * 
+ */
+
+
+var a = new ArrayTest();
+
+// Object.getOwnPropertyDescriptors(a)
+
+</script>
+
+</body>
+</html>
