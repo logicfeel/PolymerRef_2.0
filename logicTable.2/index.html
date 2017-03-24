@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <script src="LogicArray.js?v6"></script>
 <script src="TransQueue.js?v2"></script>
-<script src="logicTable.js?v10"></script>
+<script src="logicTable.js?v11"></script>
 <script>
 
 function ArrTest() {
@@ -52,14 +52,14 @@ a.push('abc');
 // TODO : 나중에  README.md 로 옮김 검토
 // ###############################################################
 // DataSet      Tcollection             Rcollection     DataRow       
-//-----------------------------------------------------------------
+// -----------------------------------------------------------------
 // DataSet      .tables  [0]            .rows[0]        .[0]
 // DataSet      .tables  ["tName"]                      .["cName"]
 //              .tables.count
 //                                      .rows.count
-//
+
 // DataSet      Tcollection             Ccollection
-//-----------------------------------------------------------------
+// -----------------------------------------------------------------
 // DataSet      .tables  [0]            .columns[0]
 // DataSet                              .columns["cName"]
 //                                      .columns.count
@@ -70,52 +70,57 @@ a.push('abc');
 
 // var lt = new LogicTable("T_DataSet");
 
-var ds = new DataSet("T_DataSet");
+{
+    /**
+     * 수동생성 테스트
+     */
+    
+    var ds = new DataSet("t_dataSet");
 
-// 데이터셋을 통해서 이용 : 1방식
-var dt = ds.tables.add("l_table");
-// 데이터 테이블 직접 이용 : 2방식
-// var dt = new DataTable("thead"); 
+    // 데이터셋을 통해서 이용 : 1방식
+    var dt = ds.tables.add("l_table");
+    
+    // 데이터 테이블 직접 이용 : 2방식
+    // var dt = new DataTable("thead"); 
 
-var dc1 = new DataColumn("p1_name", "string");
-var dc2 = new DataColumn("p2_name", "string");
-var dc3 = new DataColumn("p3_name", "string");
+    var dc1 = new DataColumn("p1_name", "string");
+    var dc2 = new DataColumn("p2_name", "string");
+    var dc3 = new DataColumn("p3_name", "string");
 
-// ds.tables["L_table"].columns.Add("컬럼명1");
+    // ds.tables["L_table"].columns.Add("컬럼명1");
 
-dt.columns.add(dc1);
-dt.columns.add(dc2);
-dt.columns.add(dc3);
+    dt.columns.add(dc1);
+    dt.columns.add(dc2);
+    dt.columns.add(dc3);
 
-var dr = null;
+    var dr = null;
 
-dr = dt.newRow();
-dr["p1_name"] = '1번내용';
-dr["p2_name"] = '2번내용';
-dr["p3_name"] = '3번내용';
-dt.rows.add(dr);
+    dr = dt.newRow();
+    dr["p1_name"] = '1번내용';
+    dr["p2_name"] = '2번내용';
+    dr["p3_name"] = '3번내용';
+    dt.rows.add(dr);
 
-dr = dt.newRow();
-dr["p1_name"] = '10번내용';
-dr["p2_name"] = '20번내용';
-dr["p3_name"] = '30번내용';
-dt.rows.add(dr);
+    dr = dt.newRow();
+    dr["p1_name"] = '10번내용';
+    dr["p2_name"] = '20번내용';
+    dr["p3_name"] = '30번내용';
+    dt.rows.add(dr);
 
-// var is = ds.acceptChanges();
-var is = ds.rejectChanges();    // rollback
+    // var is = ds.acceptChanges();     // commit
+    // var is = ds.rejectChanges();     // rollback
 
-var yn = ds.hasChanges();
+    var yn = ds.hasChanges();           // 변경 내용 여부
 
-dr2 = dt.newRow();
-dr["p1_name"] = '100번내용';
-dr["p2_name"] = '200번내용';
-dr["p3_name"] = '300번내용';
-dt.rows.add(dr);
+    dr2 = dt.newRow();
+    dr["p1_name"] = '100번내용';
+    dr["p2_name"] = '200번내용';
+    dr["p3_name"] = '300번내용';
+    dt.rows.add(dr);
 
-var is = ds.acceptChanges();    // commit
-
-var ch = ds.getChanges();
-
+    // var is = ds.acceptChanges();     // commit
+    var ch = ds.getChanges();           // 변경내용 조회
+}
 
 
 /**

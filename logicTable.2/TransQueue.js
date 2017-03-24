@@ -192,7 +192,7 @@ function TransQueue(pOriginal, pTarget) {
         // 2단계 (순서중요!)
         if (_target === null) {
             if (typeof callback === "function") {
-                Function.prototype.call(this);
+                return Function.prototype.call(this);
             } else {
                 return false;
             }
