@@ -8,7 +8,7 @@
 
         // var _items = [];
 
-        // function _setPpropertie(pIdx) {
+        // function _setPropertie(pIdx) {
             
         //     var obj = {
         //         get: function() { return _items[pIdx]; },
@@ -33,9 +33,9 @@
 
         //     index = (this.length === 1) ? 0 : this.length  - 1;
 
-        //     Object.defineProperty(this, [index], _setPpropertie(index));
+        //     Object.defineProperty(this, [index], _setPropertie(index));
         //     if (pAttrName) {
-        //         Object.defineProperty(this, pAttrName, _setPpropertie(index));
+        //         Object.defineProperty(this, pAttrName, _setPropertie(index));
         //     }
 
         // };
@@ -43,7 +43,7 @@
         this._items = [];
         this.abc = 12;
 
-        function _setPpropertie(pIdx) {
+        function _setPropertie(pIdx) {
             
             var obj = {
                 get: function() { return this._items[pIdx]; },
@@ -52,6 +52,23 @@
                 configurable: true
             };
             return obj;        
+        }
+
+        LArray.prototype.setPropCallback = function(pPropName, pGetCallback, pSetCallback) {
+            
+            var obj = {
+                enumerable: true,
+                configurable: true
+            };
+            
+            if (typeof pGetCallback === "function") {
+                obj.get = pGetCallback;
+            }
+            if (typeof pSetCallback === "function") {
+                obj.set = pSetCallback;
+            }
+
+            Object.defineProperty(this, pPropName, obj);
         }
 
         /**
@@ -68,9 +85,9 @@
 
             index = (this.length === 1) ? 0 : this.length  - 1;
 
-            Object.defineProperty(this, [index], _setPpropertie(index));
+            Object.defineProperty(this, [index], _setPropertie(index));
             if (pAttrName) {
-                Object.defineProperty(this, pAttrName, _setPpropertie(index));
+                Object.defineProperty(this, pAttrName, _setPropertie(index));
             }
 
         };

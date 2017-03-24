@@ -212,8 +212,9 @@ function DataTableCollection() {
 // dt.columns[0] + 벼열 + 객체
 function DataTable(pTableName) {
 
-    // this.columns    = new DataColumn();
-    this.columns    = new DataColumnCollection();
+    var _changesQueu    = new TransQueue();
+
+    this.columns    = new DataColumn();
     // this.rows    = new DataRow();
     // this.rows       = DataRow();
     this.rows       = new DataRowCollection();
@@ -293,95 +294,13 @@ function DataTable(pTableName) {
     
 }());
 
-
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-function DataColumnCollection() {
-
-    this._items = [];
-
-    DataColumnCollection.prototype.add = function(pDataColumn) {
-        
-        if (pDataColumn instanceof DataColumn) {
-            this.pushAttr(pDataColumn, pDataColumn.columnName);
-            return true;
-        } else {
-            return false;
-        }
-        // var dataTable = new DataTable(pTableName);
-        // if (pTableName && typeof pTableName === "string") {
-        // this.pushAttr(dataTable, pTableName);
-        //     this.setPropCallback("count", function() {return this.length});
-        // } else {
-        //     return null;
-        // }
-        // return  dataTable;
-    };
-
-    DataColumnCollection.prototype.clear = function() {
-        this._items = [];
-
-        // TODO: 삭제 확인하면서 테스트 해야함
-        // delete this;
-    };
-    
-    DataColumnCollection.prototype.contains = function() {};
-    
-    DataColumnCollection.prototype.copyTo = function() {};
-    
-    // 같은지 비교
-    DataColumnCollection.prototype.equals = function(PObject) {
-        return this === pObject;
-    };
-    
-    DataColumnCollection.prototype.indexOf = function(pObject) {
-
-        for (var i = 0; i < this.length; i++) {
-            
-            if (typeof pObject ==="string") {
-                if (this[i].columnName === pObject) {
-                    return i;
-                }
-            } else if (pObject) {
-                if (this[i] === pObject) {
-                    return i;
-                }
-            }
-        }
-        return -1;        
-    };
-    
-    DataColumnCollection.prototype.remove = function(pObject) {
-        
-        var index = -1;
-
-        index = this.indexOf(pObject);
-
-        if (0 < index) {
-            // 배열 요소 삭제
-            this.removeAt(index);       
-            // 참조 이름 삭제
-            delete this[idx].columnName;
-        } else {
-            return [];
-        }
-    };
-
-    DataColumnCollection.prototype.removeAt = function(pIdx) {
-        return this.splice(pIdx, 1);
-    };
-}
-(function() {   // prototype 상속
-    DataColumnCollection.prototype =  Object.create(LArray.prototype); // Array 상속
-    DataColumnCollection.prototype.constructor = DataRow;
-    DataColumnCollection.prototype.parent = LArray.prototype;
-}());
-
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // .Net 사용/접근법
 // DataTable dt = new DataTable("결과");
 // DataColumn name_dc = new DataColumn("name",typeof(String));
 // dt.Columns.Add(name_dc);
 // 정적과 동적의미가 
+
 function DataColumn(pName, pType, pConfigs) {
 
     this.columnName     = pName || null;
@@ -391,45 +310,46 @@ function DataColumn(pName, pType, pConfigs) {
     this.defaultValue   = pConfigs ? (pConfigs.defaultValue ? pConfigs.defaultValue : null ) : null;
     this.unique         = pConfigs ? (pConfigs.unique ? pConfigs.unique : null ) : null;
     
-    // static => dynamic(동적으로 변경)
-    // this._items = [];
 
-    // DataColumn.prototype.add = function(pDataColumn) {
-    //     // TODO: 타입 검사 필요
-    //     this.push(pDataColumn);
-    // };
+    //**************************
+    // DataColumnCollection 클래스 참조
+    this.item = [];
+
+    DataColumn.prototype.add = function(pDataColumn) {
+        // TODO: 타입 검사 필요
+        this.push(pDataColumn);
+    };
     
-    // DataColumn.prototype.clear = function() {};
+    DataColumn.prototype.clear = function() {};
     // REVIEW: 필요시 구현
-    // DataColumn.prototype.contains = function() {};
+    DataColumn.prototype.contains = function() {};
 
     // 문자열의 index 리턴
     // Test :  dt.columns.indexOf("p2_name")
-    // DataColumn.prototype.indexOf = function(pStr) {
-    //     for (var i = 0; i < this.length; i++) {
-    //         if (this[i].columnName === pStr) {
-    //             return i;
-    //         }
-    //     }
-    //     return -1;
-    // };
+    DataColumn.prototype.indexOf = function(pStr) {
+        for (var i = 0; i < this.length; i++) {
+            if (this[i].columnName === pStr) {
+                return i;
+            }
+        }
+        return -1;
+    };
 
     // 컬럼명 기준 삭제
-    // DataColumn.prototype.remove = function(pColumnName) {
-    //     var index = -1;
-    //     index = this.indexOf(pColumnName);
-    //     this.removeAt(index);
-    // };
+    DataColumn.prototype.remove = function(pColumnName) {
+        var index = -1;
+        index = this.indexOf(pColumnName);
+        this.removeAt(index);
+    };
     
     // index 기준 삭제
     // REVIEW: 전역으로 사용 가능 대상 
-    // DataColumn.prototype.removeAt = function(pIdx) {
-    //     this.splice(pIdx, 1);
-    // };
+    DataColumn.prototype.removeAt = function(pIdx) {
+        this.splice(pIdx, 1);
+    };
     
-    DataColumn.prototype.equals = function(PObject) {
-        return this === pObject;
-    };   
+    //**************************
+    // 내부    
 
 }
 (function() {   // prototype 상속
@@ -449,6 +369,8 @@ function DataRowCollection() {
     }
 
     DataRowCollection.prototype.add = function(pRow) {
+        
+        
         // TYPE1: TransQeueue 사용 안할 경우
         // this.push(pRow);     
         
@@ -474,12 +396,8 @@ function DataRowCollection() {
     DataRowCollection.prototype.insertAt = function(pRow, pIdx) {
 
     };
-    
-    // rollback 안됨 (비추천) 바로 commit 됨 :: delete() 메소드로 사용
+    // rollback 안됨 (비추천) 바로 commit 됨
     DataRowCollection.prototype.remove = function() {};
-
-    // rollback 안됨 (비추천) 바로 commit 됨 :: delete() 메소드로 사용
-    DataRowCollection.prototype.removeAt = function() {};
 }
 (function() {   // prototype 상속
     DataRowCollection.prototype =  Object.create(LArray.prototype); // Array 상속
@@ -517,7 +435,7 @@ function DataRow(pDataColumn) {
     // 내부
     DataRow.prototype.delete = function() {};
 
-    // 변경 적용 관련 (불필요함:DataTable에서 row 관리)
+    // 변경 적용 관련     
     DataRow.prototype.acceptChanges = function() {};
     DataRow.prototype.rejectChanges = function() {};
     

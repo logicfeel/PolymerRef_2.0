@@ -12,9 +12,9 @@
 
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<script src="LogicArray.js?v5"></script>
-<script src="TransQueue.js?v1"></script>
-<script src="logicTable.js?v7"></script>
+<script src="LogicArray.js?v6"></script>
+<script src="TransQueue.js?v2"></script>
+<script src="logicTable.js?v10"></script>
 <script>
 
 function ArrTest() {
@@ -49,6 +49,9 @@ a.push('abc');
 // dt.columns.add(dc5);
 // dt.columns.add(dc6);
 
+// 임시
+// this.setPropCallback("count", function() {return this.length});
+
 // var lt = new LogicTable("T_DataSet");
 
 var ds = new DataSet("T_DataSet");
@@ -62,22 +65,40 @@ var dc1 = new DataColumn("p1_name", "string");
 var dc2 = new DataColumn("p2_name", "string");
 var dc3 = new DataColumn("p3_name", "string");
 
+// ds.tables["L_table"].columns.Add("컬럼명1");
+
 dt.columns.add(dc1);
 dt.columns.add(dc2);
 dt.columns.add(dc3);
 
 var dr = null;
+
 dr = dt.newRow();
 dr["p1_name"] = '1번내용';
 dr["p2_name"] = '2번내용';
 dr["p3_name"] = '3번내용';
 dt.rows.add(dr);
+
 dr = dt.newRow();
 dr["p1_name"] = '10번내용';
 dr["p2_name"] = '20번내용';
 dr["p3_name"] = '30번내용';
 dt.rows.add(dr);
+
+// var is = ds.acceptChanges();
+var is = ds.rejectChanges();
+
+var yn = ds.hasChanges();
+
 dr2 = dt.newRow();
+dr["p1_name"] = '100번내용';
+dr["p2_name"] = '200번내용';
+dr["p3_name"] = '300번내용';
+dt.rows.add(dr);
+
+var is = ds.acceptChanges();
+
+var ch = ds.getChanges();
 
 
 

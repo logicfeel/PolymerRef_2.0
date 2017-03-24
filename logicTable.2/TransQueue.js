@@ -59,7 +59,7 @@ function TransQueue(pOriginal, pTarget) {
 
         if (_target === null) {
             this.init();    
-            return false;
+            return true;
         }
 
         for(var i = 0;  i < _queue.length; i++) {
@@ -86,7 +86,7 @@ function TransQueue(pOriginal, pTarget) {
         }
         this.init();
         // console.log('commit :: 내부 ..');    
- 
+        return true;
     };
 
     /**
@@ -96,29 +96,38 @@ function TransQueue(pOriginal, pTarget) {
 
         var idx = null;
 
-        for(var i = 0;  i < _queue.length; i++) {
-                
-            if ("I" in _queue[i]) {
-                idx = _original.indexOf(_queue[i]["I"].ref);
-                _original.splice(idx, 1);
-                // console.log('rollbak :: insert -> delete ..')    
-            }
+        try { 
 
-            // TODO: if 묶을필요 테스트후
-            if ("D" in _queue[i]) {
-                idx = _queue[i]["D"].cursor_idx;
-                _original.splice(idx, 0, _queue[i]["D"].clone);
-                // console.log('rollbak :: delete -> insert ..')    
+            for(var i = 0;  i < _queue.length; i++) {
+                    
+                if ("I" in _queue[i]) {
+                    idx = _original.indexOf(_queue[i]["I"].ref);
+                    _original.splice(idx, 1);
+                    // console.log('rollbak :: insert -> delete ..')    
+                }
+
+                // TODO: if 묶을필요 테스트후
+                if ("D" in _queue[i]) {
+                    idx = _queue[i]["D"].cursor_idx;
+                    _original.splice(idx, 0, _queue[i]["D"].clone);
+                    // console.log('rollbak :: delete -> insert ..')    
+                }
+                
+                if ("U" in _queue[i]) {
+                    idx = _original.indexOf(_queue[i]["U"].ref);
+                    _original.splice(idx, 1);
+                    _original.splice(idx, 0, _queue[i]["U"].clone);
+                    // console.log('rollbak :: delete -> insert ..')    
+                }
             }
-            
-            if ("U" in _queue[i]) {
-                idx = _original.indexOf(_queue[i]["U"].ref);
-                _original.splice(idx, 1);
-                _original.splice(idx, 0, _queue[i]["U"].clone);
-                // console.log('rollbak :: delete -> insert ..')    
-            }
+            this.init();
+
+        } catch (e) { 
+            console.log('rollback 오류:' + e);
+            return false;
         }
-        this.init();
+        
+        return true;
     };
 
     /**
@@ -140,7 +149,8 @@ function TransQueue(pOriginal, pTarget) {
         // 1단계 (순서중요!)
         if (_target === null) {
             if (typeof callback === "function") {
-                Function.prototype.call(this);
+                // Function.prototype.call(this);
+                callback.call(this);
             } else {
                 return false;
             }
@@ -239,6 +249,8 @@ function TransQueue(pOriginal, pTarget) {
      */
     this.select = function() {
         var rows = [];
+
+        if (0 >= _queue.length ) return null;
 
         for(var i = 0;  i < _queue.length; i++) {
             
