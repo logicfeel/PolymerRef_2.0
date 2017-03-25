@@ -1,0 +1,197 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+    
+
+<h2>T. logicTable ver 2.x</h2>
+<h4>(DataSet그룹, TransQueue, Builder, Container, Template)</h4>
+
+<div></div>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="LogicArray.js?v6"></script>
+<script src="TransQueue.js?v2"></script>
+<script src="logicTable.js?v11"></script>
+<script>
+
+function ArrTest() {
+    this.cssStyle = "A";
+    ArrTest.prototype.css = function() {
+        console.log('arrTest ..');
+    }
+}
+ArrTest.prototype =  Object.create(Array.prototype);
+ArrTest.prototype.constructor = ArrTest;
+
+
+var a = new ArrTest();
+a.push('abc');
+
+
+(function() {
+}());
+
+// var dt = new DataTable("TTT");
+// var dc1 = new DataColumn("p1_name", "string");
+// var dc2 = new DataColumn("p2_name", "string");
+// var dc3 = new DataColumn("p3_name", "string");
+// var dc4 = new DataColumn("p4_name", "string");
+// var dc5 = new DataColumn("p5_name", "string");
+// var dc6 = new DataColumn("p6_name", "string");
+
+// dt.columns.add(dc1);
+// dt.columns.add(dc2);
+// dt.columns.add(dc3);
+// dt.columns.add(dc4);
+// dt.columns.add(dc5);
+// dt.columns.add(dc6);
+
+// TODO : 나중에  README.md 로 옮김 검토
+// ###############################################################
+// DataSet      Tcollection             Rcollection     DataRow       
+// -----------------------------------------------------------------
+// DataSet      .tables  [0]            .rows[0]        .[0]
+// DataSet      .tables  ["tName"]                      .["cName"]
+//              .tables.count
+//                                      .rows.count
+
+// DataSet      Tcollection             Ccollection
+// -----------------------------------------------------------------
+// DataSet      .tables  [0]            .columns[0]
+// DataSet                              .columns["cName"]
+//                                      .columns.count
+// ###############################################################
+
+// 임시
+// this.setPropCallback("count", function() {return this.length});
+
+// var lt = new LogicTable("T_DataSet");
+
+{
+    /**
+     * 수동생성 테스트
+     */
+    
+    var ds = new DataSet("t_dataSet");
+
+    // 데이터셋을 통해서 이용 : 1방식
+    var dt = ds.tables.add("l_table");
+    
+    // 데이터 테이블 직접 이용 : 2방식
+    // var dt = new DataTable("thead"); 
+
+    var dc1 = new DataColumn("p1_name", "string");
+    var dc2 = new DataColumn("p2_name", "string");
+    var dc3 = new DataColumn("p3_name", "string");
+
+    // ds.tables["L_table"].columns.Add("컬럼명1");
+
+    dt.columns.add(dc1);
+    dt.columns.add(dc2);
+    dt.columns.add(dc3);
+
+    var dr = null;
+
+    dr = dt.newRow();
+    dr["p1_name"] = '1번내용';
+    dr["p2_name"] = '2번내용';
+    dr["p3_name"] = '3번내용';
+    dt.rows.add(dr);
+
+    dr = dt.newRow();
+    dr["p1_name"] = '10번내용';
+    dr["p2_name"] = '20번내용';
+    dr["p3_name"] = '30번내용';
+    dt.rows.add(dr);
+
+    // var is = ds.acceptChanges();     // commit
+    // var is = ds.rejectChanges();     // rollback
+
+    var yn = ds.hasChanges();           // 변경 내용 여부
+
+    dr2 = dt.newRow();
+    dr["p1_name"] = '100번내용';
+    dr["p2_name"] = '200번내용';
+    dr["p3_name"] = '300번내용';
+    dt.rows.add(dr);
+
+    // var is = ds.acceptChanges();     // commit
+    var ch = ds.getChanges();           // 변경내용 조회
+}
+
+
+/**
+ * rows 는 정적 메소드
+ */
+// var dr1 = dt.newRow();
+// dr1["p1_name"] = '11번내용';
+// dr1["p2_name"] = '22번내용';
+// dr1["p3_name"] = '33번내용';
+// dt.rows.add(dr1);
+
+
+// dt.register("tbody", [10, 20, 30, 40]);
+
+// DataSet은 데이터베이스에 있는 내용 및 구조를 그대로 옮겨오는 것
+
+// 데이터셋 생성: 
+// DataSet ds = new DataSet(“데이터셋이름”);
+// 자주쓰는 속성 : Tables
+
+// 테이블 추가 :
+// DataSet.Tables.Add("테이블명");
+// 자주쓰는 속성 : Columns , Rows
+// 컬럼생성
+// DataTable dt = new DataTable("테이블명");
+// DataColumn dc1 = new DataColumn("필드명1", typeof(int));     //int type
+// DataColumn dc2 = new DataColumn("필드명1", typeof(string)); //string type
+// dt.Columns.Add(dc1);
+// dt.Columns.Add(dc2);
+// or
+// ds.Tables["테이블명"].Columns.Add("컬럼명1");
+// ds.Tables["테이블명"].Columns.Add("컬럼명2");
+
+// 로우생성
+// DataRow dr = dt.NewRow();
+// dr["컬럼명1"] = "데이터1";
+// dr["컬럼명2"] = "데이터2"
+// dt.Rows.Add(dr);
+
+// DataTable의 행과 열 출력
+
+// DataTable dt;
+// foreach(DataColumn dc in dt.Columns)
+// {
+// Response.Write(dc.ColumnName + “:” + dc.DataType.ToString());
+// }
+
+// for(int i=0;i<dt.Rows.Count;i++)
+// {
+// Response.Write(dt.Rows[i]["컬럼명1"].ToString() + “:” + dt.Rows[i]["컬럼명2"].ToString());
+// }
+
+// DataSet 채우기
+// public DataSet FillDataSet()
+// {
+//  string sql = "select * from 테이블명";
+//  SqlDataAdapter adapter = new SqlDataAdapter(sql, CreateConnection());
+//  DataSet ds = new DataSet();
+//  adapter.Fill(ds, "테이블명");
+//  return ds
+// }
+ 
+// DataSet의 데이터 엑세스하기
+// foreach(DataRow row in ds.Tables["테이블명"].Rows)
+// {
+// Response.Write(row["필드명"].ToString());
+// }
+// [출처] DataSet , DataTable , DataColumn , DataRow 사용|작성자 MyStyle
+
+
+</script>
+
+</body>
+</html>

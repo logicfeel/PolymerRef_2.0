@@ -65,242 +65,6 @@
 // 공통 함수
 var Common = Common || {};
 
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-function Connection() {
-    
-    Container.prototype.open = function() {};
-    Container.prototype.close = function() {};
-}
-(function() {   // prototype 상속
-    
-}());
-
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// @종속성 :  DOM
-function ContainerConnection(pSelecter) {
-    
-    var _element = null;
-    _element = document.querySelector(pSelecter);
-
-}
-(function() {   // prototype 상속
-    ContainerConnection.prototype =  Object.create(Connection.prototype);
-    ContainerConnection.prototype.constructor = ContainerConnection;
-    ContainerConnection.prototype.parent = Connection.prototype;
-}());
-
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// @종속성 : JQuery
-// REVIEW: 이후에 종속성 제거 검토
-function AjaxConnection(pUrl, pData, pCallback) {
-    
-}
-(function() {   // prototype 상속
-    AjaxConnection.prototype =  Object.create(Connection.prototype);
-    AjaxConnection.prototype.constructor = AjaxConnection;
-    AjaxConnection.prototype.parent = Connection.prototype;
-}());
-
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-function Command(pDataAdapter) {
-
-    this.dataAdapter = pDataAdapter || null;
-
-    // 테이터 구조를 가지며면 될듯...
-
-}
-(function() {   // prototype 상속
-    
-}());
-
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-function ContainerCommand() {
-
-}
-(function() {   // prototype 상속
-    ContainerCommand.prototype =  Object.create(Command.prototype);
-    ContainerCommand.prototype.constructor = ContainerCommand;
-    ContainerCommand.prototype.parent = Command.prototype;
-}());
-
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-function AjaxCommand(pDataAdapter) {
-    Command.call(this);  // 상속(부모생성자 호출)
-
-}
-(function() {   // prototype 상속
-    AjaxCommand.prototype =  Object.create(Command.prototype);
-    AjaxCommand.prototype.constructor = AjaxCommand;
-    AjaxCommand.prototype.parent = Command.prototype;
-}());
-
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-function DataAdapter() {
-
-    this.insertCommand  = null;
-    this.updateCommand  = null;
-    this.deleteCommand  = null;
-    this.selectCommand  = null;
-
-    
-    Container.prototype.fill = function(pDataSet, pTableName) {};
-    
-    // 어뎁터에 연결된 데이터 소스에 pDataSet 바인딩 처리함
-    Container.prototype.update = function(pDataSet, pTableName) {
-
-    };
-}
-(function() {   // prototype 상속
-    
-}());
-
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// function AjaxAdapter() {
-
-// }
-// (function() {   // prototype 상속
-    
-// }());
-
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-function Container() {
-    
-    this.dataSource     = null;     // DataSet
-    this.orgConnection  = null;     // Connection
-    this.original       = null;     // DataAdapter
-    this.container      = null;     // DataAdapter
-
-    Container.prototype.dataBind = function() {};
-    Container.prototype.dataUpdate = function() {};
-}
-(function() {   // prototype 상속
-
-}());
-
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-function TemplateContainer() {
-    Container.call(this);  // 상속(부모생성자 호출)
-
-    TemplateContainer.prototype.registerTemplate = function() {};
-    TemplateContainer.prototype.unregisterTemplate = function() {};
-    TemplateContainer.prototype.getTemplate = function() {};
-    TemplateContainer.prototype.pushQueue = function() {};
-    TemplateContainer.prototype.popQueue = function() {};
-}
-(function() {   // prototype 상속
-    TemplateContainer.prototype =  Object.create(Container.prototype);
-    TemplateContainer.prototype.constructor = TemplateContainer;
-    TemplateContainer.prototype.parent = Container.prototype;
-}());
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-function TableTemplateContainer() {
-    TemplateContainer.call(this);  // 상속(부모생성자 호출)
-
-    var _table      = null;
-    var _thead      = null;
-    var _tbody      = null;
-    var _tfooter    = null;
-    var _areaTop    = null;
-    var _areaBottom = null;
-
-    // 인스턴스 속성/메소드 정의
-    TableTemplateContainer.prototype.mothod = function() {};
-}
-(function() {   // prototype 상속
-    TableTemplateContainer.prototype =  Object.create(TemplateContainer.prototype);
-    TableTemplateContainer.prototype.constructor = TableTemplateContainer;
-    TableTemplateContainer.prototype.parent = TemplateContainer.prototype;
-}());
-
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-function ContainerBuilder(pContainer) {
-
-    var _container      = pContainer || Container;
-
-    _container.original       = null;
-    _container.orgConnection  = null;
-    _container.datasource     = null;
-    
-    // 초기화 
-    // TODO: => 뭘 초기화 할지, 어떤 대상을 초기화 할지 결정후 주석처리
-    ContainerBuilder.prototype.init = function(pContainer) {
-s
-    };
-    
-    // DataSet 로딩
-    ContainerBuilder.prototype.load = function(pDataSet) {
-        // this.DS.load(pDataSet);
-    };
-
-    // DataSet 로딩
-    ContainerBuilder.prototype.setContainer = function(pContainer) {
-        // this.DS.load(pDataSet);
-    };
-
-    // 등록(위치지정)
-    // REVIEW : pDataRow 이후에 []을 삽입하면 등록가능하게
-    ContainerBuilder.prototype.register = function(pTableName, pDataRow, pIdx) {
-        // var table = null;
-        // if (this.DS.tables[pTableName]) {
-        //     table = new DataTable(pTableName);
-        // }
-        // // this.DS.tables[pTableName];
-        // if (pIdx) {
-        //     table.rows.insertAt(pDataRow, pIdx);
-        // } else {
-        //     table.rows.add(pDataRow);
-        // }
-    };
-
-    // 수정
-    ContainerBuilder.prototype.modify = function(pTableName, pDataRow, pIdx) {
-
-    };
-    
-    // 삭제
-    ContainerBuilder.prototype.remove = function(pTableName, pIdx) {
-        
-    };
-
-    // 컨테이너 객체와 데이터셋과 묶음 (전체)
-    // 컨테이너 초기화 이후 바인딩
-    ContainerBuilder.prototype.bind = function() {
-        // this.bind();
-    };
-    
-    // 변경 부분만 바인딩
-    // DS 등록/수정/삭제 대상만 바인딩 -> 커밋 처리
-    ContainerBuilder.prototype.bindChanges = function() {
-        // this.bind();
-    };
-
-    // 원본 소스에 연결데 어뎁터에 갱신 처리 함
-    // 변경 부분만 처리됨
-    ContainerBuilder.prototype.update = function() {
-        
-    };
-    
-}
-(function() {   // prototype 상속
-
-}());
-
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-function LogicTable(pContainer) {
-
-    // 컨테이너명 지정 (기본지정:테이블템플릿 컨테이너)
-    pContainer = pContainer || TableTemplateContainer;
-    LogicBuilder.call(this, pContainer);  // 상속(부모생성자 호출)
-
-    // Get 과 Set
-    LogicTable.prototype.css = function() {};
-}
-(function() {   // prototype 상속
-    LogicTable.prototype =  Object.create(ContainerBuilder.prototype);
-    LogicTable.prototype.constructor = LogicTable;
-    LogicTable.prototype.parent = ContainerBuilder.prototype;
-}());
-
 /**
  * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  * ###############################################################
@@ -425,7 +189,6 @@ function DataSet(pDataSetName) {
     };
 }
 (function() {   // prototype 상속
-
 }());
 
 /**
@@ -581,7 +344,7 @@ function DataTable(pTableName) {
         if (!getChanges) return null;
 
         changes["table"] = this.tableName;
-        changes["changes"] = getChanges;
+        changes.changes = getChanges;
         return changes;
     };
 }
@@ -843,90 +606,140 @@ function DataRow(pDataTable) {
  *      + 데이터셋 -> 컨테이너의 바인딩 처리
  * 
  */
-// function DataSetBuilder(pContainer) {
-//     pContainer = pContainer || Container;
-//     this.DS = null;
-//     this.C  = new pContainer();
+function DataSetBuilder(pContainer) {
+    pContainer = pContainer || Container;
+    this.DS = null;
+    this.C  = new pContainer();
 
-//     // 초기화
-//     DataSetBuilder.prototype.init = function(pContainer) {
-//         this.DS = new DataSet();
-//         this.C  = new pContainer();
-//     };
+    // 초기화
+    DataSetBuilder.prototype.init = function(pContainer) {
+        this.DS = new DataSet();
+        this.C  = new pContainer();
+    };
     
-//     // DataSet 로딩
-//     DataSetBuilder.prototype.load = function(pDataSet) {
-//         this.DS.load(pDataSet);
-//     };
+    // DataSet 로딩
+    DataSetBuilder.prototype.load = function(pDataSet) {
+        this.DS.load(pDataSet);
+    };
 
-//     DataSetBuilder.prototype.register = function(pTableName, pDataRow, pIdx) {
-//         var table = null;
-//         if (this.DS.tables[pTableName]) {
-//             table = new DataTable(pTableName);
-//         }
-//         // this.DS.tables[pTableName];
-//         if (pIdx) {
-//             table.rows.insertAt(pDataRow, pIdx);
-//         } else {
-//             table.rows.add(pDataRow);
-//         }
+    DataSetBuilder.prototype.register = function(pTableName, pDataRow, pIdx) {
+        var table = null;
+        if (this.DS.tables[pTableName]) {
+            table = new DataTable(pTableName);
+        }
+        // this.DS.tables[pTableName];
+        if (pIdx) {
+            table.rows.insertAt(pDataRow, pIdx);
+        } else {
+            table.rows.add(pDataRow);
+        }
         
-//     };
+    };
 
-//     DataSetBuilder.prototype.modify = function(pTableName, pDataRow, pIdx) {
+    DataSetBuilder.prototype.modify = function(pTableName, pDataRow, pIdx) {
 
-//     };
+    };
     
-//     DataSetBuilder.prototype.remove = function(pTableName, pIdx) {
+    DataSetBuilder.prototype.remove = function(pTableName, pIdx) {
         
-//     };
+    };
 
-//     // DS 전체 바인딩
-//     DataSetBuilder.prototype.bind = function() {
-//         this.bind();
-//     };
+    // DS 전체 바인딩
+    DataSetBuilder.prototype.bind = function() {
+        this.bind();
+    };
 
-//     // DS 등록/수정/삭제 대상만 바인딩 -> 커밋 처리
-//     DataSetBuilder.prototype.bindChanges = function() {
-//         this.bind();
-//     };    
-// }
-// (function() {   // prototype 상속
+    // DS 등록/수정/삭제 대상만 바인딩 -> 커밋 처리
+    DataSetBuilder.prototype.bindChanges = function() {
+        this.bind();
+    };    
+}
+(function() {   // prototype 상속
 
-// }());
+}());
 
-// //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// function LogicTable(pContainer) {
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+function LogicTable(pContainer) {
 
-//     // 컨테이너명 지정
-//     pContainer = pContainer || TableTemplateContainer;
-//     LogicBuilder.call(this, pContainer);  // 상속(부모생성자 호출)
+    // 컨테이너명 지정
+    pContainer = pContainer || TableTemplateContainer;
+    LogicBuilder.call(this, pContainer);  // 상속(부모생성자 호출)
 
-//     // Get 과 Set
-//     LogicTable.prototype.css = function() {};
-// }
-// (function() {   // prototype 상속
-//     LogicTable.prototype =  Object.create(DataSetBuilder.prototype);
-//     LogicTable.prototype.constructor = LogicTable;
-//     LogicTable.prototype.parent = DataSetBuilder.prototype;
-// }());
+    // Get 과 Set
+    LogicTable.prototype.css = function() {};
+}
+(function() {   // prototype 상속
+    LogicTable.prototype =  Object.create(DataSetBuilder.prototype);
+    LogicTable.prototype.constructor = LogicTable;
+    LogicTable.prototype.parent = DataSetBuilder.prototype;
+}());
 
-// //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// function Elements() {
-//     Elements.prototype.createElements = function() {};
-//     Elements.prototype.appendElements = function() {};
-//     Elements.prototype.replaceElements = function() {};
-//     Elements.prototype.removeElements = function() {};
-//     Elements.prototype.selectorElements = function() {};
-//     Elements.prototype.createRecordElement = function() {};
-//     Elements.prototype.createColumnElement = function() {};
-// }
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+function Elements() {
+    Elements.prototype.createElements = function() {};
+    Elements.prototype.appendElements = function() {};
+    Elements.prototype.replaceElements = function() {};
+    Elements.prototype.removeElements = function() {};
+    Elements.prototype.selectorElements = function() {};
+    Elements.prototype.createRecordElement = function() {};
+    Elements.prototype.createColumnElement = function() {};
+}
 
-// (function() {   // prototype 상속
+(function() {   // prototype 상속
+}());
 
-// }());
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+function Container() {
+    
+    this.dataSource = null;
+    this.container  = null;
+    this.Elems      = null;
 
+    Container.prototype.dataBind = function() {};
+    Container.prototype.bindInsert = function() {};
+    Container.prototype.bindUpdate = function() {};
+    Container.prototype.bindDelete = function() {};
+    Container.prototype.bindSelect = function() {};
+    Container.prototype.createContainer = function() {};
+    Container.prototype.appendContainer = function() {};
+    Container.prototype.replaceContainer = function() {};
+    Container.prototype.removeContainer = function() {};
+    Container.prototype.getContainer = function() {};
+}
+(function() {   // prototype 상속
+}());
 
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+function TemplateContainer() {
+    Container.call(this);  // 상속(부모생성자 호출)
+
+    TemplateContainer.prototype.mothod = function() {};
+}
+(function() {   // prototype 상속
+    TemplateContainer.prototype =  Object.create(Container.prototype);
+    TemplateContainer.prototype.constructor = TemplateContainer;
+    TemplateContainer.prototype.parent = Container.prototype;
+}());
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+function TableTemplateContainer() {
+    TemplateContainer.call(this);  // 상속(부모생성자 호출)
+
+    var _table = null;
+    var _thead = null;
+    var _tbody = null;
+    var _tfooter = null;
+    var _areaTop = null;
+    var _areaBottom = null;
+
+    // 인스턴스 속성/메소드 정의
+    TableTemplateContainer.prototype.mothod = function() {};
+}
+(function() {   // prototype 상속
+    TableTemplateContainer.prototype =  Object.create(TemplateContainer.prototype);
+    TableTemplateContainer.prototype.constructor = TableTemplateContainer;
+    TableTemplateContainer.prototype.parent = TemplateContainer.prototype;
+
+}());
 
 
 
