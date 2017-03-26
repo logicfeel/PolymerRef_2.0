@@ -240,7 +240,7 @@ function ContainerBuilder(pContainer) {
     // 초기화 
     // TODO: => 뭘 초기화 할지, 어떤 대상을 초기화 할지 결정후 주석처리
     ContainerBuilder.prototype.init = function(pContainer) {
-s
+
     };
     
     // DataSet 로딩
