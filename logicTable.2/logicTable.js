@@ -65,6 +65,24 @@
 // 공통 함수
 var Common = Common || {};
 
+// 배열 차원 검사 (최대 제한값 10 설정됨)
+// 첫번째 배열만 검사 (배열의 넢이가 같은 겨우만)
+// _getArrayLevel(pElem) 사용법
+// pDepts : 내부 사용값
+Common.getArrayLevel = function(pElem, pDepts) {
+    var MAX     = 10;
+    var level   = 0;
+    
+    pDepts = pDepts || 0;
+
+    if (pElem instanceof Array && MAX > pDepts) {
+        level++;
+        pDepts++;
+        level = level + this.getArrayLevel(pElem[0], pDepts);  // 재귀로 깊이 찾기
+    }
+    return level;
+}
+
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 function Connection() {
     
@@ -344,11 +362,23 @@ function DataSet(pDataSetName) {
 
     // DataSEt 로딩
     DataSet.prototype.load = function(pDataSet) {
-        var isloading = false;
 
-        if ("tables" in pDataSet) {
-            this.readSchema(pDataSet["tables"])
-            isloading = true;
+        var ds          = null;
+        var dataTable   = null;
+
+        try {
+            
+            if (!pDataSet || !pDataSet.tables) {
+                throw new Error('pDataSet  tables 객체 없음 :');
+            }
+            ds = new DataSet(pDataSet.dataSetName);
+
+            for (var i = 0; i < pDataSet.tables; i++) {
+                dataTable = DataTable.load(pDataSet.tables[i]);
+                ds.tables.add(dataTable);
+            }
+        } catch (e) { 
+            console.log('DataSet load 오류: ' + e);
         }
     };
 
@@ -546,40 +576,126 @@ function DataTable(pTableName) {
     this.rows       = new DataRowCollection(this);
     this.tableName  = pTableName;
 
+    // row의 넢이가 검사
+    function _equalRowWidth(pRow) {
+        
+        var rowWidth = -1;
+        
+        // TODO: 이중배열 여부 검사
+
+        for (var i = 0; i < pRow.length; i++) {
+            
+            // 첫번째 row 넢이 
+            if (i === 0) {
+                rowWidth = pRow[i].length;
+
+                // 넢이가 없는 경우
+                if (0 >= rowWidth) {
+                    return false;
+                }
+            } else {
+
+                // 넚이가 다른 경우
+                if (rowWidth !== pRow[i].length) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    function _getObjectType(pObject) {
+        // REVIEW: 필요시 조건 삽입
+        // switch (typeof pObject) {
+        //     case 1:
+        //         doSomethig();
+        //         break;
+        //     case 2:
+        //         return true;
+        //     default:
+        //         return "string";
+        // }
+        return typeof pObject;
+    }
+
     // DataTable 로딩
     // TODO: 컬럼을 가져 오는지, Rows 를 가져 오는지, 둘다가져오는지 ?
     // 둘다 가져오는듯  (naver검색 결과)
     // 컬럼여부를 유추를 파악해서 등록함
     // JSON 또는 객체를 가져오는 기능이 되야함
-    DataTable.prototype.load = function(pSchema) {
+    // !pSchema 는 DataTable과 같은 기준으로 검사함
+    // static 메소드
+    function _load(pTableDataObj) {
         
-        var column = null;
-
-        if ("column" in pSchema) {
-            column = new DataColumn( pSchema["column"]["columnName"],
-                                        pSchema["column"]["pType"],
-                                        pSchema["column"]["caption"],
-                                        pSchema["column"]["defaultValue"],
-                                        pSchema["column"]["unique"],);
-            // for(var i = 0; i < pSchema["column"].length; i++) {
-            // }
-        }
-
-        if ("rows" in pSchema) {
-            
-
-            for(var i = 0; i < pSchema["rows"].length; i++) {
-                
-                // 컬럼이 있을 경우
-                if (pSchema["rows"][0].length !== column.count) {
-throw new Error('데이터컬럼 columnName, dataType = null  오류 ');
-                }
-                // 없을시 생성
+        var dataTable   = null; 
+        var column      = null;
+        var obj         = null;
+        var dr          = null;
+        var obj_dr      = null;
+        
+        try { 
+            // 입력 pSchema 검사 
+            if (!pTableDataObj || !pTableDataObj.rows) {
+                throw new Error('입력스키마 pSchema 오류:' + pTableDataObj);
             }
+            if (2 > Common.getArrayLevel(pTableDataObj.rows)) {
+                throw new Error('데이터로우 이중배열 아님 오류:');
+            }
+            if (_equalRowWidth(pTableDataObj.rows)) {
+                throw new Error('데이터로우 넚이 오류:');
+            }
+            if (!pTableDataObj.tableName) {
+                throw new Error('테이블이름 없음 오류 tableName:' + pTableDataObj.tableName);
+            }
+
+            dataTable = new DataTable(pTableDataObj.tableName);
+            
+            // *************************
+            // 1단계  : 컬럼 스키마 가져오기
+            // A. 컬럼 스키마가 있는 경우
+            if ("column" in pTableDataObj) {
+                obj = pTableDataObj["column"];
+                for (var i = 0; i < obj.length; i++) {
+                    column = new DataColumn( obj[i]["columnName"], obj[i]["pType"],
+                            obj[i]["caption"], obj[i]["defaultValue"], obj[i]["unique"]);
+                    dataTable.columns.add(column);
+                }
+            }
+
+            // B. 컬럼스키마가 없는 경우
+            // 첫번째 row를 가져와서 컬럼 스키마를 생성
+            obj_dr = pTableDataObj["rows"];
+            for (var i = 0; i < obj_dr[0].length; i++) {
+                obj = obj_dr[0][i];
+                column = new DataColumn("colmn_" + i, _getObjectType(obj));
+                dataTable.columns.add(column);
+            }
+
+            // 컬럼.count == 로우.conunt 검사 (이미 넢이는 검사했으므로..)
+            if (obj_dr[0].length !== column.count) {
+                throw new Error('데이터로우 !=== 데이터컬럼수  오류 row.index:' + i);
+            } 
+
+            // *************************
+            // 2단계 : 로우 데이터 가져오기
+            if ("rows" in pTableDataObj) {
+
+                for(var i = 0; i < obj_dr.length; i++) {
+                    dr = dataTable.newRow();
+                    for (var ii = 0; ii < obj_dr[i].length; ii++) {
+                        dr[ii] = obj_dr[i][ii];
+                    }
+                    dataTable.rows.add(dr);
+                }
+            }
+        } catch (e) { 
+            console.log('DataTable load 오류: ' + e);
         }
-
-
-    };
+        return dataTable;
+    }
+    
+    // static 메소드
+    DataTable.prototype.load = _load;
 
     // DataRow 만 초기화 (!columns는 유지됨/스키마는 유지)
     DataTable.prototype.clear = function() {
