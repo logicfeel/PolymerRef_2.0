@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <script src="LogicArray.js?v6"></script>
 <script src="TransQueue.js?v2"></script>
-<script src="logicTable.js?v11"></script>
+<script src="logicTable.js?v12"></script>
 <script>
 
 function ArrTest() {
@@ -79,6 +79,7 @@ a.push('abc');
 
     // 데이터셋을 통해서 이용 : 1방식
     var dt = ds.tables.add("l_table");
+    var dt2 = ds.tables.add("l2_table");
     
     // 데이터 테이블 직접 이용 : 2방식
     // var dt = new DataTable("thead"); 
@@ -87,11 +88,17 @@ a.push('abc');
     var dc2 = new DataColumn("p2_name", "string");
     var dc3 = new DataColumn("p3_name", "string");
 
+
     // ds.tables["L_table"].columns.Add("컬럼명1");
 
     dt.columns.add(dc1);
     dt.columns.add(dc2);
     dt.columns.add(dc3);
+
+    dt2.columns.add(dc1);
+    dt2.columns.add(dc2);
+    dt2.columns.add(dc3);
+
 
     var dr = null;
 
@@ -112,14 +119,28 @@ a.push('abc');
 
     var yn = ds.hasChanges();           // 변경 내용 여부
 
-    dr2 = dt.newRow();
+    dr = dt.newRow();
     dr["p1_name"] = '100번내용';
     dr["p2_name"] = '200번내용';
     dr["p3_name"] = '300번내용';
     dt.rows.add(dr);
 
+
+    dr = dt.newRow();
+    dr["p1_name"] = '10번내용 - 중간수정';
+    dr["p2_name"] = '20번내용 - 중간수정';
+    dr["p3_name"] = '30번내용 - 중간수정';
+    dt.rows.insertAt(dr, 1);
+
+    dr = dt2.newRow();
+    dr["p1_name"] = '100번내용';
+    dr["p2_name"] = '200번내용';
+    dr["p3_name"] = '300번내용';
+    dt2.rows.add(dr);
+
     // var is = ds.acceptChanges();     // commit
     var ch = ds.getChanges();           // 변경내용 조회
+
 }
 
 

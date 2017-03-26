@@ -177,6 +177,22 @@ function Container() {
 
 }());
 
+
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+function TableContainer() {
+    Container.call(this);  // 상속(부모생성자 호출)
+
+    TableContainer.prototype.appendContainer = function() {};
+    TableContainer.prototype.replaceContainer = function() {};
+    TableContainer.prototype.removeContainer = function() {};
+    TableContainer.prototype.createContainer = function() {};
+}
+(function() {   // prototype 상속
+    TableContainer.prototype =  Object.create(Container.prototype);
+    TableContainer.prototype.constructor = TableContainer;
+    TableContainer.prototype.parent = Container.prototype;
+}());
+
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 function TemplateContainer() {
     Container.call(this);  // 상속(부모생성자 호출)
@@ -531,16 +547,38 @@ function DataTable(pTableName) {
     this.tableName  = pTableName;
 
     // DataTable 로딩
-    // TODO:
+    // TODO: 컬럼을 가져 오는지, Rows 를 가져 오는지, 둘다가져오는지 ?
+    // 둘다 가져오는듯  (naver검색 결과)
+    // 컬럼여부를 유추를 파악해서 등록함
+    // JSON 또는 객체를 가져오는 기능이 되야함
     DataTable.prototype.load = function(pSchema) {
         
-        var columns = {};
+        var column = null;
 
         if ("column" in pSchema) {
-            for(var i = 0; i < pSchema["column"].length; i++) {
-                // this.columns = new DataColumn(pSchema["column"]);
+            column = new DataColumn( pSchema["column"]["columnName"],
+                                        pSchema["column"]["pType"],
+                                        pSchema["column"]["caption"],
+                                        pSchema["column"]["defaultValue"],
+                                        pSchema["column"]["unique"],);
+            // for(var i = 0; i < pSchema["column"].length; i++) {
+            // }
+        }
+
+        if ("rows" in pSchema) {
+            
+
+            for(var i = 0; i < pSchema["rows"].length; i++) {
+                
+                // 컬럼이 있을 경우
+                if (pSchema["rows"][0].length !== column.count) {
+throw new Error('데이터컬럼 columnName, dataType = null  오류 ');
+                }
+                // 없을시 생성
             }
         }
+
+
     };
 
     // DataRow 만 초기화 (!columns는 유지됨/스키마는 유지)
@@ -686,14 +724,21 @@ function DataColumnCollection(pDataTable) {
  *                      defaultValue: "", unique: ""
  *                  }
  */
-function DataColumn(pColumnName, pType, pConfigs) {
+function DataColumn(pColumnName, pType, pCaption, pDefaultValue, pUnique) {
 
     this.columnName     = pColumnName || null;
     this.dataType       = pType || null;
-    this.caption        = pConfigs ? (pConfigs.caption ? pConfigs.caption : null ) : null;
-    this.defaultValue   = pConfigs ? (pConfigs.defaultValue ? pConfigs.defaultValue : null ) : null;
-    this.unique         = pConfigs ? (pConfigs.unique ? pConfigs.unique : null ) : null;
 
+    this.caption        = pCaption || null;
+    this.defaultValue   = pDefaultValue || null;
+    this.unique         = pUnique || false;
+
+    // 필수값 검사
+    // columnName, dataType
+    if(this.columnName === null || this.dataType === null) {
+        throw new Error('데이터컬럼 columnName, dataType = null  오류 ');
+    }
+    
     DataColumn.prototype.equals = function(PObject) {
         return (this === pObject);
     };   
@@ -718,22 +763,26 @@ function DataRowCollection(pDataTable) {
     
     this.setPropCallback("count", function() {return this.length});
     
-    function _push(pRow) {
-        this.push(pRow);
+    function _push(pDataRow) {
+        this.push(pDataRow);
     }
+
+    function _insertAt(pDataRow, pIdx) {
+        this.splice(pIdx, 0, pDataRow);
+    }    
     
     function _removeAt(pIdx) {
         return this.splice(pIdx, 1);
     }
 
-    DataRowCollection.prototype.add = function(pRow) {
+    DataRowCollection.prototype.add = function(pDataRow) {
 
         // TYPE1: TransQeueue 사용 안할 경우
-        // this.push(pRow);     
+        // this.push(pDataRow);     
         
         // TYPE2: TransQeueue 사용 사용
-        var bindPushFunc = _push.bind(this, pRow);  
-        this.transQueue.insert(pRow, null, bindPushFunc); 
+        var bindPushFunc = _push.bind(this, pDataRow);  
+        this.transQueue.insert(pDataRow, null, bindPushFunc); 
     };
 
     DataRowCollection.prototype.clear = function() {
@@ -764,7 +813,17 @@ function DataRowCollection(pDataTable) {
     };
     
     DataRowCollection.prototype.insertAt = function(pDataRow, pIdx) {
+        
+        
+        
         if (pDataRow instanceof DataRow &&  typeof pIdx === "number") {
+            
+            // TYPE1: TransQeueue 사용 안할 경우
+            this.splice(pIdx, 0, pDataRow);
+
+            // TYPE2: TransQeueue 사용 사용
+            var bindInsertAtFunc = _insertAt.bind(this, pDataRow);  
+            this.transQueue.insert(pDataRow, pIdx, bindInsertAtFunc); 
             this.splice(pIdx, 0, pDataRow);
             return true;
         }

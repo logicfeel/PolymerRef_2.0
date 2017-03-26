@@ -92,34 +92,34 @@
 
         // 방법1 : 수동으로 저작하여 생성
         (function() {
-            oTable.setHead(["번호", "제목", "글쓴이"]);
-            var b = document.createElement('b');
-            b.innerText = "진하게";
-            var c = document.querySelector("#inner_div");
-            var d = c.cloneNode(true);
-            var e = document.createElement('button');
-            e.innerText = "버튼임";
-            oTable.setBody(
-                [
-                    ["1", "내용입니다.", "세리"],
-                    ["2", "방과후 ㅎ...", b],
-                    [e, "방과후 어딜 돌아 댕기는거야 아가야.....", d]
-                ]
-            );
-            oTable.setCSS("table", "table table-hover table-bordered");
-            oTable.setCSS("table thead td", "warning");
-            setElem.appendChild(oTable.container);
+            // oTable.setHead(["번호", "제목", "글쓴이"]);
+            // var b = document.createElement('b');
+            // b.innerText = "진하게";
+            // var c = document.querySelector("#inner_div");
+            // var d = c.cloneNode(true);
+            // var e = document.createElement('button');
+            // e.innerText = "버튼임";
+            // oTable.setBody(
+            //     [
+            //         ["1", "내용입니다.", "세리"],
+            //         ["2", "방과후 ㅎ...", b],
+            //         [e, "방과후 어딜 돌아 댕기는거야 아가야.....", d]
+            //     ]
+            // );
+            // oTable.setCSS("table", "table table-hover table-bordered");
+            // oTable.setCSS("table thead td", "warning");
+            // setElem.appendChild(oTable.container);
         }());
 
         // 방법2 : 데이터셋 기반 설정 기존과 :: 단계적으로 붙일 경우 (기존에 붙여짐)
-        (function() {
-            // oTable.init();
-            // oTable.loadDataSet(orgJson);
-            // oTable.bind();
-            // oTable.setCSS("table", "table table-hover table-bordered");
-            // oTable.setCSS("table thead td", "warning");        
-            // setElem.appendChild(oTable.container);
-        }());
+        {
+            oTable.init();
+            oTable.loadDataSet(orgJson);
+            oTable.bind();
+            oTable.setCSS("table", "table table-hover table-bordered");
+            oTable.setCSS("table thead td", "warning");        
+            setElem.appendChild(oTable.container);
+        }
 
         // 방법3 : 데이터셋 기반 설정 :: 함축적함수 bind(pJSON)
         // (function() {
