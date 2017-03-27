@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <script src="LogicArray.js?v6"></script>
 <script src="TransQueue.js?v2"></script>
-<script src="logicTable.js?v12"></script>
+<script src="logicTable.js?v16"></script>
 <script>
 
 function ArrTest() {
@@ -132,6 +132,7 @@ a.push('abc');
     dr["p3_name"] = '30번내용 - 중간수정';
     dt.rows.insertAt(dr, 1);
 
+    // 테이블2 추가
     dr = dt2.newRow();
     dr["p1_name"] = '100번내용';
     dr["p2_name"] = '200번내용';
@@ -140,6 +141,32 @@ a.push('abc');
 
     // var is = ds.acceptChanges();     // commit
     var ch = ds.getChanges();           // 변경내용 조회
+
+    ds.clear();
+
+    var ds2 = new DataSet("t2_dataSet");
+    
+    var schemaData = {
+        tables: [
+            {
+                tableName: "ds2_table",
+                // columns: [
+                //     {
+                //         columnName: "ccc_name",
+                //         dataType: "string",
+                //         caption: "제목임"
+                //     }
+                // ],
+                rows: [
+                    [10, "20"],
+                    [100, "200"],
+                    [1000, "2000"]
+                ]                
+            }
+        ]
+    };
+    
+    ds2.read(schemaData);
 
 }
 

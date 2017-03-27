@@ -360,29 +360,28 @@ function DataSet(pDataSetName) {
     this.dt = this.tables;      // Ref
     this.dataSetName = pDataSetName;
 
-    // DataSEt 로딩
+    // dataReader 를 통한 가져오기
+    // REVIEW: 가져오기 옵션 있음
     DataSet.prototype.load = function(pDataSet) {
 
-        var ds          = null;
-        var dataTable   = null;
+        // var ds          = null;
+        // var dataTable   = null;
 
-        try {
-            
-            if (!pDataSet || !pDataSet.tables) {
-                throw new Error('pDataSet  tables 객체 없음 :');
-            }
-            ds = new DataSet(pDataSet.dataSetName);
+        // try {
+        //     if (!pDataSet || !pDataSet.tables) {
+        //         throw new Error('pDataSet  tables 객체 없음 :');
+        //     }
 
-            for (var i = 0; i < pDataSet.tables; i++) {
-                dataTable = DataTable.load(pDataSet.tables[i]);
-                ds.tables.add(dataTable);
-            }
-        } catch (e) { 
-            console.log('DataSet load 오류: ' + e);
-        }
+        //     for (var i = 0; i < pDataSet.tables.length; i++) {
+        //         dataTable = DataTable.load(pDataSet.tables[i]);
+        //         this.tables.add(dataTable);
+        //     }
+        // } catch (e) { 
+        //     console.log('DataSet load 오류 :' + e);
+        // }
     };
 
-    // DataRows 를 제거 (columns 유지, 스키마는 유지됨)
+    // DataRows 를 제거 (columns 스키마는 유지됨)
     DataSet.prototype.clear = function() {
         this.tables.clear();
     };
@@ -394,25 +393,46 @@ function DataSet(pDataSetName) {
     // 구조 + 데이터 복사
     DataSet.prototype.copy = function() {};
 
-    // DataRow 데이터 읽기
-    DataSet.prototype.read = function(pDataRows) {};
+    // DataSet 로딩 (tables + rows + columns)
+    DataSet.prototype.read = function(pDataSet) {
+
+        var ds          = null;
+        var dataTable   = null;
+
+        try {
+            
+            if (!pDataSet || !pDataSet.tables) {
+                throw new Error('pDataSet  tables 객체 없음 :');
+            }
+
+            for (var i = 0; i < pDataSet.tables.length; i++) {
+                dataTable = DataTable.read(pDataSet.tables[i]);
+                this.tables.add(dataTable);
+            }
+        } catch (e) { 
+            console.log('DataSet load 오류 :' + e);
+        }
+    };
 
     // MS: 호환성
-    DataSet.prototype.readXml = function() {};          
+    DataSet.prototype.readXml = DataSet.prototype.read;          
 
     // 스키마 (datatable, column 설정)
     DataSet.prototype.readSchema = function(pDataTables) {
-        var datTables = {};
+        // var datTables = {};
 
-        for (var table in pDataTables) {
-            if ( pDataTables.hasOwnProperty(table)){
-                datTables[table] = new DataTable(table);
+        // for (var table in pDataTables) {
+        //     if ( pDataTables.hasOwnProperty(table)){
+        //         datTables[table] = new DataTable(table);
 
-                // 생각좀...
-                // TODO:
-            }
-        }
+        //         // 생각좀...
+        //         // TODO:
+        //     }
+        // }
     };
+
+    // MS: 호환성
+    DataSet.prototype.readXmlSchema = DataSet.prototype.readSchema;              
 
     DataSet.prototype.readXmlSchema = function() {};    // MS: 호환성
 
@@ -487,15 +507,21 @@ function DataTableCollection(pDataSet) {
 
     this.setPropCallback("count", function() {return this.length});
 
-    DataTableCollection.prototype.add = function(pTableName) {
+    // pObject : String = 테이블명
+    // DataTable : 데이터테이블 객체
+    DataTableCollection.prototype.add = function(pObject) {
 
-        var dataTable = new DataTable(pTableName);
+        var dataTable = null;
 
-        if (pTableName && typeof pTableName === "string") {
-            this.pushAttr(dataTable, pTableName);
+        if (typeof pObject === "string") {      
+            dataTable = new DataTable(pObject);
+        } else if (pObject instanceof DataTable) {
+            dataTable = pObject;
         } else {
             return null;
         }
+
+        this.pushAttr(dataTable, dataTable.tableName);
         return  dataTable;
     };
 
@@ -576,7 +602,7 @@ function DataTable(pTableName) {
     this.rows       = new DataRowCollection(this);
     this.tableName  = pTableName;
 
-    // row의 넢이가 검사
+    // row의 넢이 검사
     function _equalRowWidth(pRow) {
         
         var rowWidth = -1;
@@ -625,9 +651,12 @@ function DataTable(pTableName) {
     // JSON 또는 객체를 가져오는 기능이 되야함
     // !pSchema 는 DataTable과 같은 기준으로 검사함
     // static 메소드
-    function _load(pTableDataObj) {
+    function _read(pTableDataObj) {
         
         var dataTable   = null; 
+        var dtRows      = pTableDataObj["rows"];
+        var dtColumns   = pTableDataObj["columns"];
+        var dtTableName = pTableDataObj["tableName"];
         var column      = null;
         var obj         = null;
         var dr          = null;
@@ -635,71 +664,93 @@ function DataTable(pTableName) {
         
         try { 
             // 입력 pSchema 검사 
-            if (!pTableDataObj || !pTableDataObj.rows) {
-                throw new Error('입력스키마 pSchema 오류:' + pTableDataObj);
+            if (!pTableDataObj) {
+                throw new Error('입력스키마 pSchema 오류 tableName:' + dtTableName);
             }
-            if (2 > Common.getArrayLevel(pTableDataObj.rows)) {
-                throw new Error('데이터로우 이중배열 아님 오류:');
+            if (!pTableDataObj["tableName"]) {
+                throw new Error('테이블이름 없음 오류 tableName:' + dtTableName);
             }
-            if (_equalRowWidth(pTableDataObj.rows)) {
-                throw new Error('데이터로우 넚이 오류:');
+            if (dtColumns && !(dtColumns instanceof Array)) {
+                throw new Error('colum 배열 아님 오류 :');
             }
-            if (!pTableDataObj.tableName) {
-                throw new Error('테이블이름 없음 오류 tableName:' + pTableDataObj.tableName);
+            if (dtRows && !(dtRows instanceof Array)) {
+                throw new Error('rows 배열 아님 오류 :');
+            }
+            if (dtRows && 2 > Common.getArrayLevel(dtRows)) {
+                throw new Error('rows 이중배열 아님 오류 :');
+            }
+            if (dtRows && !_equalRowWidth(dtRows)) {
+                throw new Error('row들의 넚이가 다름 오류 :');
+            }
+            if (!dtRows && !dtColumns) {
+                throw new Error('rows와 columns 없음 오류 :');
             }
 
-            dataTable = new DataTable(pTableDataObj.tableName);
+            dataTable = new DataTable(dtTableName);
             
             // *************************
             // 1단계  : 컬럼 스키마 가져오기
-            // A. 컬럼 스키마가 있는 경우
-            if ("column" in pTableDataObj) {
-                obj = pTableDataObj["column"];
-                for (var i = 0; i < obj.length; i++) {
-                    column = new DataColumn( obj[i]["columnName"], obj[i]["pType"],
-                            obj[i]["caption"], obj[i]["defaultValue"], obj[i]["unique"]);
+
+            if (dtColumns) {
+                
+                // A. 컬럼 스키마가 있는 경우
+                for (var i = 0; i < dtColumns.length; i++) {
+                    
+                    // 필수 요소 검사
+                    if (!(dtColumns[i]["columnName"] && dtColumns[i]["dataType"])) {
+                        throw new Error('colum에 필수 정보 (columnName, dataType)없음 오류 tableName:' + dtTableName);
+                    }
+                    
+                    column = new DataColumn( dtColumns[i]["columnName"], dtColumns[i]["dataType"],
+                            dtColumns[i]["caption"], dtColumns[i]["defaultValue"], dtColumns[i]["unique"]);
+                    dataTable.columns.add(column);
+                }
+            } else if (dtRows) {
+
+                // B. 컬럼스키마가 없는 경우
+                // 첫번째 row를 가져와서 컬럼 스키마를 생성
+                for (var i = 0; i < dtRows[0].length; i++) {
+                    column = new DataColumn("column_" + i, _getObjectType(dtRows[0][i]));
                     dataTable.columns.add(column);
                 }
             }
 
-            // B. 컬럼스키마가 없는 경우
-            // 첫번째 row를 가져와서 컬럼 스키마를 생성
-            obj_dr = pTableDataObj["rows"];
-            for (var i = 0; i < obj_dr[0].length; i++) {
-                obj = obj_dr[0][i];
-                column = new DataColumn("colmn_" + i, _getObjectType(obj));
-                dataTable.columns.add(column);
-            }
-
-            // 컬럼.count == 로우.conunt 검사 (이미 넢이는 검사했으므로..)
-            if (obj_dr[0].length !== column.count) {
-                throw new Error('데이터로우 !=== 데이터컬럼수  오류 row.index:' + i);
-            } 
-
             // *************************
             // 2단계 : 로우 데이터 가져오기
-            if ("rows" in pTableDataObj) {
+            if (dtRows) {
 
-                for(var i = 0; i < obj_dr.length; i++) {
+                // 컬럼.count == 로우.conunt 검사 (이미 넢이는 검사했으므로..)
+                if (dtRows[0].length !== dataTable.columns.count) {
+                    throw new Error('rows !== columns  오류 row.index:' + i);
+                }
+
+                for(var i = 0; i < dtRows.length; i++) {
                     dr = dataTable.newRow();
-                    for (var ii = 0; ii < obj_dr[i].length; ii++) {
-                        dr[ii] = obj_dr[i][ii];
+                    for (var ii = 0; ii < dtRows[i].length; ii++) {
+                        dr[ii] = dtRows[i][ii];
                     }
                     dataTable.rows.add(dr);
                 }
             }
         } catch (e) { 
-            console.log('DataTable load 오류: ' + e);
+            console.log('DataTable read 오류: ' + e);
         }
         return dataTable;
     }
     
     // static 메소드
-    DataTable.prototype.load = _load;
+    DataTable.read = _read;
+
+    // 동적 메소드
+    DataTable.prototype.read = _read;
+
+    // MS: DataReader 
+    DataTable.prototype.load = function() {};
+
 
     // DataRow 만 초기화 (!columns는 유지됨/스키마는 유지)
     DataTable.prototype.clear = function() {
-        this.rows.clear();
+        this.rows   = new DataRowCollection(this);
     };
 
     DataTable.prototype.select = function() {
@@ -903,6 +954,7 @@ function DataRowCollection(pDataTable) {
 
     DataRowCollection.prototype.clear = function() {
         _dataTable.rows =  new DataRowCollection(_dataTable);
+        this.transQueue.init();
     };
     
     // column 값 여부
@@ -930,17 +982,14 @@ function DataRowCollection(pDataTable) {
     
     DataRowCollection.prototype.insertAt = function(pDataRow, pIdx) {
         
-        
-        
         if (pDataRow instanceof DataRow &&  typeof pIdx === "number") {
             
             // TYPE1: TransQeueue 사용 안할 경우
-            this.splice(pIdx, 0, pDataRow);
+            // this.splice(pIdx, 0, pDataRow);
 
             // TYPE2: TransQeueue 사용 사용
             var bindInsertAtFunc = _insertAt.bind(this, pDataRow);  
             this.transQueue.insert(pDataRow, pIdx, bindInsertAtFunc); 
-            this.splice(pIdx, 0, pDataRow);
             return true;
         }
         return false;
