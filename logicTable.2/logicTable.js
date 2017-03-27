@@ -230,11 +230,20 @@ function ContainerAdapter() {
     };
 
     ContainerAdapter.prototype.createColumnElement = function(pDataRow) {
+
         var colums = [];
+        var elem    = null;
+        var clone   = null;
 
         if (this.columnElement !== null && this.columnElement instanceof HTMLElement) {
             for (var i = 0; i < pDataRow.length; i++) {
-                colums.push(this.columnElement.appendChild(this.createElement(pDataRow[i])));
+                elem = this.createElement(pDataRow[i]);
+                
+                clone = this.columnElement.cloneNode(true);
+                clone.appendChild(elem);
+                colums.push(clone);
+                // 방식을 바꿔야함
+                // colums.push(this.columnElement.appendChild(elem));
             }
         }
         return colums;
@@ -259,14 +268,18 @@ function ContainerAdapter() {
         if (this.recordElement !== null && this.recordElement instanceof HTMLElement) {
             
             var columnElems = this.createColumnElement(pDataRow);
-            
+            var clone   = null;
+
             if (pIdx) {
                 // TODO: idx 추가 구현
             } else {
                 
                 // TODO: 배열검사해야함
                 for (var i = 0;  i < columnElems.length; i++) {
-                    this.recordElement.appendChild(columnElems[i]);
+                    clone = this.recordElement.cloneNode(true);
+                    clone.appendChild(columnElems[i]);
+                    this.container.appendChild(clone);
+
                 }
             }
         }
