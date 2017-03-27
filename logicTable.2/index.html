@@ -8,11 +8,16 @@
 <h2>T. logicTable ver 2.x</h2>
 <h4>(DataSet그룹, TransQueue, Builder, Container, Template)</h4>
 
+
 <div></div>
+
+<ul>
+    <li></li>
+</ul>
 
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<script src="LogicArray.js?v6"></script>
+<script src="LogicArray.js?v7"></script>
 <script src="TransQueue.js?v2"></script>
 <script src="logicTable.js?v16"></script>
 <script>
@@ -142,34 +147,53 @@ a.push('abc');
     // var is = ds.acceptChanges();     // commit
     var ch = ds.getChanges();           // 변경내용 조회
 
-    ds.clear();
+    // ds.clear();
+}
 
+{
     var ds2 = new DataSet("t2_dataSet");
     
     var schemaData = {
         tables: [
             {
                 tableName: "ds2_table",
-                // columns: [
-                //     {
-                //         columnName: "ccc_name",
-                //         dataType: "string",
-                //         caption: "제목임"
-                //     }
-                // ],
+                columns: [
+                    {
+                        columnName: "ccc_name",
+                        dataType: "string",
+                        caption: "제목임"
+                    },
+                    {
+                        columnName: "cc2_name",
+                        dataType: "string",
+                        caption: "제목임"
+                    }
+                ],
                 rows: [
                     [10, "20"],
                     [100, "200"],
                     [1000, "2000"]
-                ]                
+                ]
             }
         ]
     };
     
     ds2.read(schemaData);
 
-}
+    var dt3 = new DataTable();
+    dt3.read(schemaData.tables[0]);
 
+    var ch2 = ds2.getChanges();           // 변경내용 조회
+}
+    
+
+    // 컨테이너 어뎁터 fill 테스트
+    var CAD = new ContainerAdapter();
+    CAD.container = document.querySelector("div");
+    CAD.recordElement = document.querySelector("ul");
+    CAD.columnElement = document.querySelector("ul");
+
+    CAD.fill(ds, "l_table");
 
 /**
  * rows 는 정적 메소드
