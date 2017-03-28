@@ -264,7 +264,6 @@ function TemplateElement(pObject, pIsDeep) {
             elem = _importScript(pObject);
 
         // 템플릿
-        // TODO: 태그 이름으로 해야함,  IE 호환성 이슈
         } else if (pObject.content) {
         
             elem = _importTemplate(pObject);

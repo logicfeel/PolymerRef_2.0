@@ -41,7 +41,7 @@
         // };
          
         this._items = [];
-        this.abc = 12;
+        this._SCOPE = "LArray";
 
         function _setPropertie(pIdx) {
             

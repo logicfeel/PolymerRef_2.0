@@ -10,16 +10,56 @@
 
 
 <div></div>
+<!--컨테이너-->
 
-<ul>
-    <li></li>
+<!--일반 사례 : 템플릿 -> 붙이는 방식 (deep = false)-->
+<ul><!--레코드-->
+    <li></li><!--컬럼-->
 </ul>
+
+<b></b>
+
+<!--일반 사례 : 템플릿 -> 붙이는 방식-->
+<script type="html/x-my-template" id="table-list">
+    <table>
+        <thead>
+            <tr><!--레코드-->
+                <td>..</td><!--컬럼-->
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td></td>
+            </tr>        
+        </tbody>
+    </table>
+</script>
+
+<template id="t" >
+    <p>Tempate..</p>
+</template>
+
+<p id="commit"><!--<input type="button" name="aa" value="버튼임"></input>-->
+</p>
+
+    <table>
+        <thead>
+            <tr><!--레코드-->
+                <td>..</td><!--컬럼-->
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td></td>
+            </tr>        
+        </tbody>
+    </table>
 
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<script src="LogicArray.js?v0"></script>
+<script src="LogicArray.js?v1"></script>
 <script src="TransQueue.js?v0"></script>
-<script src="logicTable.js?v16"></script>
+<script src="logicTable.js?v18"></script>
 <script>
 
 function ArrTest() {
@@ -39,41 +79,43 @@ a.push('abc');
 (function() {
 }());
 
-// var dt = new DataTable("TTT");
-// var dc1 = new DataColumn("p1_name", "string");
-// var dc2 = new DataColumn("p2_name", "string");
-// var dc3 = new DataColumn("p3_name", "string");
-// var dc4 = new DataColumn("p4_name", "string");
-// var dc5 = new DataColumn("p5_name", "string");
-// var dc6 = new DataColumn("p6_name", "string");
+{
+    // var dt = new DataTable("TTT");
+    // var dc1 = new DataColumn("p1_name", "string");
+    // var dc2 = new DataColumn("p2_name", "string");
+    // var dc3 = new DataColumn("p3_name", "string");
+    // var dc4 = new DataColumn("p4_name", "string");
+    // var dc5 = new DataColumn("p5_name", "string");
+    // var dc6 = new DataColumn("p6_name", "string");
 
-// dt.columns.add(dc1);
-// dt.columns.add(dc2);
-// dt.columns.add(dc3);
-// dt.columns.add(dc4);
-// dt.columns.add(dc5);
-// dt.columns.add(dc6);
+    // dt.columns.add(dc1);
+    // dt.columns.add(dc2);
+    // dt.columns.add(dc3);
+    // dt.columns.add(dc4);
+    // dt.columns.add(dc5);
+    // dt.columns.add(dc6);
 
-// TODO : 나중에  README.md 로 옮김 검토
-// ###############################################################
-// DataSet      Tcollection             Rcollection     DataRow       
-// -----------------------------------------------------------------
-// DataSet      .tables  [0]            .rows[0]        .[0]
-// DataSet      .tables  ["tName"]                      .["cName"]
-//              .tables.count
-//                                      .rows.count
+    // TODO : 나중에  README.md 로 옮김 검토
+    // ###############################################################
+    // DataSet      Tcollection             Rcollection     DataRow       
+    // -----------------------------------------------------------------
+    // DataSet      .tables  [0]            .rows[0]        .[0]
+    // DataSet      .tables  ["tName"]                      .["cName"]
+    //              .tables.count
+    //                                      .rows.count
 
-// DataSet      Tcollection             Ccollection
-// -----------------------------------------------------------------
-// DataSet      .tables  [0]            .columns[0]
-// DataSet                              .columns["cName"]
-//                                      .columns.count
-// ###############################################################
+    // DataSet      Tcollection             Ccollection
+    // -----------------------------------------------------------------
+    // DataSet      .tables  [0]            .columns[0]
+    // DataSet                              .columns["cName"]
+    //                                      .columns.count
+    // ###############################################################
 
-// 임시
-// this.setPropCallback("count", function() {return this.length});
+    // 임시
+    // this.setPropCallback("count", function() {return this.length});
 
-// var lt = new LogicTable("T_DataSet");
+    // var lt = new LogicTable("T_DataSet");
+}
 
 {
     /**
@@ -139,61 +181,101 @@ a.push('abc');
 
     // 테이블2 추가
     dr = dt2.newRow();
-    dr["p1_name"] = '100번내용';
-    dr["p2_name"] = '200번내용';
-    dr["p3_name"] = '300번내용';
+    dr["p1_name"] = 't2 100번내용';
+    dr["p2_name"] = 't2 200번내용';
+    dr["p3_name"] = 't2 300번내용';
     dt2.rows.add(dr);
 
     // var is = ds.acceptChanges();     // commit
     var ch = ds.getChanges();           // 변경내용 조회
 
     // ds.clear();
+    // ds 삽입 여기까지...
+    // *************************************
 }
 
 {
-    var ds2 = new DataSet("t2_dataSet");
+    // var ds2 = new DataSet("t2_dataSet");
     
-    var schemaData = {
-        tables: [
-            {
-                tableName: "ds2_table",
-                columns: [
-                    {
-                        columnName: "ccc_name",
-                        dataType: "string",
-                        caption: "제목임"
-                    },
-                    {
-                        columnName: "cc2_name",
-                        dataType: "string",
-                        caption: "제목임"
-                    }
-                ],
-                rows: [
-                    [10, "20"],
-                    [100, "200"],
-                    [1000, "2000"]
-                ]
-            }
-        ]
-    };
+    // var schemaData = {
+    //     tables: [
+    //         {
+    //             tableName: "ds2_table",
+    //             columns: [
+    //                 {
+    //                     columnName: "ccc_name",
+    //                     dataType: "string",
+    //                     caption: "제목임"
+    //                 },
+    //                 {
+    //                     columnName: "cc2_name",
+    //                     dataType: "string",
+    //                     caption: "제목임"
+    //                 }
+    //             ],
+    //             rows: [
+    //                 [10, "20"],
+    //                 [100, "200"],
+    //                 [1000, "2000"]
+    //             ]
+    //         }
+    //     ]
+    // };
     
-    ds2.read(schemaData);
+    // ds2.read(schemaData);
 
-    var dt3 = new DataTable();
-    dt3.read(schemaData.tables[0]);
+    // var dt3 = new DataTable();
+    // dt3.read(schemaData.tables[0]);
 
-    var ch2 = ds2.getChanges();           // 변경내용 조회
+    // var ch2 = ds2.getChanges();           // 변경내용 조회
 }
     
-
+{
     // 컨테이너 어뎁터 fill 테스트
     var CAD = new ContainerAdapter();
+    CAD.putElement = document.querySelector("div");
     CAD.container = document.querySelector("div");
     CAD.recordElement = document.querySelector("ul");
     CAD.columnElement = document.querySelector("li");
 
     CAD.fill(ds, "l_table");
+    CAD.element = document.querySelector("b");
+    CAD.fill(ds, "l2_table");
+    CAD.element = null;
+    // CAD.fill(ds, "l_table");
+}
+{
+    var C_AD2 = new ContainerAdapter();
+    CAD.container = document.querySelector("div");
+
+    var table = document.querySelector("table");
+
+    var template = document.querySelector("#table-list");
+    var tempBody = template.firstChild;
+    var tempDiv = document.createElement("div");
+    tempDiv.innerHTML = tempBody.nodeValue;
+    // tempDiv.appendChild(tempBody);
+    // tempDiv.insertAdjacentElement("afterbegin", tempBody);
+
+    var t2 = document.querySelector("#t");
+}
+
+{
+    var t1 = document.querySelector("#commit");
+    var t_elem = new TemplateElement();
+    t_elem.importTemplate(t1.firstChild);
+    t_elem.insertSlot("input", "in");
+    // 슬롯 삭제 테스트
+    t_elem.slot["in"].setAttribute("value", "슬롯 반영");
+    var t_div = document.querySelector("div");
+    
+
+    t_div.appendChild(t_elem.element);
+
+    // t_elem.deleteSlot("in");
+    
+    
+}
 
 /**
  * rows 는 정적 메소드
