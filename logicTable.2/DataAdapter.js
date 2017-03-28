@@ -449,7 +449,7 @@ function ContainerAdapter() {
 }
 (function() {   // prototype 상속
     ContainerAdapter.prototype =  Object.create(DataAdapter.prototype);
-    ContainerAdapter.prototype.constructor = AjaxAdapter;
+    ContainerAdapter.prototype.constructor = ContainerAdapter;
     ContainerAdapter.prototype.parent = DataAdapter.prototype;    
 }());
 
