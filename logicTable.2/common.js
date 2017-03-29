@@ -1,7 +1,7 @@
 // 공통 함수
-var common = common || {};
-
-(function() { 
+(function(global) {
+    
+    var common = common || {};
 
     // 배열 차원 검사 (최대 제한값 10 설정됨)
     // 첫번째 배열만 검사 (배열의 넢이가 같은 겨우만)
@@ -30,5 +30,6 @@ var common = common || {};
         }
     }
 
-    // TODO: gobal 전역 번수 공통 로직
-}());    
+    global.common = common;
+
+}(this));  

@@ -54,16 +54,29 @@
             </tr>        
         </tbody>
     </table>
+<p id="temp_1"><!--
+    <table>
+        <thead>
+            <tr>
+                <td>..</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td></td>
+            </tr>        
+        </tbody>
+    </table>--></p>
 
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<script src="LogicArray.js?v1"></script>
+<script src="LogicArray.js?v3"></script>
 <script src="TransQueue.js?v0"></script>
 <!--<script src="logicTable.js?v18"></script>-->
 <!-- 분리됨 -->
 <script src="common.js?v1"></script>
 <script src="DataSet.js?v1"></script>
-<script src="DataAdapter.js?v1"></script>
+<script src="DataAdapter.js?v3"></script>
 <script src="DataContainer.js?v1"></script>
 
 <script>
@@ -281,6 +294,13 @@ a.push('abc');
     // t_elem.deleteSlot("in");
     
     
+}
+
+{
+    var CD = new ContainerAdapter();
+    var CD_sel = document.querySelector("#temp_1");
+    CD.template.importTemplate(CD_sel.firstChild);
+    CD.template.insertSlot("table", "main_t");
 }
 
 /**

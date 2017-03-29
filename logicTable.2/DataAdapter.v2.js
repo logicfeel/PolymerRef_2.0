@@ -133,89 +133,24 @@ function DataAdapter() {
 function ContainerAdapter() {
 
     this.putElement     = null;     // 붙일 위치
-    this.element        = null;     // TemplateElement : 컨테이너 
-    this.template       = new TemplateElement();
-    this.tables         = new LArray();
+    this.container      = null;     // TemplateElement : 컨테이너 (div)
+    this.recordElement  = null;     // TemplateElement
+    this.columnElement  = null;     // TemplateElement
+    this.element        = null;     // TemplateElement
+    
 
     // 컨테이너 객체 초기화
     ContainerAdapter.prototype.clear = function() {
         this.putElement     = null;     // 붙일 위치
-        this.element        = null;
-        this.template       = new TemplateElement();
-        this.tables         = new LArray();
+        this.container      = null;     // TemplateElement : 컨테이너 (div)
+        this.recordElement  = null;     // TemplateElement
+        this.columnElement  = null;     // TemplateElement
+        this.element        = null;     // TemplateElement
     };
 
-    ContainerAdapter.prototype.insertTable = function(pTableName) {
-        this.tables.pushAttr(null, pTableName);
-    };
-    
-    ContainerAdapter.prototype.deleteTable = function(pTableName) {
-        this.tables.popAttr(npTableName);
-    };
-
-    // // 컨테이너 추가[사이 추가 포함]
-    // ContainerAdapter.prototype.appendContainer = function(pTableName, pDataRow, pIdx) {
-
-    //     var container = this.createContainer(pDataRow);        
-        
-    //     if (this.recordElement !== null && this.recordElement instanceof HTMLElement) {
-            
-    //         if (pIdx && typeof pIdx === "number") {
-    //             this.container.insertBefore(container, this.container.childNodes[pIdx]);
-    //         } else {
-    //             this.container.appendChild(container);
-    //         }
-    //     }
+    // 이거에 용도
+    // ContainerAdapter.prototype.createRecordElement = function(pTableName, pDataRow, pIdx) {
     // };
-
-    // pSlot 선택요소 : 없을시 [0] 번 선택됨
-    ContainerAdapter.prototype.appendContainer = function(pTableName, pSlot) {
-        // 메인 컨테이너
-        // this.template.slot[pTableName]
-    };
-
-    ContainerAdapter.prototype.createContainer = function(pTableName) {
-    };
-
-    ContainerAdapter.prototype.createRecord = function(pTableName) {
-    };
-
-    ContainerAdapter.prototype.appendRecord = function(pTableName) {
-    };
-
-    ContainerAdapter.prototype.replaceRecord = function(pTableName) {
-    };
-
-    ContainerAdapter.prototype.removeRecord = function(pTableName) {
-    };
-
-    ContainerAdapter.prototype.createColumn = function(pTableName) {
-    };
-
-    ContainerAdapter.prototype.insertCommand = function(pTableName, pDataRow, pIdx) {
-        
-        // TODO: 기본검사 상위에 둬야 함
-        if (!this.template) {
-            throw new Error('template 객체 없음 에러! pTableName:');
-        }
-
-
-        // TODO: 검사 해야 함
-        if (this.tables[pTableName] && this.tables[pTableName].container) {
-
-        } else {
-            throw new Error('pTableName 또는  container 객체 없음 에러! pTableName:' + pTableName);
-        }
-    };
-
-    ContainerAdapter.prototype.deleteCommand = function(pTableName, pIdx) {
-    };
-
-    ContainerAdapter.prototype.updateCommand = function(pTableName, pDataRow, pIdx) {
-    };
-
-    ContainerAdapter.prototype.selectCommand = function(pTableName) {
-    };
 
     // 요소 생성
     ContainerAdapter.prototype.createElement = function(pValue) {
@@ -295,19 +230,6 @@ function ContainerAdapter() {
     ContainerAdapter.prototype =  Object.create(DataAdapter.prototype);
     ContainerAdapter.prototype.constructor = ContainerAdapter;
     ContainerAdapter.prototype.parent = DataAdapter.prototype;    
-}());
-
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// pObjct : Element, selector => X 없음
-// 종속성 : DOM Element
-function Table(pContainer, pRecordElement, pColumnElement) {
-    
-    this.prototype.container        = pContainer || null;
-    this.prototype.recordElement    = pRecordElement || null;
-    this.prototype.columnElement    = pColumnElement || null;
-}
-(function() {   // prototype 상속
-    
 }());
 
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -424,9 +346,7 @@ function TemplateElement(pObject, pIsDeep) {
         for (var i = 0; i < refElem.length; i++) {  // NodeList 임
             refElem.removeChild(refElem.childNodes[i]);
         }
-        
-        // REVIEW: <slot> 꼭 필요한지 유무 => 필요없을듯?
-        refElem.appendChild(slot);  
+        refElem.appendChild(slot);
         this.slot[pSlotName] = refElem;
         this.slot[pSlotName]["S_Selector"] = pSelector;
     };

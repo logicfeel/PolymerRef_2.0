@@ -359,7 +359,7 @@ function ContainerAdapter() {
     this.element        = null;     // TemplateElement
     
     // DS.tables.changes => A.D 반영
-    DataAdapter.prototype.fill = function(pDataSet, pTableName) {
+    ContainerAdapter.prototype.fill = function(pDataSet, pTableName) {
 
         var cTables = null;
         

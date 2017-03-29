@@ -1,3 +1,5 @@
+(function(global) {
+    'use strict';    
 /**
  * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  * ###############################################################
@@ -118,7 +120,6 @@ function DataSet(pDataSetName) {
 
         for(var i = 0; i < this.tables.length; i++) {
             collection = this.tables[i].getChanges();
-            
             if (collection) {
                 changes.pushAttr(collection, this.tables[i].tableName);
             }
@@ -129,6 +130,8 @@ function DataSet(pDataSetName) {
 
     // commit 여부 조회
     DataSet.prototype.hasChanges = function() {
+        
+        var collection = null;
         
         for(var i = 0; i < this.tables.length; i++) {
             collection = this.tables[i].getChanges();
@@ -155,7 +158,7 @@ function DataTableCollection(pDataSet) {
     this._items = [];
     this._SCOPE = "DataTableCollection";
 
-    this.setPropCallback("count", function() {return this.length});
+    this.setPropCallback("count", function() {return this._items.length});
 
     // pObject : String = 테이블명
     // DataTable : 데이터테이블 객체
@@ -363,11 +366,13 @@ function DataTable(pTableName) {
 
 
     DataTable.prototype.readSchema = function(pTableDataObj) {
+
         var dataTable   = null; 
         var dtRows      = pTableDataObj["rows"];
         var dtColumns   = pTableDataObj["columns"];
         var dtTableName = pTableDataObj["tableName"];        
         var column      = null;
+        
         try { 
             // 입력 pSchema 검사 
             if (!pTableDataObj) {
@@ -435,8 +440,9 @@ function DataTable(pTableName) {
     
     // row 추가
     DataTable.prototype.newRow = function() {
-        return new DataRow(this);
-        // console.log('DataTable. newRow');
+        var dataRow = null;
+        dataRow = new DataRow(this);
+        return dataRow;
     };
 
     // TODO : 나중에
@@ -480,7 +486,7 @@ function DataTable(pTableName) {
  * @param {DataTable} pDataTable 데이터테이블
  */
 function DataColumnCollection(pDataTable) {
-
+    
     var _dataTable = pDataTable;
 
     this._items = [];
@@ -506,7 +512,7 @@ function DataColumnCollection(pDataTable) {
     // 지정 컬렴 여부
     DataColumnCollection.prototype.contains = function(pColumnName) {
         
-        for (var i = 0; i < this.length; i++) {
+        for (var i = 0; i < this._items.length; i++) {
             if (this[i].columnName === pColumnName) return true;
         }
         return false;
@@ -571,6 +577,7 @@ function DataColumnCollection(pDataTable) {
  *                  }
  */
 function DataColumn(pColumnName, pType, pCaption, pDefaultValue, pUnique) {
+    Array.call(this);  // 상속(부모생성자 호출)
 
     this.columnName     = pColumnName || null;
     this.dataType       = pType || null;
@@ -747,3 +754,14 @@ function DataRow(pDataTable) {
     DataRow.prototype.parent = LArray.prototype;
 }());
 
+
+global.DataSet              = global.DataSet || DataSet;
+global.DataTableCollection  = global.DataTableCollection || DataTableCollection;
+global.DataTable            = global.DataTable || DataTable;
+global.DataColumnCollection = global.DataColumnCollection || DataColumnCollection;
+global.DataColumn           = global.DataColumn || DataColumn;
+global.DataRowCollection    = global.DataRowCollection || DataRowCollection;
+global.DataRow              = global.DataRow || DataRow;
+global.DataColumn           = global.DataColumn || DataColumn;
+
+}(this));
