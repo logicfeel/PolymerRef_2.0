@@ -7,22 +7,21 @@
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 function DataContainer() {
     
-    this.dataSource     = null;     // DataSet
-    this.orgConnection  = null;     // Connection
-    this.original       = null;     // DataAdapter
-    this.container      = null;     // DataAdapter
-
-    DataContainer.prototype.dataBind = function() {};
-    DataContainer.prototype.dataUpdate = function() {};
 }
 (function() {   // prototype 상속
 
 }());
 
+DataContainer.prototype.dataSource     = null;     // DataSet
+DataContainer.prototype.orgConnection  = null;     // Connection
+DataContainer.prototype.original       = null;     // DataAdapter
+DataContainer.prototype.container      = null;     // DataAdapter
+
+DataContainer.prototype.dataBind = function() {};
+DataContainer.prototype.dataUpdate = function() {};
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 function TableContainer() {
-    Container.call(this);  // 상속(부모생성자 호출)
 
     TableContainer.prototype.appendContainer = function() {};
     TableContainer.prototype.replaceContainer = function() {};
@@ -37,7 +36,6 @@ function TableContainer() {
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 function TemplateContainer() {
-    Container.call(this);  // 상속(부모생성자 호출)
 
     TemplateContainer.prototype.registerTemplate = function() {};
     TemplateContainer.prototype.unregisterTemplate = function() {};
@@ -148,7 +146,7 @@ function LogicTable(pContainer) {
 
     // 컨테이너명 지정 (기본지정:테이블템플릿 컨테이너)
     pContainer = pContainer || TableTemplateContainer;
-    LogicBuilder.call(this, pContainer);  // 상속(부모생성자 호출)
+    ContainerBuilder.call(this, pContainer);  // 상속(부모생성자 호출)
 
     // Get 과 Set
     LogicTable.prototype.css = function() {};
