@@ -30,6 +30,17 @@
         }
     }
 
+    // REVIEW: 공통화 필요
+    common.querySelecotrOuter = function(pElement, pSelector) {
+        
+        var elem =  document.createElement('span');
+        
+        elem.appendChild(pElement);
+        elem = elem.querySelector(pSelector);
+
+        return elem;
+    }
+
     global.common = common;
 
 }(this));  

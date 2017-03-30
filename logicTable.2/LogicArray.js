@@ -5,24 +5,16 @@
      * !! prototype 노출형 부모 (부모.call(this);  <= 불필요
      * 제한1 : var(private) 사용 못함
      * 제한2 : 생성자 전달 사용 못함
+     * 제한3 : 부모.call(this) 비 호출로 초기화 안됨
      * 장점 : 중복 호출 방지 (성능 향상)  **
      * @name LAarry (LoagicArayy)
      */
     function LArray() {
 
-        // this._items = [];
-        // this._SCOPE = "LArray";
-
-        // function _setPropertie(pIdx) {
-            
-        //     var obj = {
-        //         get: function() { return this._items[pIdx]; },
-        //         set: function(newValue) { this._items[pIdx] = newValue; },
-        //         enumerable: true,
-        //         configurable: true
-        //     };
-        //     return obj;        
-        // }
+        this._items = [];
+        this._SCOPE = "LArray";
+        // this._init();
+        var ab = "3";
     }
     (function() {   // prototype 상속 정의
         LArray.prototype =  Object.create(Array.prototype); // Array 상속
@@ -30,9 +22,14 @@
         LArray.prototype.parent = Array.prototype;
     }());
 
-    LArray.prototype._items = [];
-    LArray.prototype._SCOPE = "LArray";
-
+    // !! 여긴 staitc 변수가 됨
+    // LArray.prototype._items = [];
+    // LArray.prototype._SCOPE = "LArray";
+    
+    LArray.prototype._init = function() {
+        LArray.prototype._items = [];
+    };
+    
     LArray.prototype._setPropertie = function(pIdx) {
         
         var obj = {
@@ -82,8 +79,22 @@
     };
 
     // TODO: 삭제 구현 필요
-    // pObject : pAttrName || pIdx 둘중 하나
-    LArray.prototype.popAttr = function(pObject) {};
+    // pAttrName (필수)
+    LArray.prototype.popAttr = function(pAttrName) {
+        
+        var idx = this.indexOfAttr(pAttrName);
+
+        delete this[pAttrName];                 // 내부 이름 참조 삭제
+        this.splice(idx, 1);                    // 내부 참조 삭제
+        return this._items.splice(idx, 1);      // _items 삭제
+    };
+
+    LArray.prototype.indexOfAttr = function(pAttrName) {
+        
+        var idx = this._items.indexOf(this[pAttrName]);
+        return idx;
+    };
+
 
     global.LArray = global.LArray || LArray;
 

@@ -132,8 +132,8 @@ function DataAdapter() {
 // - 서버 가져오기
 function ContainerAdapter() {
 
-    this.putElement     = null;     // 붙일 위치
-    this.element        = null;     // TemplateElement : 컨테이너 
+    this.putElement     = null;                     // 붙일 위치
+    this.element        = null;                     // TemplateElement : 컨테이너 
     this.template       = new TemplateElement();
     this.tables         = new LArray();
 
@@ -146,7 +146,7 @@ function ContainerAdapter() {
     };
 
     ContainerAdapter.prototype.insertTable = function(pTableName) {
-        this.tables.pushAttr(null, pTableName);
+        this.tables.pushAttr(new Table(), pTableName);
     };
     
     ContainerAdapter.prototype.deleteTable = function(pTableName) {
@@ -170,8 +170,6 @@ function ContainerAdapter() {
 
     // pSlot 선택요소 : 없을시 [0] 번 선택됨
     ContainerAdapter.prototype.appendContainer = function(pTableName, pSlot) {
-        // 메인 컨테이너
-        // this.template.slot[pTableName]
     };
 
     ContainerAdapter.prototype.createContainer = function(pTableName) {
@@ -192,16 +190,115 @@ function ContainerAdapter() {
     ContainerAdapter.prototype.createColumn = function(pTableName) {
     };
 
-    ContainerAdapter.prototype.insertCommand = function(pTableName, pDataRow, pIdx) {
+    // pMainSlotName : 선택값
+    ContainerAdapter.prototype.insertCommand = function(pTableName, pDataRow, pIdx, pMainSlotName) {
         
+        var slotIdx = -1;
+
         // TODO: 기본검사 상위에 둬야 함
         if (!this.template) {
             throw new Error('template 객체 없음 에러! pTableName:');
         }
 
-
+        // 슬롯이 없을경우 기본 슬롯 생성
+        if (this.template.slot.length <= 0) {
+            this.template.defaultSetSlot();
+        }
+        
+        // 슬롯이 하나 이거나 슬롯 이름을 미정시 0번 인덱스 선택
+        if (!pMainSlotName || this.template.slot.length === 1) {
+            slotIdx = 0;
+        } else if (pMainSlotName) {
+            slotIdx = this.template.slot.indexOfAttr(pMainSlotName);
+        }
+        
+        if (slotIdx < 0) {
+            // 예외 처리
+        }
+        
         // TODO: 검사 해야 함
-        if (this.tables[pTableName] && this.tables[pTableName].container) {
+        if (this.tables[pTableName]) {
+
+            // ***********
+            // 메인 컨테이너 : table
+            var clone = null;
+            var selector = "";
+            var refElem = null;
+
+            if (!this.element || this.element === null) {
+                var tempElem = this.template.slot[slotIdx];
+                var mainSelector = tempElem["S_Selector"];
+                 clone = tempElem.cloneNode(true);
+            } else {
+                clone = this.element;
+            }
+            // ***********
+            // 컨테이너 : thead, tbody ...
+            if (this.tables[pTableName].containerElement.slot.length <= 0) {
+                this.tables[pTableName].containerElement.defaultSetSlot();
+            }
+
+            selector = this.tables[pTableName].containerElement.slot[0]["S_Selector"];
+            
+            if (this.element) {
+                refElem = this.element.querySelector(selector);
+            }
+            // TODO: 찾는 로직 만들어야 함
+            var clone_3 = null;
+
+            if (!refElem) {
+                slotIdx = 0;
+                tempElem = this.tables[pTableName].containerElement.slot[slotIdx];
+                clone_3 = tempElem.cloneNode(false);
+                clone.appendChild(clone_3);
+            } else {
+                clone_3 = refElem;
+            }
+
+            // ***********
+            // 레코드
+            if (this.tables[pTableName].recordElement.slot.length <= 0) {
+                this.tables[pTableName].recordElement.defaultSetSlot();
+            }
+            // TODO: 찾는 로직 만들어야 함
+            slotIdx = 0;
+            tempElem = this.tables[pTableName].recordElement.slot[slotIdx];
+            var clone_1 = tempElem.cloneNode(false);
+            
+            // pIdx 가 있는 경우
+            if (pIdx && typeof pIdx === "number") {
+                clone_3.insertBefore(clone_1, clone_3.childNodes[pIdx]);
+            } else {
+                clone_3.appendChild(clone_1);
+            }
+            
+
+            // ***********
+            // 컬럼  
+            //
+            if (this.tables[pTableName].columnElement.slot.length <= 0) {
+                this.tables[pTableName].columnElement.defaultSetSlot();
+            }
+            
+            // TODO: 찾는 로직 만들어야 함
+            slotIdx = 0;
+            tempElem = this.tables[pTableName].columnElement.slot[slotIdx];
+            for (var i = 0; i < pDataRow.length; i++) {
+                var clone_2 = tempElem.cloneNode(false);
+                var elem = document.createTextNode(pDataRow[i]);
+                clone_2.appendChild(elem);
+
+                // 레코드에 붙임
+                clone_1.appendChild(clone_2);
+            }
+           
+            // 메인에 지정
+            if (!this.element) {
+                this.element = clone;
+
+                // put 위치에 붙임
+                this.putElement.appendChild(clone);                
+            }
 
         } else {
             throw new Error('pTableName 또는  container 객체 없음 에러! pTableName:' + pTableName);
@@ -287,7 +384,7 @@ function ContainerAdapter() {
     ContainerAdapter.prototype.replaceContainer = function(pTableName, pDataRow, pIdx) {};
     ContainerAdapter.prototype.removeContainer = function(pTableName, pDataRow, pIdx) {};
 
-    this.insertCommand  = ContainerAdapter.prototype.appendContainer;
+    // this.insertCommand  = ContainerAdapter.prototype.appendContainer;
     this.updateCommand  = ContainerAdapter.prototype.replaceContainer;
     this.deleteCommand  = ContainerAdapter.prototype.replaceContainer;
 }
@@ -300,11 +397,11 @@ function ContainerAdapter() {
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // pObjct : Element, selector => X 없음
 // 종속성 : DOM Element
-function Table(pContainer, pRecordElement, pColumnElement) {
+function Table(pContainerElement, pRecordElement, pColumnElement) {
     
-    this.prototype.container        = pContainer || null;
-    this.prototype.recordElement    = pRecordElement || null;
-    this.prototype.columnElement    = pColumnElement || null;
+    this.containerElement   = pContainerElement || new TemplateElement();
+    this.recordElement      = pRecordElement ||  new TemplateElement();
+    this.columnElement      = pColumnElement ||  new TemplateElement();
 }
 (function() {   // prototype 상속
     
@@ -315,11 +412,11 @@ function Table(pContainer, pRecordElement, pColumnElement) {
 // 종속성 : DOM Element
 function TemplateElement(pObject, pIsDeep) {
 
-    var _original   = null;
-    var _elemTemp   = null;
+    this._original   = null;
+    this._elemTemp   = null;
 
     this.element    = null;
-    this.slot       = {};
+    this.slot       = new LArray();
     this.deep       = pIsDeep || true;
 
     // 객체 생성 빌더
@@ -343,7 +440,7 @@ function TemplateElement(pObject, pIsDeep) {
         elem.innerHTML = pObject.nodeValue;
         
         // return elem.firstChild;  // span 제거 할 경우
-        return elem;
+        return elem.querySelector("*");
     }
 
     function _importScript(pObject) {
@@ -355,7 +452,7 @@ function TemplateElement(pObject, pIsDeep) {
     }
 
     function _importElement(pObject) {
-        return null;
+        return pObject;
     }
 
     function _importText(pObject) {
@@ -364,10 +461,10 @@ function TemplateElement(pObject, pIsDeep) {
     
     // 초기화
     TemplateElement.prototype.clear = function() {
-        _original       = null;
-        _elemTemp       = null;
+        this._original       = null;
+        this._elemTemp       = null;
         this.element    = null;
-        this.slot       = {};
+        this.slot       = new LArray();
         this.deep       = pIsDeep || true;
     };
 
@@ -411,24 +508,50 @@ function TemplateElement(pObject, pIsDeep) {
         
         // 리턴 및 this 설정
         this.element    = elem;
-        _original       = elem
+        this._original       = elem
         return elem;
     }
     
     // 슬롯이 추가되고 자식은 삭제됨
+    TemplateElement.prototype.defaultSetSlot = function() {
+        
+        var firstNodeSelector = "";
+
+        if (this._original) {
+            firstNodeSelector = String(this._original.nodeName);
+            firstNodeSelector = firstNodeSelector.toLowerCase();
+            this.insertSlot(firstNodeSelector);
+            return true;
+        } else {
+            // 에외 처리
+        }
+        return false;
+    }
+
+    // 슬롯이 추가되고 자식은 삭제됨
     TemplateElement.prototype.insertSlot = function(pSelector, pSlotName) {
         
-        var refElem = this.element.querySelector(pSelector);
-        var slot = document.createElement('slot');
+        var refElem = null;
+        
+        // 레퍼방식으로 변환함
+        // refElem = this.element.querySelector(pSelector);
+        
+        refElem = common.querySelecotrOuter(this.element, pSelector);
 
-        for (var i = 0; i < refElem.length; i++) {  // NodeList 임
+        // var slot = document.createElement('slot');
+        var maxLength = refElem.childNodes.length;
+        for (var i = maxLength - 1; i >= 0; i--) {  // NodeList 임
             refElem.removeChild(refElem.childNodes[i]);
         }
         
         // REVIEW: <slot> 꼭 필요한지 유무 => 필요없을듯?
-        refElem.appendChild(slot);  
-        this.slot[pSlotName] = refElem;
-        this.slot[pSlotName]["S_Selector"] = pSelector;
+        // refElem.appendChild(slot);
+        refElem["S_Selector"] = pSelector;
+        this.slot.pushAttr(refElem, pSlotName);
+        
+        // LArray 사용구조로 개선함 !!
+        // this.slot[pSlotName] = refElem;      
+        // this.slot[pSlotName]["S_Selector"] = pSelector;
     };
     
     // 슬롯이 삭제되고 원본에서 자식이 복구됨
@@ -436,13 +559,15 @@ function TemplateElement(pObject, pIsDeep) {
         
         var selector = this.slot[pSlotName].S_Selector;
         var refElem = this.element.querySelector(selector);
-        var orgElem = _original.querySelector(selector);
+        var orgElem = this._original.querySelector(selector);
 
         // 슬롯 삭제
         for (var i = 0; i < refElem.length; i++) {  // NodeList 임
             refElem.removeChild(refElem.childNodes[i]);
         }
-        delete this.slot[pSlotName];
+        
+        // 슬롯 삭제
+        this.slot.popAttr(pSlotName);
 
         // 기존 복구
         for (var i = 0; i < orgElem.length; i++) {  // NodeList 임

@@ -117,11 +117,18 @@ function DataSet(pDataSetName) {
         
         var changes     = new LArray();
         var collection  = null;
+        var tableName   = "";
+        
+        // changes._items = [];
 
         for(var i = 0; i < this.tables.length; i++) {
             collection = this.tables[i].getChanges();
             if (collection) {
-                changes.pushAttr(collection, this.tables[i].tableName);
+                tableName = this.tables[i].tableName;
+                
+                // 구조 개선
+                // changes.pushAttr.call(changes, collection, tableName);   
+                changes.pushAttr(collection, tableName);
             }
         }
         if (0 >= changes.length) return null;
@@ -152,10 +159,11 @@ function DataSet(pDataSetName) {
  * @param {DataSet} pDataSet 데이터셋
  */
 function DataTableCollection(pDataSet) {
+    LArray.call(this);
 
     var _dataSet = pDataSet;
 
-    this._items = [];
+    // this._items = [];
     this._SCOPE = "DataTableCollection";
 
     this.setPropCallback("count", function() {return this._items.length});
@@ -174,7 +182,10 @@ function DataTableCollection(pDataSet) {
             return null;
         }
 
+        // this 위치 수정
         this.pushAttr(dataTable, dataTable.tableName);
+        // this.pushAttr.call(this, dataTable, dataTable.tableName);
+
         return  dataTable;
     };
 
@@ -475,9 +486,9 @@ function DataTable(pTableName) {
     };
 }
 (function() {   // prototype 상속
-    DataTable.prototype =  Object.create(LArray.prototype); // Array 상속
-    DataTable.prototype.constructor = DataTable;
-    DataTable.prototype.parent = LArray.prototype;
+    // DataTable.prototype =  Object.create(LArray.prototype); // Array 상속
+    // DataTable.prototype.constructor = DataTable;
+    // DataTable.prototype.parent = LArray.prototype;
 }());
 
 /**
@@ -486,10 +497,11 @@ function DataTable(pTableName) {
  * @param {DataTable} pDataTable 데이터테이블
  */
 function DataColumnCollection(pDataTable) {
-    
+    LArray.call(this);
+
     var _dataTable = pDataTable;
 
-    this._items = [];
+    // this._items = [];
     this._SCOPE = "DataColumnCollection";
 
     this.setPropCallback("count", function() {return this._items.length});
@@ -497,7 +509,10 @@ function DataColumnCollection(pDataTable) {
     DataColumnCollection.prototype.add = function(pDataColumn) {
         
         if (pDataColumn instanceof DataColumn) {
+
+            // 부모의 this 를 참조하는 방식 변경
             this.pushAttr(pDataColumn, pDataColumn.columnName);
+            // this.pushAttr.call(this, pDataColumn, pDataColumn.columnName);
             return true;
         } else {
             return false;
@@ -609,11 +624,12 @@ function DataColumn(pColumnName, pType, pCaption, pDefaultValue, pUnique) {
  * @param {DataTable} pDataTable 데이터테이블
  */
 function DataRowCollection(pDataTable) {
+    LArray.call(this);
 
     var _dataTable = pDataTable;
 
     // REVIEW: 이슈 있음
-    this._items = [];  
+    // this._items = [];  
     this._SCOPE = "DataRowCollection";
 
     this.transQueue = new TransQueue(this, null);
@@ -719,6 +735,7 @@ function DataRowCollection(pDataTable) {
  * @param {DataTable} pDataTable 데이터테이블
  */
 function DataRow(pDataTable) {
+    LArray.call(this);
 
     var _dataTable = pDataTable;    // 소유한 데이터테이블
     var columnName = "";
@@ -731,6 +748,7 @@ function DataRow(pDataTable) {
         for (var i = 0; i < _dataTable.columns.length; i++) {
             columnName = _dataTable.columns[i].columnName;      // !! 버그 발견함 this 이슈
             this.pushAttr(null, columnName);
+            // this.pushAttr.call(this, null, columnName);
         }
     }
 

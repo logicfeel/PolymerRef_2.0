@@ -1,6 +1,7 @@
 <html>
 <head>
-  <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 </head>
 <body>
     
@@ -55,7 +56,7 @@
         </tbody>
     </table>
 <p id="temp_1"><!--
-    <table>
+    <table class="table table-striped">
         <thead>
             <tr>
                 <td>..</td>
@@ -67,16 +68,44 @@
             </tr>        
         </tbody>
     </table>--></p>
+<!--
 
+LArray.prototype._items
 
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<script src="LogicArray.js?v3"></script>
+-->
+<!--
+<table class="table table-striped">
+    <thead><tr>
+        <td>t2 100번내용</td>
+        <td>t2 200번내용</td>
+        <td>t2 300번내용</td>
+        </tr></thead>
+        <tbody>
+        <tr>
+        <td>t2 100번내용</td>
+        <td>t2 200번내용</td>
+        <td>t2 300번내용</td>
+        </tr>
+        <tr>
+        <td>t2 100번내용</td>
+        <td>t2 200번내용</td>
+        <td>t2 300번내용</td>
+        </tr>
+        <tr>
+        <td>t2 100번내용</td>
+        <td>t2 200번내용</td>
+        <td>t2 300번내용</td>
+        </tr>
+        </tbody>
+    </table>-->
+
+<script src="LogicArray.js?v9"></script>
 <script src="TransQueue.js?v0"></script>
 <!--<script src="logicTable.js?v18"></script>-->
 <!-- 분리됨 -->
-<script src="common.js?v1"></script>
-<script src="DataSet.js?v1"></script>
-<script src="DataAdapter.js?v3"></script>
+<script src="common.js?v2"></script>
+<script src="DataSet.js?v6"></script>
+<script src="DataAdapter.js?v6"></script>
 <script src="DataContainer.js?v1"></script>
 
 <script>
@@ -144,8 +173,8 @@ a.push('abc');
     var ds = new DataSet("t_dataSet");
 
     // 데이터셋을 통해서 이용 : 1방식
-    var dt = ds.tables.add("l_table");
-    var dt2 = ds.tables.add("l2_table");
+    var dt = ds.tables.add("body");
+    var dt2 = ds.tables.add("head");
     
     // 데이터 테이블 직접 이용 : 2방식
     // var dt = new DataTable("thead"); 
@@ -251,47 +280,47 @@ a.push('abc');
     
 {
     // 컨테이너 어뎁터 fill 테스트
-    var CAD = new ContainerAdapter();
-    CAD.putElement = document.querySelector("div");
-    CAD.container = document.querySelector("div");
-    CAD.recordElement = document.querySelector("ul");
-    CAD.columnElement = document.querySelector("li");
+    // var CAD = new ContainerAdapter();
+    // CAD.putElement = document.querySelector("div");
+    // CAD.container = document.querySelector("div");
+    // CAD.recordElement = document.querySelector("ul");
+    // CAD.columnElement = document.querySelector("li");
 
-    CAD.fill(ds, "l_table");
-    CAD.element = document.querySelector("b");
-    CAD.fill(ds, "l2_table");
-    CAD.element = null;
+    // CAD.fill(ds, "l_table");
+    // CAD.element = document.querySelector("b");
+    // CAD.fill(ds, "head");
+    // CAD.element = null;
     // CAD.fill(ds, "l_table");
 }
 {
-    var C_AD2 = new ContainerAdapter();
-    CAD.container = document.querySelector("div");
+    // var C_AD2 = new ContainerAdapter();
+    // CAD.container = document.querySelector("div");
 
-    var table = document.querySelector("table");
+    // var table = document.querySelector("table");
 
-    var template = document.querySelector("#table-list");
-    var tempBody = template.firstChild;
-    var tempDiv = document.createElement("div");
-    tempDiv.innerHTML = tempBody.nodeValue;
-    // tempDiv.appendChild(tempBody);
-    // tempDiv.insertAdjacentElement("afterbegin", tempBody);
+    // var template = document.querySelector("#table-list");
+    // var tempBody = template.firstChild;
+    // var tempDiv = document.createElement("div");
+    // tempDiv.innerHTML = tempBody.nodeValue;
+    // // tempDiv.appendChild(tempBody);
+    // // tempDiv.insertAdjacentElement("afterbegin", tempBody);
 
-    var t2 = document.querySelector("#t");
+    // var t2 = document.querySelector("#t");
 }
 
 {
-    var t1 = document.querySelector("#commit");
-    var t_elem = new TemplateElement();
-    t_elem.importTemplate(t1.firstChild);
-    t_elem.insertSlot("input", "in");
-    // 슬롯 삭제 테스트
-    t_elem.slot["in"].setAttribute("value", "슬롯 반영");
-    var t_div = document.querySelector("div");
+    // var t1 = document.querySelector("#commit");
+    // var t_elem = new TemplateElement();
+    // t_elem.importTemplate(t1.firstChild);
+    // t_elem.insertSlot("input", "in");
+    // // 슬롯 삭제 테스트
+    // t_elem.slot["in"].setAttribute("value", "슬롯 반영");
+    // var t_div = document.querySelector("div");
     
 
-    t_div.appendChild(t_elem.element);
+    // t_div.appendChild(t_elem.element);
 
-    // t_elem.deleteSlot("in");
+    // // t_elem.deleteSlot("in");
     
     
 }
@@ -299,8 +328,50 @@ a.push('abc');
 {
     var CD = new ContainerAdapter();
     var CD_sel = document.querySelector("#temp_1");
+    CD.putElement = document.querySelector("div");
+
     CD.template.importTemplate(CD_sel.firstChild);
-    CD.template.insertSlot("table", "main_t");
+    
+    // 메인지정안한경우
+    // CD.template.insertSlot("table", "main_t");   
+
+    CD.insertTable("head");
+    CD.insertTable("body");
+
+    // CD.tables["head"].container = new TemplateElement();
+    
+    var tempElem = document.createElement("span");
+    tempElem.innerHTML = CD_sel.firstChild.nodeValue;
+    // REVIEW : 앞에 공백 자동 사라짐  , 나중에 어떻게 할지 결정해야 함
+    tempElem = tempElem.querySelector("*"); 
+   
+    var select_elem;
+
+    // head
+    select_elem = tempElem.querySelector("thead");
+    CD.tables["head"].containerElement.importTemplate(select_elem);
+
+    select_elem = tempElem.querySelector("thead tr");
+    CD.tables["head"].recordElement.importTemplate(select_elem);
+
+    select_elem = tempElem.querySelector("thead tr td");
+    CD.tables["head"].columnElement.importTemplate(select_elem);
+
+    CD.fill(ds, "head");
+
+    // body
+    select_elem = tempElem.querySelector("tbody");
+    CD.tables["body"].containerElement.importTemplate(select_elem);
+
+    select_elem = tempElem.querySelector("tbody tr");
+    CD.tables["body"].recordElement.importTemplate(select_elem);
+
+    select_elem = tempElem.querySelector("tbody tr td");
+    CD.tables["body"].columnElement.importTemplate(select_elem);
+
+    CD.fill(ds, "body");
+    
+
 }
 
 /**
