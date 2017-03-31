@@ -22,11 +22,11 @@
     }
 
     // REVIEW: 공통화 필요
-    common.isArray = function(value) {
+    common.isArray = function(pValue) {
         if (typeof Array.isArray === "function") {
-            return Array.isArray(value);
+            return Array.isArray(pValue);
         } else {
-            return Object.prototype.toString.call(value) === "[object Array]";
+            return Object.prototype.toString.call(pValue) === "[object Array]";
         }
     }
 
