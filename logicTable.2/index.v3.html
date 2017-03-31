@@ -59,7 +59,7 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th></th>
+                <td>..</td>
             </tr>
         </thead>
         <tbody>
@@ -103,9 +103,9 @@ LArray.prototype._items
 <script src="TransQueue.js?v0"></script>
 <!--<script src="logicTable.js?v18"></script>-->
 <!-- 분리됨 -->
-<script src="common.js?v4"></script>
+<script src="common.js?v2"></script>
 <script src="DataSet.js?v6"></script>
-<script src="DataAdapter.js?v9"></script>
+<script src="DataAdapter.js?v6"></script>
 <script src="DataContainer.js?v1"></script>
 
 <script>
@@ -335,64 +335,42 @@ a.push('abc');
     // 메인지정안한경우
     // CD.template.insertSlot("table", "main_t");   
 
-    CD.insertTable("head", "thead");
-    CD.insertTable("body", "tbody");
+    CD.insertTable("head");
+    CD.insertTable("body");
 
     // CD.tables["head"].container = new TemplateElement();
-    var mainElem;   // 테스용
-    // mainElem = common.querySelecotrOuter(CD._original, "*");
-    mainElem = CD.template._original;
+    
+    var tempElem = document.createElement("span");
+    tempElem.innerHTML = CD_sel.firstChild.nodeValue;
+    // REVIEW : 앞에 공백 자동 사라짐  , 나중에 어떻게 할지 결정해야 함
+    tempElem = tempElem.querySelector("*"); 
+   
+    var select_elem;
 
     // head
-    // select_elem = tempElem.querySelector("thead");
-    // CD.tables["head"].containerElement.importTemplate(select_elem);
+    select_elem = tempElem.querySelector("thead");
+    CD.tables["head"].containerElement.importTemplate(select_elem);
 
-    select_elem = mainElem.querySelector("thead tr");
-    CD.tables["head"].recordElement.importTemplate(select_elem, "tr");
+    select_elem = tempElem.querySelector("thead tr");
+    CD.tables["head"].recordElement.importTemplate(select_elem);
 
-    select_elem = mainElem.querySelector("thead tr th");
-    CD.tables["head"].columnElement.importTemplate(select_elem, "th");
+    select_elem = tempElem.querySelector("thead tr td");
+    CD.tables["head"].columnElement.importTemplate(select_elem);
 
     CD.fill(ds, "head");
 
     // body
-    // select_elem = tempElem.querySelector("tbody");
-    // CD.tables["body"].containerElement.importTemplate(select_elem);
+    select_elem = tempElem.querySelector("tbody");
+    CD.tables["body"].containerElement.importTemplate(select_elem);
 
-    select_elem = mainElem.querySelector("tbody tr");
-    CD.tables["body"].recordElement.importTemplate(select_elem, "tr");
+    select_elem = tempElem.querySelector("tbody tr");
+    CD.tables["body"].recordElement.importTemplate(select_elem);
 
-    select_elem = mainElem.querySelector("tbody tr td");
-    CD.tables["body"].columnElement.importTemplate(select_elem, "td");
+    select_elem = tempElem.querySelector("tbody tr td");
+    CD.tables["body"].columnElement.importTemplate(select_elem);
 
     CD.fill(ds, "body");
-
-    console.log('-A.D 블럭..');
-    /*
-        CD.template._original.outerHTML
-        CD.template._element.outerHTML
-        
-        CD.tables["head"].mainSlotSelector
-        CD.tables["head"].mainSlot.outerHTML
-
-        CD.tables["head"].recordElement._original.outerHTML
-        CD.tables["head"].recordElement._element.outerHTML
-        CD.tables["head"].recordElement._element
-        CD.tables["head"].recordElement.slot
-        CD.tables["head"].recordElement.slotSelector
-
-        CD.tables["head"].columnElement._original.outerHTML
-        CD.tables["head"].columnElement._element.outerHTML
-
-        CD.tables["body"].mainSlotSelector
-        CD.tables["body"].mainSlot.outerHTML
-
-        CD.tables["body"].recordElement._original.outerHTML
-        CD.tables["body"].recordElement._element.outerHTML        
-
-        CD.tables["body"].columnElement._original.outerHTML
-        CD.tables["body"].columnElement._element.outerHTML
-    */
+    
 
 }
 

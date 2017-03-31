@@ -33,13 +33,51 @@
     // REVIEW: 공통화 필요
     common.querySelecotrOuter = function(pElement, pSelector) {
         
-        var elem =  document.createElement('span');
+        // TODO:  Element 검사
+        var elem =  null;
         
-        elem.appendChild(pElement);
+        if (!pElement.parentElement) {
+            elem = document.createElement('span');
+            elem.appendChild(pElement);
+        } else {
+            elem = pElement.parentElement;
+        }
+        
         elem = elem.querySelector(pSelector);
 
         return elem;
     }
+
+    // slot 기준으로 잘라내기
+    common.cutElement = function(pOrgElement, pCutSelector, pIsRemove) {
+        
+        var maxLength   = 0;
+        var tempElem    = null;
+        var selectorElem    = null;
+
+        pIsRemove   = pIsRemove || false;
+
+        if (!(pOrgElement instanceof HTMLElement)) {
+            throw new Error('pOrgElement가 HTMLElement 객체 아님 에러! :');
+            return null;
+        }
+
+        if (pIsRemove) {
+            tempElem = pOrgElement;
+        } else {
+            tempElem = pOrgElement.cloneNode(true);
+        }
+        
+        selectorElem = common.querySelecotrOuter(tempElem, pCutSelector);
+        // selectorElem = tempElem.querySelector(pCutSelector);
+           
+        maxLength = selectorElem.childNodes.length;
+
+        for (var i = maxLength - 1; i >= 0; i--) {  // NodeList 임
+            selectorElem.removeChild(selectorElem.childNodes[i]);
+        }            
+        return selectorElem;
+    };
 
     global.common = common;
 
