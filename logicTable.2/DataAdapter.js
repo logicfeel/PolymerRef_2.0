@@ -134,14 +134,49 @@ function ContainerAdapter() {
 
     this.putElement     = null;                     // 붙일 위치
     this.element        = null;                     // TemplateElement : 컨테이너 
-    this.template       = new TemplateElement();
+    this.template       = new TemplateElement(this);
     this.tables         = new LArray();
+
+    // tables 에 이전 레코드 찾기
+    // pOnwerTableObject : 기준(소유) 테이블 객체
+    ContainerAdapter.prototype._beforeRecord = function(pOnwerTableObject) {
+        
+        var idx = -1;
+        var selector = null;
+        var selectorLoop = null;
+        var before = [];
+        idx = this.tables.indexOf(pOnwerTableObject);
+        selector = pOnwerTableObject.mainSlotSelector;
+
+        // 이전 등록된 테이블 과 비교 함
+        for (var i = 0; i < this.tables.length; i++) {
+
+            selectorLoop = this.tables[i].mainSlotSelector;
+
+            if (common.querySelecotrOuter(this.template._element, selector) ===
+                common.querySelecotrOuter(this.template._element, selectorLoop)) {
+                    before.push(this.tables[i]);
+                }
+        }
+        return before;
+    };
+
+    // 컨테이너 객체 초기화
+    ContainerAdapter.prototype._countRecord = function(pArray) {
+        
+        var count = 0;
+
+        for (var i = 0; i < pArray.length; i++) {
+            count = count + pArray[i].recoredCount;
+        }
+        return count;
+    }
 
     // 컨테이너 객체 초기화
     ContainerAdapter.prototype.clear = function() {
         this.putElement     = null;     // 붙일 위치
         this.element        = null;
-        this.template       = new TemplateElement();
+        this.template       = new TemplateElement(this);
         this.tables         = new LArray();
     };
 
@@ -150,7 +185,7 @@ function ContainerAdapter() {
         
         var _refElem = null;
         var tableObject = {};
-        
+
         // this.template.element 선택슬롯을 잘라냄
         common.cutElement(this.template._element, pSelector, true);
 
@@ -160,8 +195,11 @@ function ContainerAdapter() {
 
         tableObject.mainSlot = _refElem;
         tableObject.mainSlotSelector = pSelector;
-        tableObject.recordElement = new TemplateElement();
-        tableObject.columnElement = new TemplateElement();
+        tableObject.recordElement = new TemplateElement(this);
+        tableObject.columnElement = new TemplateElement(this);
+        tableObject.beforeRecord = this._beforeRecord(tableObject);
+        tableObject.recoredCount = 0;
+        
 
         this.tables.pushAttr(tableObject, pTableName);
     };
@@ -223,78 +261,109 @@ function ContainerAdapter() {
         // }
 
         // TODO: 검사 해야 함
-        if (this.tables[pTableName]) {
+        if (!this.tables[pTableName]) {
+            throw new Error('pTableName 또는  container 객체 없음 에러! pTableName:' + pTableName);            
+        }
 
-            // ***********
-            // 메인 컨테이너 : table
-            var mainElement         = null;
-            var mainSlotSelector    = null;
-            var mainSlot            = null;
+        // ***********
+        // 메인 컨테이너 : table
+        var mainElement         = null;
+        var mainSlotSelector    = null;
+        var mainSlot            = null;
 
-            var record              = null;
-            var recordSlotSelector  = null;
-            var recordSlot          = null;
-            var record_Clone        = null;
-            var recordSlot_Clone    = null;
+        var record              = null;
+        var recordSlotSelector  = null;
+        var recordSlot          = null;
+        var record_clone        = null;
+        var recordSlot_clone    = null;
+        
+        var column              = null;
+        var columnSlotSelector  = null;
+        var columnSlot          = null;
+        var column_Clone        = null;
+        var columnSlot_Clone    = null;
+        
+        var TextElem            = null;
+        var beforeRecordCount   = 0;
+        
+        var equelRowCantiner    = false;    // 로우와 컨테이너 같은 유무
+
+
+        mainElement         = this.template._element;
+        mainSlotSelector    = this.tables[pTableName].mainSlotSelector;            
+        mainSlot            = this.tables[pTableName].mainSlot;
+
+        record              = this.tables[pTableName].recordElement._element;
+        recordSlotSelector  = this.tables[pTableName].recordElement.slotSelector;
+        recordSlot          = this.tables[pTableName].recordElement.slot;
+
+        column              = this.tables[pTableName].columnElement._element;            
+        columnSlotSelector  = this.tables[pTableName].columnElement.slotSelector;
+        columnSlot          = this.tables[pTableName].columnElement.slot;
+
+        // !! 위치 중요 최 상위에 와야함
+        // 이후에 mainElement 값이 변형되기 때문
+        // if (mainElement.outerHTML === record.outerHTML) {
+        //     equelRowCantiner  = true;
+        // }
+
+
+        // ***************************
+        // 테이블에 대한 메인 컨테이너 설정
+        // 최초 로딩과 이후 분리 조건
+        if (this.element) {
+            mainElement = this.element;
+            mainSlot    = common.querySelecotrOuter(this.element, mainSlotSelector);
+        }
+
+        // ***************************
+        // 레코드 복제 생성 및 참조 재등록
+        //  - 레코드가 없는 경우 
+        //  - 컨테이너와 레코드가 같은 경우
+        // if (mainElement.outerHTML === record.outerHTML) {
+        //     record_clone      = mainElement;
+        //     recordSlot_clone  = mainSlot;
+        //     console.log('같음');
+        // } else {
+            record_clone      = record.cloneNode(true);
+            recordSlot_clone  = common.querySelecotrOuter(record_clone, recordSlotSelector);
+        // }
+
+
+        // ***************************
+        // 컬럼 설정
+        for (var i = 0; i < pDataRow.length; i++) {
+
+            column_Clone = column.cloneNode(true);   // REVIEW: 내부에 태그 있는 경우? 
             
-            var column              = null;
-            var columnSlotSelector  = null;
-            var columnSlot          = null;
-            var column_Clone        = null;
-            var columnSlot_Clone    = null;
-            
-            var TextElem            = null;
+            // TODO: 컬럼에 slot 에 추가해야함
+            // TODO: 컬럼의 데이터타입에 따른 분기 필요
+            TextElem = document.createTextNode(pDataRow[i]);
+            column_Clone.appendChild(TextElem);
+            recordSlot_clone.appendChild(column_Clone);
+        }
+        
+        // **************************
+        // 레코드 위치 관리
+        // 병합 관점 레코드 카운터 가져오기
+        beforeRecordCount = this._countRecord(this.tables[pTableName].beforeRecord);
 
-            mainElement         = this.template._element;
-            mainSlotSelector    = this.tables[pTableName].mainSlotSelector;            
-            mainSlot            = this.tables[pTableName].mainSlot;
+        // pIdx 가 없거나 정수 타입이 아니면 기본값 0 설정
+        if (!pIdx || typeof pIdx !== "number") {
+            pIdx = 0;
+        }
 
-            record              = this.tables[pTableName].recordElement._element;
-            recordSlotSelector  = this.tables[pTableName].recordElement.slotSelector;
-            recordSlot          = this.tables[pTableName].recordElement.slot;
+        // REVIEW : 방식에 따라서 fill 위치와 연관 있음 => 당연한 결과
+        // (pIdx)인덱스 값 + (beforeRecordCount)이전레코드 수 
+        mainSlot.insertBefore(record_clone, mainSlot.childNodes[pIdx + beforeRecordCount]);
+        
+        // 레코드 카운터 추가
+        // 삭제 변경시 관리 해야 함
+        this.tables[pTableName].recoredCount++;  
 
-            column              = this.tables[pTableName].columnElement._element;            
-            columnSlotSelector  = this.tables[pTableName].columnElement.slotSelector;
-            columnSlot          = this.tables[pTableName].columnElement.slot;
-
-
-            // 테이블에 대한 메인 컨테이너 설정
-            if (this.element) {
-                mainElement = this.element;
-                mainSlot    = common.querySelecotrOuter(this.element, mainSlotSelector);
-            }
-            
-            // 레코드 복제 생성 및 참조 재등록
-            record_Clone      = record.cloneNode(true);
-            recordSlot_Clone  = common.querySelecotrOuter(record_Clone, recordSlotSelector);
-
-
-            // 컬럼 설정
-            for (var i = 0; i < pDataRow.length; i++) {
-
-                column_Clone = column.cloneNode(true);   // REVIEW: 내부에 태그 있는 경우? 
-                
-                // TODO: 컬럼에 slot 에 추가해야함
-                // TODO: 컬럼의 데이터타입에 따른 분기 필요
-                TextElem = document.createTextNode(pDataRow[i]);
-                column_Clone.appendChild(TextElem);
-                recordSlot_Clone.appendChild(column_Clone);
-            }
-
-            // pIdx 가 있는 경우
-            if (pIdx && typeof pIdx === "number") {
-                mainSlot.insertBefore(record_Clone, mainSlot.childNodes[pIdx]);
-            } else {
-                mainSlot.appendChild(record_Clone);
-            }
-
-            if (!this.element) {
-                this.element = mainElement;
-                this.putElement.appendChild(this.element);
-            }
-
-        } else {
-            throw new Error('pTableName 또는  container 객체 없음 에러! pTableName:' + pTableName);
+        if (!this.element) {
+            this.element = mainElement;
+            this.putElement.appendChild(this.element);
         }
     };
 
@@ -411,8 +480,9 @@ function ContainerAdapter() {
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // pObjct : Element, selector => X 없음
 // 종속성 : DOM Element
-function TemplateElement(pObject, pIsDeep) {
+function TemplateElement(pParentObject) {
 
+    this._parent            = pParentObject;
     this._original          = null;
     this._elemTemp          = null;
     this._element           = null;
@@ -520,10 +590,9 @@ function TemplateElement(pObject, pIsDeep) {
         // 셀렉터 있는 경우 main 이외
         if (pSelector) {
             
-            var _refElem = null;
-
-            // this.template.element 선택슬롯을 잘라냄
             common.cutElement(this._element, pSelector, true);
+            
+            var _refElem = null;
 
             _refElem = common.querySelecotrOuter(this._element, pSelector);
 
