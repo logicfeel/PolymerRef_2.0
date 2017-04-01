@@ -399,6 +399,9 @@ if (pIdx == 0 ) {
             this.element = mainElement;
             this.putElement.appendChild(this.element);
         }
+        /**
+         * TODO: 레코드 미지정 경우에 활용 가능함 , 입력값에 따른 검사 필요
+         */
 
         // TODO: importTemplate() 메인에서는 입력값이 1개입 레코드와, 컬럼 통일성 체크
     };
