@@ -280,14 +280,15 @@ function ContainerAdapter() {
         var column              = null;
         var columnSlotSelector  = null;
         var columnSlot          = null;
-        var column_Clone        = null;
-        var columnSlot_Clone    = null;
+        var column_clone        = null;
+        var columnSlot_clone    = null;
         
         var TextElem            = null;
-        var beforeRecordCount   = 0;
-        
-        var equelRowCantiner    = false;    // 로우와 컨테이너 같은 유무
 
+        
+        var isEquelRowCantiner  = false;    // 로우와 컨테이너 같은 유무
+        var equalRow            = null;
+        var equalContainer      = null;
 
         mainElement         = this.template._element;
         mainSlotSelector    = this.tables[pTableName].mainSlotSelector;            
@@ -303,10 +304,15 @@ function ContainerAdapter() {
 
         // !! 위치 중요 최 상위에 와야함
         // 이후에 mainElement 값이 변형되기 때문
-        // if (mainElement.outerHTML === record.outerHTML) {
-        //     equelRowCantiner  = true;
-        // }
-
+        // 1. 메인슬롯  == 레코드슬롯  셀렉터로 가져옴 비교
+        equalContainer  = common.querySelecotrOuter(this.template._original, mainSlotSelector);
+        equalRow        = common.querySelecotrOuter(this.template._original, recordSlotSelector);
+        if (equalContainer.isEqualNode(equalRow)) {
+            isEquelRowCantiner  = true;
+        }
+        // REVIEW: 강제 테스트 모드
+        // REVIEW: 이후에 설정으로 노출 하면 좋을듯..
+        // isEquelRowCantiner = false;
 
         // ***************************
         // 테이블에 대한 메인 컨테이너 설정
@@ -329,42 +335,72 @@ function ContainerAdapter() {
             recordSlot_clone  = common.querySelecotrOuter(record_clone, recordSlotSelector);
         // }
 
+        var bindInsertRecord = _insertRecord.bind(this);
 
         // ***************************
         // 컬럼 설정
         for (var i = 0; i < pDataRow.length; i++) {
 
-            column_Clone = column.cloneNode(true);   // REVIEW: 내부에 태그 있는 경우? 
-            
             // TODO: 컬럼에 slot 에 추가해야함
             // TODO: 컬럼의 데이터타입에 따른 분기 필요
             TextElem = document.createTextNode(pDataRow[i]);
-            column_Clone.appendChild(TextElem);
-            recordSlot_clone.appendChild(column_Clone);
-        }
-        
-        // **************************
-        // 레코드 위치 관리
-        // 병합 관점 레코드 카운터 가져오기
-        beforeRecordCount = this._countRecord(this.tables[pTableName].beforeRecord);
 
-        // pIdx 가 없거나 정수 타입이 아니면 기본값 0 설정
-        if (!pIdx || typeof pIdx !== "number") {
-            pIdx = 0;
+            column_clone = column.cloneNode(true);   // REVIEW: 내부에 태그 있는 경우? 
+            column_clone.appendChild(TextElem);
+// 디버깅
+// if (pDataRow[i] == "10번내용 - 중간수정" || pDataRow[i] == "20번내용 - 중간수정" || pDataRow[i] == "30번내용 - 중간수정" ) {
+//     console.log('TextElem');
+// }
+            if (!isEquelRowCantiner) {
+                recordSlot_clone.appendChild(column_clone);
+            } else {
+                bindInsertRecord(column_clone, i);
+            }
         }
 
-        // REVIEW : 방식에 따라서 fill 위치와 연관 있음 => 당연한 결과
-        // (pIdx)인덱스 값 + (beforeRecordCount)이전레코드 수 
-        mainSlot.insertBefore(record_clone, mainSlot.childNodes[pIdx + beforeRecordCount]);
-        
-        // 레코드 카운터 추가
-        // 삭제 변경시 관리 해야 함
-        this.tables[pTableName].recoredCount++;  
+        if (!isEquelRowCantiner) {
+            bindInsertRecord(record_clone);
+        }
+            // 내부 함수
+        function _insertRecord(pRecord, pColumnCnt) {
+            
+            var beforeRecordCount   = 0;
+            var elementIdx          = 0;
+
+            pColumnCnt = pColumnCnt || 0;
+            // **************************
+            // 레코드 위치 관리
+            // 병합 관점 레코드 카운터 가져오기
+            beforeRecordCount = this._countRecord(this.tables[pTableName].beforeRecord);
+
+            // pIdx 가 없거나 정수 타입이 아니면 기본값 0 설정
+            if (!pIdx || typeof pIdx !== "number") {
+                pIdx = 0;
+            }
+
+            if (isEquelRowCantiner) {
+                elementIdx = pIdx ? (pIdx * pDataRow.length) - 1 : 0;    // REVIEW: 길이를 다른곳에 가져오는것 검토
+            }
+// 디버깅
+if (pIdx == 0 ) {
+    console.log('pIdx == 0');
+}
+            // REVIEW : 방식에 따라서 fill 위치와 연관 있음 => 당연한 결과
+            // (pIdx)인덱스 값 + (beforeRecordCount)이전레코드 수 + 컬럼=>레코드 변환 누적카운터
+            mainSlot.insertBefore(pRecord, mainSlot.childNodes[pIdx + elementIdx + beforeRecordCount + pColumnCnt]);
+            
+            // 레코드 카운터 추가
+            // 삭제 변경시 관리 해야 함
+            // REVIEW: 오타 수정해야함 => recoredCount
+            this.tables[pTableName].recoredCount++;  
+        }
 
         if (!this.element) {
             this.element = mainElement;
             this.putElement.appendChild(this.element);
         }
+
+        // TODO: importTemplate() 메인에서는 입력값이 1개입 레코드와, 컬럼 통일성 체크
     };
 
     ContainerAdapter.prototype.deleteCommand = function(pTableName, pIdx) {
