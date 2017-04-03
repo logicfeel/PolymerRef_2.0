@@ -381,10 +381,10 @@ function ContainerAdapter() {
             if (isEquelRowCantiner) {
                 elementIdx = pIdx ? (pIdx * pDataRow.length) - 1 : 0;    // REVIEW: 길이를 다른곳에 가져오는것 검토
             }
-// 디버깅
-if (pIdx == 0 ) {
-    console.log('pIdx == 0');
-}
+// // 디버깅
+// if (pIdx == 0 ) {
+//     console.log('pIdx == 0');
+// }
             // REVIEW : 방식에 따라서 fill 위치와 연관 있음 => 당연한 결과
             // (pIdx)인덱스 값 + (beforeRecordCount)이전레코드 수 + 컬럼=>레코드 변환 누적카운터
             mainSlot.insertBefore(pRecord, mainSlot.childNodes[pIdx + elementIdx + beforeRecordCount + pColumnCnt]);
