@@ -347,7 +347,10 @@ function ContainerAdapter() {
 
             column_clone = column.cloneNode(true);   // REVIEW: 내부에 태그 있는 경우? 
             column_clone.appendChild(TextElem);
-// 디버깅
+
+// 4.0-C.D branch 추가 
+
+// 디버깅  
 // if (pDataRow[i] == "10번내용 - 중간수정" || pDataRow[i] == "20번내용 - 중간수정" || pDataRow[i] == "30번내용 - 중간수정" ) {
 //     console.log('TextElem');
 // }
