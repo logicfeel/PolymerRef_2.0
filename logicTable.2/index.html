@@ -241,7 +241,7 @@ a.push('abc');
     dr = dt2.newRow();
     dr["p1_name"] = 't2 100번내용';
     dr["p2_name"] = 't2 200번내용';
-    dr["p3_name"] = 't2 300번내용';
+    dr["p3_name"] = {abc:1};
     dt2.rows.add(dr);
 
     // var is = ds.acceptChanges();     // commit
@@ -407,14 +407,21 @@ a.push('abc');
 }
 
 {
+
+
     var CD2 = new ContainerAdapter();
+
     var CD2_sel = document.querySelector("#temp_2");
     CD2.putElement = document.querySelector("div");
 
-    CD2.template.importTemplate(CD2_sel.firstChild);
 
+    CD2.importTemplate(CD2_sel.firstChild);     // 위치 변경
+
+    
+    
     CD2.insertTable("head", "ul");
     CD2.insertTable("body", "ul");
+    // CD2.insertTable("head", "ul");
 
     // 셀렉터 참조
     mainElem = CD2.template._original;
@@ -427,7 +434,61 @@ a.push('abc');
     select_elem = common.querySelecotrOuter(mainElem, "ul li");
     CD2.tables["body"].columnElement.importTemplate(select_elem, "li");
 
+
+    // select_elem = common.querySelecotrOuter(mainElem, "ul li");
+    // CD2.tables["head"].columnElement.importTemplate(select_elem, "li");
+
+    // 콜백 함수 테스트  => OK
+    // select_elem = common.querySelecotrOuter(mainElem, "ul li");
+    // CD2.tables["head"].columnElement.importTemplate(select_elem, "li" ,
+    //     function(pValue, pIndex, pRow, pSlotElem) {
+    //         if ( pValue instanceof Object) pValue = "오브젝트여~~";
+    //         var columnValue = document.createTextNode(pValue + " D:" + pIndex);
+    //         // pSlotElem.setAttribute("class", "democlass");
+    //         return columnValue;
+    //     }
+    // );
+
+    // 수동으로 템플릿 접근 
+    CD2_sel = document.querySelector("#temp_1");
+    // var elem =  document.createElement('span');
+    // elem.innerHTML = CD2_sel.nodeValue;
+    // elem = elem.querySelector("*");
+    var subSlot = [
+        {
+            name: "p1_name",
+            selector: "thead tr th"
+        },
+        {
+            name: "p2_name",
+            selector: "tbody tr td"
+        },
+        {
+            idx: 2,
+            selector: "tbody tr td"
+        },                
+
+    ];
+
+    CD2.tables["head"].columnElement.importTemplate(CD2_sel.firstChild, null, null, subSlot );
+        
+        // function(pValue, pIndex, pRow, pSlotElem) {
+        //     if ( pValue instanceof Object) pValue = "오브젝트여~~";
+        //     var columnValue = document.createTextNode(pValue + " D:" + pIndex);
+        //     // pSlotElem.setAttribute("class", "democlass");
+        //     return columnValue;
+        // }
+
+
+
+    CD2.fill(ds, "head");
     CD2.fill(ds, "body");
+    // CD2.fill(ds, "head");
+    
+    /*
+    CD2.tables["body"].recoredCount
+    CD2.tables["head"].recoredCount
+    */
 }
 
 {
