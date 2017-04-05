@@ -336,46 +336,46 @@ a.push('abc');
 }
 
 {
-    // var CD = new ContainerAdapter();
-    // var CD_sel = document.querySelector("#temp_1");
-    // CD.putElement = document.querySelector("div");
+    var CD = new ContainerAdapter();
+    var CD_sel = document.querySelector("#temp_1");
+    CD.putElement = document.querySelector("div");
 
-    // CD.template.importTemplate(CD_sel.firstChild);
+    CD.template.importTemplate(CD_sel.firstChild);
     
-    // // 메인지정안한경우
-    // // CD.template.insertSlot("table", "main_t");   
+    // 메인지정안한경우
+    // CD.template.insertSlot("table", "main_t");   
 
-    // CD.insertTable("head", "thead");
-    // CD.insertTable("body", "tbody");
+    CD.insertTable("head", "thead");
+    CD.insertTable("body", "tbody");
 
-    // // CD.tables["head"].container = new TemplateElement();
-    // var mainElem;   // 테스용
-    // // mainElem = common.querySelecotrOuter(CD._original, "*");
-    // mainElem = CD.template._original;
+    // CD.tables["head"].container = new TemplateElement();
+    var mainElem;   // 테스용
+    // mainElem = common.querySelecotrOuter(CD._original, "*");
+    mainElem = CD.template._original;
 
-    // // head
-    // // select_elem = tempElem.querySelector("thead");
-    // // CD.tables["head"].containerElement.importTemplate(select_elem);
+    // head
+    // select_elem = tempElem.querySelector("thead");
+    // CD.tables["head"].containerElement.importTemplate(select_elem);
 
-    // // select_elem = mainElem.querySelector("thead tr");
-    // // CD.tables["head"].recordElement.importTemplate(select_elem, "tr");
+    // select_elem = mainElem.querySelector("thead tr");
+    // CD.tables["head"].recordElement.importTemplate(select_elem, "tr");
 
-    // // select_elem = mainElem.querySelector("thead tr th");
-    // // CD.tables["head"].columnElement.importTemplate(select_elem, "th");
+    // select_elem = mainElem.querySelector("thead tr th");
+    // CD.tables["head"].columnElement.importTemplate(select_elem, "th");
 
-    // // CD.fill(ds, "head");
+    // CD.fill(ds, "head");
 
-    // // body
-    // // select_elem = tempElem.querySelector("tbody");
-    // // CD.tables["body"].containerElement.importTemplate(select_elem);
+    // body
+    // select_elem = tempElem.querySelector("tbody");
+    // CD.tables["body"].containerElement.importTemplate(select_elem);
 
-    // select_elem = mainElem.querySelector("tbody tr");
-    // CD.tables["body"].recordElement.importTemplate(select_elem, "tr");
+    select_elem = mainElem.querySelector("tbody tr");
+    CD.tables["body"].recordElement.importTemplate(select_elem, "tr");
 
-    // select_elem = mainElem.querySelector("tbody tr td");
-    // CD.tables["body"].columnElement.importTemplate(select_elem, "td");
+    select_elem = mainElem.querySelector("tbody tr td");
+    CD.tables["body"].columnElement.importTemplate(select_elem, "td");
 
-    // CD.fill(ds, "body");
+    CD.fill(ds, "body");
 
     console.log('-A.D 블럭..');
     /*
@@ -409,86 +409,86 @@ a.push('abc');
 {
 
 
-    var CD2 = new ContainerAdapter();
+    // var CD2 = new ContainerAdapter();
 
-    var CD2_sel = document.querySelector("#temp_2");
-    CD2.putElement = document.querySelector("div");
+    // var CD2_sel = document.querySelector("#temp_2");
+    // CD2.putElement = document.querySelector("div");
 
 
-    CD2.importTemplate(CD2_sel.firstChild);     // 위치 변경
+    // CD2.importTemplate(CD2_sel.firstChild);     // 위치 변경
 
     
     
-    CD2.insertTable("head", "ul");
-    CD2.insertTable("body", "ul");
     // CD2.insertTable("head", "ul");
+    // CD2.insertTable("body", "ul");
+    // // CD2.insertTable("head", "ul");
 
-    // 셀렉터 참조
-    mainElem = CD2.template._original;
+    // // 셀렉터 참조
+    // mainElem = CD2.template._original;
 
-    // select_elem = mainElem.querySelector("ul");
-    select_elem = common.querySelecotrOuter(mainElem, "ul");
-    CD2.tables["body"].recordElement.importTemplate(select_elem, "ul");
+    // // select_elem = mainElem.querySelector("ul");
+    // select_elem = common.querySelecotrOuter(mainElem, "ul");
+    // CD2.tables["body"].recordElement.importTemplate(select_elem, "ul");
 
-    // select_elem = mainElem.querySelector("ul li");
-    select_elem = common.querySelecotrOuter(mainElem, "ul li");
-    CD2.tables["body"].columnElement.importTemplate(select_elem, "li");
-
-
+    // // select_elem = mainElem.querySelector("ul li");
     // select_elem = common.querySelecotrOuter(mainElem, "ul li");
-    // CD2.tables["head"].columnElement.importTemplate(select_elem, "li");
+    // CD2.tables["body"].columnElement.importTemplate(select_elem, "li");
 
-    // 콜백 함수 테스트  => OK
-    // select_elem = common.querySelecotrOuter(mainElem, "ul li");
-    // CD2.tables["head"].columnElement.importTemplate(select_elem, "li" ,
-    //     function(pValue, pIndex, pRow, pSlotElem) {
-    //         if ( pValue instanceof Object) pValue = "오브젝트여~~";
-    //         var columnValue = document.createTextNode(pValue + " D:" + pIndex);
-    //         // pSlotElem.setAttribute("class", "democlass");
-    //         return columnValue;
-    //     }
-    // );
 
-    // 수동으로 템플릿 접근 
-    CD2_sel = document.querySelector("#temp_1");
-    // var elem =  document.createElement('span');
-    // elem.innerHTML = CD2_sel.nodeValue;
-    // elem = elem.querySelector("*");
-    var subSlot = [
-        {
-            name: "p1_name",
-            selector: "thead tr th"
-        },
-        {
-            name: "p2_name",
-            selector: "tbody tr td"
-        },
-        {
-            idx: 2,
-            selector: "tbody tr td"
-        },                
+    // // select_elem = common.querySelecotrOuter(mainElem, "ul li");
+    // // CD2.tables["head"].columnElement.importTemplate(select_elem, "li");
 
-    ];
+    // // 콜백 함수 테스트  => OK
+    // // select_elem = common.querySelecotrOuter(mainElem, "ul li");
+    // // CD2.tables["head"].columnElement.importTemplate(select_elem, "li" ,
+    // //     function(pValue, pIndex, pRow, pSlotElem) {
+    // //         if ( pValue instanceof Object) pValue = "오브젝트여~~";
+    // //         var columnValue = document.createTextNode(pValue + " D:" + pIndex);
+    // //         // pSlotElem.setAttribute("class", "democlass");
+    // //         return columnValue;
+    // //     }
+    // // );
 
-    CD2.tables["head"].columnElement.importTemplate(CD2_sel.firstChild, null, null, subSlot );
+    // // 수동으로 템플릿 접근 
+    // CD2_sel = document.querySelector("#temp_1");
+    // // var elem =  document.createElement('span');
+    // // elem.innerHTML = CD2_sel.nodeValue;
+    // // elem = elem.querySelector("*");
+    // var subSlot = [
+    //     {
+    //         name: "p1_name",
+    //         selector: "thead tr th"
+    //     },
+    //     {
+    //         name: "p2_name",
+    //         selector: "tbody tr td"
+    //     },
+    //     {
+    //         idx: 2,
+    //         selector: "tbody tr td"
+    //     },                
+
+    // ];
+
+    // CD2.tables["head"].columnElement.importTemplate(CD2_sel.firstChild, null, null, subSlot );
         
-        // function(pValue, pIndex, pRow, pSlotElem) {
-        //     if ( pValue instanceof Object) pValue = "오브젝트여~~";
-        //     var columnValue = document.createTextNode(pValue + " D:" + pIndex);
-        //     // pSlotElem.setAttribute("class", "democlass");
-        //     return columnValue;
-        // }
+    //     // function(pValue, pIndex, pRow, pSlotElem) {
+    //     //     if ( pValue instanceof Object) pValue = "오브젝트여~~";
+    //     //     var columnValue = document.createTextNode(pValue + " D:" + pIndex);
+    //     //     // pSlotElem.setAttribute("class", "democlass");
+    //     //     return columnValue;
+    //     // }
 
 
 
-    CD2.fill(ds, "head");
-    CD2.fill(ds, "body");
     // CD2.fill(ds, "head");
+    // CD2.fill(ds, "body");
+    // // CD2.fill(ds, "head");
     
-    /*
-    CD2.tables["body"].recoredCount
-    CD2.tables["head"].recoredCount
-    */
+    // /*
+    // CD2.tables["body"].recoredCount
+    // CD2.tables["head"].recoredCount
+    // */
 }
 
 {

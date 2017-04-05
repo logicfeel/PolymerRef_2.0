@@ -253,7 +253,7 @@ function ContainerAdapter() {
     // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     
     ContainerAdapter.prototype.insertCommand = function(pTableName, pDataRow, pIdx) {
-        containerManager("INSERT", pTableName, pDataRow, pIdx);
+        this.containerManager("INSERT", pTableName, pDataRow, pIdx);
     };
 
     ContainerAdapter.prototype.attachManager = function(pTableName, pRecord, pIdx, pRecordCount) {
@@ -266,7 +266,6 @@ function ContainerAdapter() {
         var mainSlotSelector    = this.tables[pTableName].mainSlotSelector;
 
         var hasRecord           = this.tables[pTableName].recordElement._element;
-        var hasColumnSubSlot    = this.tables[pTableName].columnElement.subSlot;
 
        if (this.element) {     // [A.8]
             mainElement         = this.element;
@@ -287,19 +286,23 @@ function ContainerAdapter() {
             pIdx = 0;
         }
 
-        if (isEquelRowCantiner) {
+        if (!hasRecord) {
             elementIdx = pIdx ? (pIdx * pDataRow.length) : 0;    // REVIEW: 길이를 다른곳에 가져오는것 검토
         }
 
         // REVIEW : 방식에 따라서 fill 위치와 연관 있음 => 당연한 결과
         // (pIdx)인덱스 값 + (beforeRecordCount)이전레코드 수 + 컬럼=>레코드 변환 누적카운터
-        pMainSlot.insertBefore(pRecord, pMainSlot.childNodes[elementIdx + beforeRecordCount + pRecordCount]);
+        mainSlot.insertBefore(pRecord, mainSlot.childNodes[elementIdx + beforeRecordCount + pRecordCount + pIdx]);
         
         // 레코드 카운터 추가
         // 삭제 변경시 관리 해야 함
         // REVIEW: 오타 수정해야함 => recordCount
         this.tables[pTableName].recordCount++;  
 
+        if (!this.element) {
+            this.element = mainElement;
+            this.putElement.appendChild(this.element);
+        }
     };
 
     ContainerAdapter.prototype.containerManager = function(pCommand, pTableName, pDataRow, pIdx) {
@@ -307,6 +310,7 @@ function ContainerAdapter() {
         // 분기 : 레코드 생성 |  레코드 교체 |  레코드 삭제 
 
         var record = null;
+        var hasRecord           = this.tables[pTableName].recordElement._element;
 
         switch (pCommand) {
             case "INSERT":
@@ -320,7 +324,7 @@ function ContainerAdapter() {
                     record = this.columnManager(pTableName, pDataRow);
                     this.attachManager(pTableName, record, pIdx);
                 
-                } else {
+                } else if (!hasRecord && !hasColumnSubSlot){
                 
                     for (var i = 0; i < pDataRow.length; i++) {
                         record = this.createColumn(pTableName, pDataRow[i]);
@@ -429,7 +433,7 @@ function ContainerAdapter() {
             column = this.createColumnSubSlot(pTableName, pDataRow);
             pSlot.appendChild(column);
         } else {
-            for (var i = 0; pDataRow.length; i++) {
+            for (var i = 0; i < pDataRow.length; i++) {
                 column = this.createColumn(pTableName, pDataRow[i]);
                 pSlot.appendChild(column);
             }
