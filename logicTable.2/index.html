@@ -74,7 +74,7 @@
     </ul>--></p>    
 
     <p id="temp_3"><!--
-    <div>
+    <div class="a3">
     <ul class="list-group">
         <li class="list-group-item">
             <b></b>
@@ -407,82 +407,82 @@ a.push('abc');
 }
 
 {
-    // TEST : 레코드 없음, 컬럼서브 슬롯 있음
-    var CD2 = new ContainerAdapter();
+    // // TEST : 레코드 없음, 컬럼서브 슬롯 있음 : OK
+    // var CD2 = new ContainerAdapter();
 
-    var CD2_sel = document.querySelector("#temp_2");
-    CD2.putElement = document.querySelector("div");
+    // var CD2_sel = document.querySelector("#temp_2");
+    // CD2.putElement = document.querySelector("div");
 
 
-    CD2.importTemplate(CD2_sel.firstChild);     // 위치 변경
+    // CD2.importTemplate(CD2_sel.firstChild);     // 위치 변경
 
     
     
-    CD2.insertTable("head", "ul");
-    CD2.insertTable("body", "ul");
     // CD2.insertTable("head", "ul");
+    // CD2.insertTable("body", "ul");
+    // // CD2.insertTable("head", "ul");
 
-    // 셀렉터 참조
-    mainElem = CD2.template._original;
+    // // 셀렉터 참조
+    // mainElem = CD2.template._original;
 
-    // select_elem = mainElem.querySelector("ul");
-    select_elem = common.querySelecotrOuter(mainElem, "ul");
-    CD2.tables["body"].recordElement.importTemplate(select_elem, "ul");
+    // // select_elem = mainElem.querySelector("ul");
+    // select_elem = common.querySelecotrOuter(mainElem, "ul");
+    // CD2.tables["body"].recordElement.importTemplate(select_elem, "ul");
 
-    // select_elem = mainElem.querySelector("ul li");
-    select_elem = common.querySelecotrOuter(mainElem, "ul li");
-    CD2.tables["body"].columnElement.importTemplate(select_elem, "li");
-
-
+    // // select_elem = mainElem.querySelector("ul li");
     // select_elem = common.querySelecotrOuter(mainElem, "ul li");
-    // CD2.tables["head"].columnElement.importTemplate(select_elem, "li");
+    // CD2.tables["body"].columnElement.importTemplate(select_elem, "li");
 
-    // 콜백 함수 테스트  => OK
-    // select_elem = common.querySelecotrOuter(mainElem, "ul li");
-    // CD2.tables["head"].columnElement.importTemplate(select_elem, "li" ,
-    //     function(pValue, pIndex, pRow, pSlotElem) {
-    //         if ( pValue instanceof Object) pValue = "오브젝트여~~";
-    //         var columnValue = document.createTextNode(pValue + " D:" + pIndex);
-    //         // pSlotElem.setAttribute("class", "democlass");
-    //         return columnValue;
-    //     }
-    // );
 
-    // 수동으로 템플릿 접근 
-    CD2_sel = document.querySelector("#temp_1");
-    // var elem =  document.createElement('span');
-    // elem.innerHTML = CD2_sel.nodeValue;
-    // elem = elem.querySelector("*");
-    var subSlot = [
-        {
-            name: "p1_name",
-            selector: "thead tr th"
-        },
-        {
-            name: "p2_name",
-            selector: "tbody tr td"
-        },
-        {
-            idx: 2,
-            selector: "tbody tr td"
-        },                
+    // // select_elem = common.querySelecotrOuter(mainElem, "ul li");
+    // // CD2.tables["head"].columnElement.importTemplate(select_elem, "li");
 
-    ];
+    // // 콜백 함수 테스트  => OK
+    // // select_elem = common.querySelecotrOuter(mainElem, "ul li");
+    // // CD2.tables["head"].columnElement.importTemplate(select_elem, "li" ,
+    // //     function(pValue, pIndex, pRow, pSlotElem) {
+    // //         if ( pValue instanceof Object) pValue = "오브젝트여~~";
+    // //         var columnValue = document.createTextNode(pValue + " D:" + pIndex);
+    // //         // pSlotElem.setAttribute("class", "democlass");
+    // //         return columnValue;
+    // //     }
+    // // );
 
-    CD2.tables["head"].columnElement.importTemplate(CD2_sel.firstChild, null, null, subSlot );
+    // // 수동으로 템플릿 접근 
+    // CD2_sel = document.querySelector("#temp_1");
+    // // var elem =  document.createElement('span');
+    // // elem.innerHTML = CD2_sel.nodeValue;
+    // // elem = elem.querySelector("*");
+    // var subSlot = [
+    //     {
+    //         name: "p1_name",
+    //         selector: "thead tr th"
+    //     },
+    //     {
+    //         name: "p2_name",
+    //         selector: "tbody tr td"
+    //     },
+    //     {
+    //         idx: 2,
+    //         selector: "tbody tr td"
+    //     },                
+
+    // ];
+
+    // CD2.tables["head"].columnElement.importTemplate(CD2_sel.firstChild, null, null, subSlot);
         
-        // function(pValue, pIndex, pRow, pSlotElem) {
-        //     if ( pValue instanceof Object) pValue = "오브젝트여~~";
-        //     var columnValue = document.createTextNode(pValue + " D:" + pIndex);
-        //     // pSlotElem.setAttribute("class", "democlass");
-        //     return columnValue;
-        // }
+    //     // function(pValue, pIndex, pRow, pSlotElem) {
+    //     //     if ( pValue instanceof Object) pValue = "오브젝트여~~";
+    //     //     var columnValue = document.createTextNode(pValue + " D:" + pIndex);
+    //     //     // pSlotElem.setAttribute("class", "democlass");
+    //     //     return columnValue;
+    //     // }
 
 
 
     // CD2.fill(ds, "head");
-    CD2.fill(ds, "body");
-    // CD2.fill(ds, "head");
+    // CD2.fill(ds, "body");
+    // // CD2.fill(ds, "head");
     
     /*
     CD2.tables["body"].recoredCount
@@ -491,41 +491,41 @@ a.push('abc');
 }
 
 {
-    // // 요소와 슬롯이 다른 사례 (요소 하위에 슬롯)
-    // // 테이블 div :: ul
-    // // 레코드 li  :: b
-    // var CD3 = new ContainerAdapter();
-    // var CD3_sel = document.querySelector("#temp_3");
-    // CD3.putElement = document.querySelector("div");
+    // 요소와 슬롯이 다른 사례 (요소 하위에 슬롯)
+    // 테이블 div :: ul
+    // 레코드 li  :: b
+    var CD3 = new ContainerAdapter();
+    var CD3_sel = document.querySelector("#temp_3");
+    CD3.putElement = document.querySelector("div");
 
-    // CD3.template.importTemplate(CD3_sel.firstChild);
+    CD3.template.importTemplate(CD3_sel.firstChild);
     
-    // mainElem = CD3.template._original;
+    mainElem = CD3.template._original;
     
-    // CD3.insertTable("body", "div ul");
+    CD3.insertTable("body", "div ul");
 
-    // // 테이블 슬롯이 같은 경우
-    // CD3.insertTable("head", "ul");
+    // 테이블 슬롯이 같은 경우
+    CD3.insertTable("head", "ul");
 
-    // // select_elem = mainElem.querySelector("ul");
-    // select_elem = common.querySelecotrOuter(mainElem, "ul li");
-    // CD3.tables["body"].recordElement.importTemplate(select_elem, "li");
+    // select_elem = mainElem.querySelector("ul");
+    select_elem = common.querySelecotrOuter(mainElem, "ul li");
+    CD3.tables["body"].recordElement.importTemplate(select_elem, "li");
 
-    // // select_elem = mainElem.querySelector("ul li");
-    // select_elem = common.querySelecotrOuter(mainElem, "b");
-    // CD3.tables["body"].columnElement.importTemplate(select_elem, "b");
+    // select_elem = mainElem.querySelector("ul li");
+    select_elem = common.querySelecotrOuter(mainElem, "b");
+    CD3.tables["body"].columnElement.importTemplate(select_elem, "b");
 
-    // CD3.fill(ds, "body");   // 테스트 완료 
+    CD3.fill(ds, "body");   // 테스트 완료 
     
-    // //  ###########    
-    // select_elem = common.querySelecotrOuter(mainElem, "ul li");
-    // CD3.tables["head"].recordElement.importTemplate(select_elem, "li");
+    //  ###########    
+    select_elem = common.querySelecotrOuter(mainElem, "ul li");
+    CD3.tables["head"].recordElement.importTemplate(select_elem, "li");
 
-    // select_elem = common.querySelecotrOuter(mainElem, "b");
-    // CD3.tables["head"].columnElement.importTemplate(select_elem, "b");
+    select_elem = common.querySelecotrOuter(mainElem, "b");
+    CD3.tables["head"].columnElement.importTemplate(select_elem, "b");
     
-    // CD3.fill(ds, "head");
-    // // 테스트 완료 
+    CD3.fill(ds, "head");
+    // 테스트 완료 
 }
 /**
  * rows 는 정적 메소드
