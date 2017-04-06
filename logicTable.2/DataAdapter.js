@@ -182,7 +182,6 @@ function ContainerAdapter() {
 
     ContainerAdapter.prototype.insertTable = function(pTableName, pSelector) {
         
-        
         var _refElem = null;
         var tableObject = {};
 
@@ -210,11 +209,8 @@ function ContainerAdapter() {
 
     // // 컨테이너 추가[사이 추가 포함]
     // ContainerAdapter.prototype.appendContainer = function(pTableName, pDataRow, pIdx) {
-
     //     var container = this.createContainer(pDataRow);        
-        
     //     if (this.recordElement !== null && this.recordElement instanceof HTMLElement) {
-            
     //         if (pIdx && typeof pIdx === "number") {
     //             this.container.insertBefore(container, this.container.childNodes[pIdx]);
     //         } else {
@@ -260,14 +256,13 @@ function ContainerAdapter() {
 
         var beforeRecordCount   = 0;
         var elementIdx          = 0;
-
         var mainElement         = null; 
         var mainSlot            = null;
         var mainSlotSelector    = this.tables[pTableName].mainSlotSelector;
-
         var hasRecord           = this.tables[pTableName].recordElement._element;
+        var hasElement          = this.element;
 
-       if (this.element) {     // [A.8]
+       if (hasElement) {     // [A.8]
             mainElement         = this.element;
             mainSlot            = common.querySelecotrOuter(this.element, mainSlotSelector);
         } else {                // [A.1]
@@ -287,7 +282,7 @@ function ContainerAdapter() {
         }
 
         if (!hasRecord) {
-            elementIdx = pIdx ? (pIdx * pDataRow.length) : 0;    // REVIEW: 길이를 다른곳에 가져오는것 검토
+            elementIdx = pIdx ? (pIdx * pDataRow.length) : 0;
         }
 
         // REVIEW : 방식에 따라서 fill 위치와 연관 있음 => 당연한 결과
@@ -296,10 +291,9 @@ function ContainerAdapter() {
         
         // 레코드 카운터 추가
         // 삭제 변경시 관리 해야 함
-        // REVIEW: 오타 수정해야함 => recordCount
         this.tables[pTableName].recordCount++;  
 
-        if (!this.element) {
+        if (!hasElement) {
             this.element = mainElement;
             this.putElement.appendChild(this.element);
         }
@@ -307,106 +301,95 @@ function ContainerAdapter() {
 
     ContainerAdapter.prototype.containerManager = function(pCommand, pTableName, pDataRow, pIdx) {
 
+        // var record      = null;
+        // var hasRecord   = this.tables[pTableName].recordElement._element;
+
         // 분기 : 레코드 생성 |  레코드 교체 |  레코드 삭제 
-
-        var record = null;
-        var hasRecord           = this.tables[pTableName].recordElement._element;
-
         switch (pCommand) {
             case "INSERT":
-
-                if (hasRecord) {
-                    record = this.recordManager(pTableName, pDataRow);
-                    this.attachManager(pTableName, record, pIdx);
-                
-                } else if (hasColumnSubSlot) {
-                
-                    record = this.columnManager(pTableName, pDataRow);
-                    this.attachManager(pTableName, record, pIdx);
-                
-                } else if (!hasRecord && !hasColumnSubSlot){
-                
-                    for (var i = 0; i < pDataRow.length; i++) {
-                        record = this.createColumn(pTableName, pDataRow[i]);
-                        this.attachManager(pTableName, record, pIdx, i);
-                    }
-
-                }           
+                this.createContainer(pCommand, pTableName, pDataRow, pIdx);
                 break;
 
             case "UPDATE":
-                
+                // TODO: 삭제 처리
+                this.createContainer(pCommand, pTableName, pDataRow, pIdx);
                 break;
             case "DELETE":
-                
+                // TODO: 삭제 처리
                 break;
             case "SELECT":
-                
+                // TODO: 조회 처리
                 break;
             default:
                 throw new Error('cmd 에러 발생 pCommand:' + pCommand);
         }
     };
 
-    // [2 ~ 5]
-    // ContainerAdapter.prototype.createContainer = function(pTableName, pDataRow) {
+    ContainerAdapter.prototype.createContainer = function(pCommand, pTableName, pDataRow, pIdx) {
+
+        var hasRecord   = this.tables[pTableName].recordElement._element;
+        var hasColumnSubSlot    = this.tables[pTableName].columnElement.subSlot;
+        var record      = null;
+
+        if (hasRecord) {
+
+            record = this.recordManager(pTableName, pDataRow);
+            this.attachManager(pTableName, record, pIdx);
         
-    //     // if (this.tables[pTableName].recordElement._element) {
-            
-    //         // 레코드 메니저 호출
-    //         return this.recordManager(pTableName, pDataRow, pIdx);
-    //     // } else {
+        } else if (hasColumnSubSlot) {
 
-    //         // 컬럼 매니저 호출
-    //         // return this.columnManager(pTableName, pDataRow, pIdx);
-    //     // }
+            var mainElement         = null; 
+            var mainSlot            = null;
+            var hasElement          = this.element;
+            var mainSlotSelector    = this.tables[pTableName].mainSlotSelector;
 
-    // };
+            if (hasElement) {     // [A.8]
+                mainElement         = this.element;
+                mainSlot            = common.querySelecotrOuter(this.element, mainSlotSelector);
+            } else {                // [A.1]
+                mainElement         = this.template._element.cloneNode(true);
+                mainSlot            = common.querySelecotrOuter(mainElement, mainSlotSelector);
+            }
+
+            // 레코드가 없으므로 null 넘김
+            record = this.columnManager(null, pTableName, pDataRow);
+            this.attachManager(pTableName, record, pIdx);
+        
+        } else if (!hasRecord && !hasColumnSubSlot){
+
+            for (var i = 0; i < pDataRow.length; i++) {
+                record = this.createColumn(pTableName, pDataRow[i]);
+                this.attachManager(pTableName, record, pIdx, i);
+            }
+        }
+    }
 
     ContainerAdapter.prototype.recordManager = function(pTableName, pDataRow) {
-
-        // 분기 : 레코드 생성 | 레코드슬롯 생성
 
         var record              = null;
         var recordSlotSelector  = null;
         var recordSlot          = null;
-
         var hasRecordSubSlot    = null;
-        // var record_clone        = null;
-        // var recordSlot_clone    = null;
-        
-        // 레코드 유무 (있음)
-        // if (this.tables[pTableName].recordElement._element) {
-            record              = this.tables[pTableName].recordElement._element.cloneNode(true);
-            recordSlotSelector  = this.tables[pTableName].recordElement.slotSelector;
-            recordSlot          = common.querySelecotrOuter(record, recordSlotSelector);
-            hasRecordSubSlot       = this.tables[pTableName].recordElement.subSlot;
 
-            if (hasRecordSubSlot) {
-                this.createRecordSubSlot(recordSlot, pTableName, pDataRow);
-            } else {
-                this.columnManager(recordSlot, pTableName, pDataRow);
-            }
+        record              = this.tables[pTableName].recordElement._element.cloneNode(true);
+        recordSlotSelector  = this.tables[pTableName].recordElement.slotSelector;
+        recordSlot          = common.querySelecotrOuter(record, recordSlotSelector);
+        hasRecordSubSlot       = this.tables[pTableName].recordElement.subSlot;
 
-        // 레코드 유무 (없음)
-        // } else {
-        //     this.columnManager();
-        // }
-        
-        // 임시
-
+        // 분기 : 레코드 생성 | 레코드슬롯 생성
+        if (hasRecordSubSlot) {
+            this.createRecordSubSlot(recordSlot, pTableName, pDataRow);
+        } else {
+            this.columnManager(recordSlot, pTableName, pDataRow);
+        }
         return record;
     };
 
     // ContainerAdapter.prototype.createRecord = function(pSlot, pTableName, pDataRow) {
-
     //     // 컬럼 메니저 호출
     //     var column = this.columnManager(pSlot, pTableName, pDataRow);
-
     //     // for (var i = 0; pDataRow.length; i++) {
-
     //     // }
-
     // };
 
     ContainerAdapter.prototype.createRecordSubSlot = function(pSlot, pTableName, pDataRow) {
@@ -418,68 +401,92 @@ function ContainerAdapter() {
     };
 
     // 레코드가 유무와 상관없이 호출함
+    ContainerAdapter.prototype._equelRowCantiner = function(pTableName) {
+
+        var container           = null;
+        var row           = null;
+        var mainSlotSelector    = null;
+        var recordSlotSelector  = null;
+
+        mainSlotSelector    = this.tables[pTableName].mainSlotSelector;            
+        recordSlotSelector  = this.tables[pTableName].recordElement.slotSelector;
+
+        container  = common.querySelecotrOuter(this.template._original, mainSlotSelector);
+        row        = common.querySelecotrOuter(this.template._original, recordSlotSelector);
+        
+        if (container.isEqualNode(row)) {
+            return true;
+        } else{
+            return false;
+        }
+    }
+
+    // 레코드가 유무와 상관없이 호출함
     ContainerAdapter.prototype.columnManager = function(pSlot, pTableName, pDataRow) {
         
-        // 분기 : 컬럼 생성 | 컬럼슬롯 생성
+        var hasColumnSubSlot    = this.tables[pTableName].columnElement.subSlot;
+        var column              = null;
+        var equelRowCantiner  = this._equelRowCantiner(pTableName);
 
-        var columnSubSlot       = null;
-        var columnCallback      = null;
-        var column             = null;
 
-        columnSubSlot       = this.tables[pTableName].columnElement.subSlot;
-        columnCallback      = this.tables[pTableName].columnElement._callback;
-
-        if (columnSubSlot) {
+        // 분기 : 컬럼 생성 | 컬럼서브슬롯 생성
+        if (hasColumnSubSlot) {
             column = this.createColumnSubSlot(pTableName, pDataRow);
-            pSlot.appendChild(column);
-        } else {
-            for (var i = 0; i < pDataRow.length; i++) {
-                column = this.createColumn(pTableName, pDataRow[i]);
+            if (!pSlot) {
+                return column;
+            } else {
                 pSlot.appendChild(column);
             }
+            
+        } else {
+            for (var i = 0; i < pDataRow.length; i++) {
+                column = this.createColumn(pTableName, pDataRow[i], pDataRow);
+                
+                if (equelRowCantiner) {
+                    
+                    // for 문이라 구조 변경해야함
+                    return; 
+                } else {
+                    pSlot.appendChild(column);
+                }
+                
+            }
         }
-        // return;
     };
 
-    ContainerAdapter.prototype.createColumn = function(pTableName, pRowValue) {
+    ContainerAdapter.prototype.createColumn = function(pTableName, pRowValue, pDataRow) {
         
-        var column              = null;
-        var columnSlotSelector  = null;
-        var columnValue         = null;
-        var columnClone         = null;
+        var column              = this.tables[pTableName].columnElement._element;
+        var columnSlotSelector  = this.tables[pTableName].columnElement.slotSelector;;
+        var columnCallback      = this.tables[pTableName].columnElement._callback;
+        var columnIdx           = pDataRow.indexOf(pRowValue);
+        var columnClone         = column.cloneNode(true);
+        var columnChild         = null;
         var columnCloneSlot     = null;
-        
-        column              = this.tables[pTableName].columnElement._element;
-        columnSlotSelector  = this.tables[pTableName].columnElement.slotSelector;
 
-        // for (var i = 0; pDataRow.length; i++) {
-            
-            columnValue     = document.createTextNode(pRowValue);
+        columnChild     = this.callbackManager(columnCallback, pRowValue, columnIdx, pDataRow, columnClone);
+        columnCloneSlot = common.querySelecotrOuter(columnClone, columnSlotSelector);
 
-            columnClone     = column.cloneNode(true);
-            columnCloneSlot = common.querySelecotrOuter(columnClone, columnSlotSelector);
-            columnCloneSlot.appendChild(columnValue);
-        // }
+        columnCloneSlot.appendChild(columnChild);
+
         return columnClone;
     };
 
     ContainerAdapter.prototype.createColumnSubSlot = function(pTableName, pDataRow) {
         
-        var column              = null;
-        var columnSubSlot       = null;
-        var columnClone         = null;
+        var column              = this.tables[pTableName].columnElement._element;
+        var columnSubSlot       = this.tables[pTableName].columnElement.subSlot;
+        var columnClone         = column.cloneNode(true);
+        var columnChild         = null;
         var columnCloneSlot     = null;
-        
-        var columnName      = "";
-        var columnIdx     = -1;
-        var value         = null;     
-        
-        columnSubSlot       = this.tables[pTableName].columnElement.subSlot;
-
-        columnClone = column.cloneNode(true);
+        var columnCallback      = null;        
+        var columnName          = "";
+        var columnIdx           = -1;
+        var rowValue            = "";
 
         for (var i = 0; i < columnSubSlot.length; i++) {
-            columnCloneSlot      = columnClone.querySelector(columnSubSlot[i].selector);
+
+            columnCloneSlot     = columnClone.querySelector(columnSubSlot[i].selector);
             
             // REVIEW: 확인필요
             // columnCloneSlot      = common.querySelecotrOuter(columnClone, columnSubSlot[i].selector); 
@@ -488,26 +495,27 @@ function ContainerAdapter() {
             columnIdx     = (columnIdx <= 0 && columnSubSlot[i].idx) ? columnSubSlot[i].idx : columnIdx;
 
             if (columnIdx >= 0) {
-
-                value = pDataRow[columnIdx];
-
-                // if (columnSubSlot[i].callback && typeof columnSubSlot[i].callback === "function") {
-                //     columnValue = columnSubSlot[i].callback.call(this, value, columnIdx, pDataRow, columnClone);
-                // } else {
-                    columnValue = document.createTextNode(value);
-                // }
-
+                rowValue        = pDataRow[columnIdx];
+                columnCallback  = columnSubSlot[i].callback;
+                columnChild     = this.callbackManager(columnCallback, rowValue, columnIdx, pDataRow, columnClone);
             } else {
                 console.log('서브 슬록 없음' + i);
             }
-            columnCloneSlot.appendChild(columnValue);
+            columnCloneSlot.appendChild(columnChild);
         }
         return columnClone;
-
     };
     
-    ContainerAdapter.prototype.callbackManager = function() {
-
+    ContainerAdapter.prototype.callbackManager = function(pCallback, pRowValue, pColumnIdx, pDataRow, pColumClone) {
+        
+        var columnChild         = null;
+        
+        if (pCallback && typeof pCallback === "function") {
+            columnChild = pCallback.call(this, pRowValue, pColumnIdx, pDataRow, pColumClone);
+        } else {
+            columnChild = document.createTextNode(pRowValue);
+        }
+        return columnChild;
     };
 
     
@@ -807,19 +815,19 @@ if (pDataRow[i] == '10번내용' ) {
 
 
     // **********************************
-    ContainerAdapter.prototype.createContainer = function(pTableName, pDataRow, pIdx) {
+    // ContainerAdapter.prototype.createContainer = function(pTableName, pDataRow, pIdx) {
         
-        var clone = null;
-        var columns = this.createColumnElements(pTableName, pDataRow);
+    //     var clone = null;
+    //     var columns = this.createColumnElements(pTableName, pDataRow);
 
-        clone = this.recordElement.cloneNode(false);    // REVIEW: 나중에 확인 필요
+    //     clone = this.recordElement.cloneNode(false);    // REVIEW: 나중에 확인 필요
         
-        // TODO: 배열검사
-        for (var i = 0;  i < columns.length; i++) {
-            clone.appendChild(columns[i]);
-        }
-        return clone;
-    };
+    //     // TODO: 배열검사
+    //     for (var i = 0;  i < columns.length; i++) {
+    //         clone.appendChild(columns[i]);
+    //     }
+    //     return clone;
+    // };
     
     // 컨테이너 추가[사이 추가 포함]
     ContainerAdapter.prototype.appendContainer = function(pTableName, pDataRow, pIdx) {
