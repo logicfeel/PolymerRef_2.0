@@ -138,6 +138,11 @@ function ContainerAdapter() {
     this.element        = null;                     // TemplateElement : 컨테이너 
     this.template       = new TemplateElement(this);
     this.tables         = new LArray();
+}
+(function() {   // prototype 상속
+    ContainerAdapter.prototype =  Object.create(DataAdapter.prototype);
+    ContainerAdapter.prototype.constructor = ContainerAdapter;
+    ContainerAdapter.prototype.parent = DataAdapter.prototype;    
 
     // tables 에 이전 레코드 찾기
     // pOnwerTableObject : 기준(소유) 테이블 객체
@@ -226,6 +231,7 @@ function ContainerAdapter() {
         }
     }
 
+    // 콜백 호출
     ContainerAdapter.prototype._callbackManager = function(pCallback, pRowValue, pColumnIdx, pDataRow, pColumClone) {
         
         var columnChild         = null;
@@ -491,7 +497,7 @@ function ContainerAdapter() {
     };
     
     ContainerAdapter.prototype.deleteTable = function(pTableName) {
-        this.tables.popAttr(npTableName);
+        this.tables.popAttr(pTableName);
     };
 
     // 컨테이너 객체 초기화
@@ -517,11 +523,6 @@ function ContainerAdapter() {
         this._selectContainer(pTableName, pDataRow, pIdx);
     };
 
-}
-(function() {   // prototype 상속
-    ContainerAdapter.prototype =  Object.create(DataAdapter.prototype);
-    ContainerAdapter.prototype.constructor = ContainerAdapter;
-    ContainerAdapter.prototype.parent = DataAdapter.prototype;    
 }());
 
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -602,7 +603,25 @@ function TemplateElement(pParentObject) {
     function _importText(pObject) {
         return null;
     }
-    
+
+    // 슬롯이 추가되고 자식은 삭제됨
+    TemplateElement.prototype._setSlot = function(pSelector) {
+        
+        var refElem = null;
+        
+        // 레퍼방식으로 querySelector        
+        refElem = common.querySelecotrOuter(this._element, pSelector);
+        this.slot = refElem;
+        this.slotSelector = pSelector
+
+        // 자식 노드 삭제
+        var maxLength = refElem.childNodes.length;
+        for (var i = maxLength - 1; i >= 0; i--) {  // NodeList 임
+            refElem.removeChild(refElem.childNodes[i]);
+        }
+    };
+
+
     // 초기화
     TemplateElement.prototype.clear = function() {
         
@@ -612,7 +631,6 @@ function TemplateElement(pParentObject) {
         this.slot               = null;
         this.slotSelector       = null;
         this.subSlot            = null;
-        // this.deep               = pIsDeep || true;      // REVIEW : 불필요 
     };
 
     // 컬럼의 경우 셀렉터를 배열 형태로 넘겨서 매칭함
@@ -726,23 +744,6 @@ function TemplateElement(pParentObject) {
         }
         return false;
     }
-    
-    // 슬롯이 추가되고 자식은 삭제됨
-    TemplateElement.prototype._setSlot = function(pSelector) {
-        
-        var refElem = null;
-        
-        // 레퍼방식으로 querySelector        
-        refElem = common.querySelecotrOuter(this._element, pSelector);
-        this.slot = refElem;
-        this.slotSelector = pSelector
-
-        // 자식 노드 삭제
-        var maxLength = refElem.childNodes.length;
-        for (var i = maxLength - 1; i >= 0; i--) {  // NodeList 임
-            refElem.removeChild(refElem.childNodes[i]);
-        }
-    };
     
     // 슬롯이 삭제되고 원본에서 자식이 복구됨
     // TODO: 삭제 대기
