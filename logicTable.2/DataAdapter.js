@@ -65,7 +65,22 @@ function AjaxCommand() {
     AjaxCommand.prototype =  Object.create(Command.prototype);
     AjaxCommand.prototype.constructor = AjaxCommand;
     AjaxCommand.prototype.parent = Command.prototype;
+
+
+
 }());
+
+/**
+ * 발신 자료 타입 : 
+ * 발신 자료 :
+ * 수신 자료 타입 : 
+ * 수신 자료 :
+ */
+
+var __org       = "key=2&value=34";
+var __send_Get  = "key=2&value=34";
+var __send_Post = "key=2&value=34";
+
 
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // 추상 클래스 역활
