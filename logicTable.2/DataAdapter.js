@@ -97,6 +97,40 @@ function DataAdapter() {
     // DS.tables.changes => A.D 반영
     DataAdapter.prototype.fill = function(pDataSet, pTableName) {
 
+        // var cTables = null;
+        
+        // if (pTableName) {
+        //     cTables = pDataSet.tables[pTableName].getChanges();
+        //     cTables = [cTables];    // 이중배열 처리    
+        // } else {
+        //     cTables = pDataSet.getChanges();
+        // }
+
+        // for (var i = 0; i < cTables.length; i++) {
+        //     for (var ii = 0; ii < cTables[i].changes.length; ii++) {
+        //         switch (cTables[i].changes[ii].cmd) {
+        //             case "I":
+        //                 this.insertCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
+        //                 break;
+        //             case "D":
+        //                 this.updateCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
+        //                 break;
+        //             case "U":
+        //                 this.deleteCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
+        //                 break;
+        //             case "S":
+        //                 this.selectCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
+        //                 break;
+        //             default:
+        //                 throw new Error('cmd 에러 발생 cmd:' + cTables[i].cmd);
+        //         }
+        //     }
+        // }
+    };
+
+    // A.D  => D.S 전체 채움
+    DataAdapter.prototype.update = function(pDataSet, pTableName) {
+
         var cTables = null;
         
         if (pTableName) {
@@ -109,27 +143,24 @@ function DataAdapter() {
         for (var i = 0; i < cTables.length; i++) {
             for (var ii = 0; ii < cTables[i].changes.length; ii++) {
                 switch (cTables[i].changes[ii].cmd) {
-                    case "I":
+                    case "I":       // update() commanad
                         this.insertCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
                         break;
-                    case "D":
+                    case "D":       // update() commanad
                         this.updateCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
                         break;
-                    case "U":
+                    case "U":       // update() commanad
                         this.deleteCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
                         break;
-                    case "S":
+                    case "S":       // fill() commanad
                         this.selectCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
                         break;
                     default:
                         throw new Error('cmd 에러 발생 cmd:' + cTables[i].cmd);
                 }
             }
-        }
+        }        
     };
-
-    // A.D  => D.S 전체 채움
-    DataAdapter.prototype.update = function(pDataSet, pTableName) {};
 
 }());
 
@@ -564,9 +595,9 @@ function ContainerAdapter() {
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // pObjct : Element, selector => X 없음
 // 종속성 : DOM Element
-function TemplateElement(pParentObject) {
+function TemplateElement(pOnwerContainerAdapter) {
 
-    this._parent            = pParentObject;
+    this._onwer            = pOnwerContainerAdapter;
     this._original          = null;
     this._element           = null;
     this._callback          = null;
@@ -796,17 +827,225 @@ function TemplateElement(pParentObject) {
 
 
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// @종속성 : DataAdapter, Ajax 관련
+// @종속성 : DataAdapter, Ajax 관련, RequestInfo
 function AjaxAdapter() {
+    
+    this.xhr            = null;         // XMLHttpRequest
+    this.tables         = new LArray();     // 테이블별 명령
+    this.statusqueue    = [];      // send 결과
+    this.isTransSend    = false;        // command 별 일괄 처리 여부
+    this.isForced       = false;        // 일괄처리시 강제 완료 여부
 
+    this._createHttpRequestObject();    // 객체 초기화 설정
 }
 (function() {   // prototype 상속
     AjaxAdapter.prototype =  Object.create(DataAdapter.prototype);
     AjaxAdapter.prototype.constructor = AjaxAdapter;
     AjaxAdapter.prototype.parent = DataAdapter.prototype;    
+
+    // ajax 객체 생성 (브라우저별)
+    AjaxAdapter.prototype._createHttpRequestObject = function() {
+        if (window.XMLHttpRequest) {
+            this.xhr = new XMLHttpRequest();
+        } else {
+            // code for IE6, IE5
+            this.xhr = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+    };
+    
+    // [일괄처리] 동일 command 여부 검사
+    AjaxAdapter.prototype._checkTransCommand = function() {
+        return true;
+    };
+
+    // 명령 공통 처리
+    AjaxAdapter.prototype._command = function(pTableName, pCommand) {
+
+        // 일괄여부
+        if (this.isTransSend) {
+            
+        } else {
+
+            // 명령 종류 검사 (동일타입)
+            if (this._checkTransCommand()) {
+
+                switch (pCommand) {
+                    case "INSERT":   // update() commanad
+                        this.tables[pTableName].insert.send();
+                        break;
+                    case "DELETE":   // update() commanad
+                        this.tables[pTableName].delete.send();
+                        break;
+                    case "UPDATE":   // update() commanad
+                        this.tables[pTableName].update.send();
+                        break;
+                    case "SELECT":   // fill() commanad
+                        this.tables[pTableName].select.send();
+                        break;
+                    default:
+                        throw new Error('cmd 에러 발생 cmd:' + cTables[i].cmd);
+                }                
+
+            } else {
+                throw new Error('command 동일 타입 오류 : ');
+                return null;                
+            }
+        }
+
+    };
+    
+    // 테이블 등록
+    AjaxAdapter.prototype.insertTable = function(pTableName) {
+        
+        var tableObject = {};
+        
+        tableObject.insert = new RequestInfo(this);
+        tableObject.delete = new RequestInfo(this);
+        tableObject.update = new RequestInfo(this);
+        tableObject.select = new RequestInfo(this);
+        
+        this.tables.pushAttr(tableObject, pTableName);
+    };
+    
+    // 테이블 삭제
+    AjaxAdapter.prototype.deleteTable = function(pTableName) {
+        this.tables.popAttr(pTableName);
+    };
+    
+    // ****************
+    // 추상 메소드 구현
+    AjaxAdapter.prototype.insertCommand = function(pTableName, pDataRow, pIdx) {
+        this._command(pTableName, "INSERT");
+    };
+    
+    AjaxAdapter.prototype.deleteCommand = function(pTableName, pDataRow, pIdx) {
+
+    };
+    
+    AjaxAdapter.prototype.updateCommand = function(pTableName, pDataRow, pIdx) {
+
+    };
+    
+    AjaxAdapter.prototype.selectCommand = function(pTableName, pDataRow, pIdx) {
+
+    };
+
 }());
 
 
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// @종속성 : Ajax 관련
+function RequestInfo(pOnwerAjaxAdapter) {
+    
+    this._onwer         = pOnwerAjaxAdapter;
+    this._collection    = [];
+    this._addCollection = [];
+    this.fnRowMap       = null;
+    this.fnRowFilter    = null;
+    this.fnCallback     = null;
+    this.method         = "GET";
+    this.url            = null;
+    this.header         = null;
+    this.async          = true;     // true:비동기화,  false:동기화
+
+}
+(function() {   // prototype 상속
+
+    // row 컬렉션 설정
+    RequestInfo.prototype._setRowCollection = function(pSetType) {};
+    
+    // row 변형 콜백 후 리턴
+    RequestInfo.prototype._rowsMap = function() {};
+    
+    // row 필터 콜백 후 리턴
+    RequestInfo.prototype._rowsFilter = function() {};
+    
+    // 콜백
+    RequestInfo.prototype._callback = function() {};
+    
+    // 전송
+    RequestInfo.prototype.send = function() {
+        
+        var xhr = this._onwer.xhr;
+
+        // TODO: 동기화 및 여러개 실행시 관련 검토 필요
+
+        if (!this.url) {
+            throw new Error('url 에러 발생 url:' + this.url);
+            return null;
+        }
+
+        switch (this.method) {
+            case "GET":
+                var rStr = "1";
+
+                xhr.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        rStr = this.responseText;
+                        alert(rStr);
+                    }
+                };
+                xhr.open("GET", this.url);
+                xhr.send();
+                // this._onwer.xhr.setRequestHeader()
+                
+                break;
+            case "POST":
+                
+                break;
+            case "JSONP":
+                
+                break;
+            case "PUT":
+                
+                break;
+            case "DELETE":
+                
+                break;
+            default:
+                throw new Error('method 에러 발생 method:' + this.method, this.async);
+        }
+
+    };
+    
+    // 헤더 설정
+    RequestInfo.prototype.setHeader = function(pHeaderType) {};
+    
+    // 전송방식 설정
+    // pMethodName : GET, POST, PUT, DELETE, JSONP
+    // 기본값 : GET
+    RequestInfo.prototype.setMethod = function(pMethodName) {
+
+        var methodList = ["GET", "POST", "JSONP", "PUT", "DELETE"];
+        var isMethed = false;
+
+        isMethed = methodList.some(function(valeu, index, arr) {
+            return (valeu === pMethodName) ? true : false;
+        });
+
+        if (!isMethed) {
+            throw new Error('method 에러 발생 cmd:' + pMethodName);
+            return null;
+        }
+    };
+    
+    // 전송 컬렉션 얻기
+    RequestInfo.prototype.getCollection = function() {};
+    
+    // 전송 추가 컬렉션 (_rowsMap, _rowsFilter 비 적용됨)
+    // pCollection : 배열  | 1차원 객체
+    RequestInfo.prototype.addCollection = function(pCollection) {
+        
+        // 배열의 경우
+
+        // 1차원 객체의 경우
+    };
+    
+    RequestInfo.prototype.queryStringToObject = function() {};
+    
+    RequestInfo.prototype.ObjectToQueryString = function() {};
+
+}());
 
 
 
