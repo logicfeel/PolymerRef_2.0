@@ -132,7 +132,7 @@ function DataAdapter() {
     DataAdapter.prototype.update = function(pDataSet, pTableName) {
 
         var cTables = null;
-        
+
         if (pTableName) {
             cTables = pDataSet.tables[pTableName].getChanges();
             cTables = [cTables];    // 이중배열 처리    
@@ -150,16 +150,16 @@ function DataAdapter() {
                         this.updateCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
                         break;
                     case "U":       // update() commanad
-                        this.deleteCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
+                         this.deleteCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
                         break;
                     case "S":       // fill() commanad
-                        this.selectCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
+                         this.selectCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
                         break;
                     default:
                         throw new Error('cmd 에러 발생 cmd:' + cTables[i].cmd);
                 }
             }
-        }        
+        }
     };
 
 }());
@@ -553,20 +553,32 @@ function ContainerAdapter() {
 
     ContainerAdapter.prototype.insertCommand = function(pTableName, pDataRow, pIdx) {
         this._createContainer(pTableName, pDataRow, pIdx);
+        
+        // TODO: 조견별 결과 필요
+        return true;
     };
 
     ContainerAdapter.prototype.deleteCommand = function(pTableName, pIdx) {
         this._removeContainer(pTableName, pDataRow, pIdx);
+        
+        // TODO: 조견별 결과 필요
+        return true;
     };
 
     ContainerAdapter.prototype.updateCommand = function(pTableName, pDataRow, pIdx) {
         this.replaceContainer(pTableName, pDataRow, pIdx);
+        
+        // TODO: 조견별 결과 필요
+        return true;
     };
 
     ContainerAdapter.prototype.selectCommand = function(pTableName) {
         
         // TODO: 입력값을 뭐로 할지 선택
         this._selectContainer(pTableName, pDataRow, pIdx);
+
+        // TODO: 조견별 결과 필요
+        return true;
     };
 
 }());
@@ -904,7 +916,6 @@ function AjaxAdapter() {
                 return null;                
             }
         }
-
     };
     
     // 테이블 등록
@@ -928,7 +939,7 @@ function AjaxAdapter() {
     // ****************
     // 추상 메소드 구현
     AjaxAdapter.prototype.insertCommand = function(pTableName, pDataRow, pIdx) {
-        this._command("INSERT", pTableName, pDataRow, pIdx);
+        return this._command("INSERT", pTableName, pDataRow, pIdx);
     };
     
     AjaxAdapter.prototype.deleteCommand = function(pTableName, pDataRow, pIdx) {
@@ -947,7 +958,8 @@ function AjaxAdapter() {
 
 
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// @종속성 : Ajax 관련
+// @종속성 : Ajax 관련, JQuery 
+// TODO : JQuery 종송성 끊어야 함
 function RequestInfo(pOnwerAjaxAdapter) {
     
     this._onwer             = pOnwerAjaxAdapter;
@@ -955,11 +967,12 @@ function RequestInfo(pOnwerAjaxAdapter) {
     this._headCollection    = new LArray();
     this.fnRowMap           = null;     // fn(value, name, rows)
     this.fnRowFilter        = null;     // fn(value, name, rows)
-    this.fnCallback         = null;     // fn(pEvent, count, rows, xhr)
+    this.fnCallback         = null;     // fn(pEvent, pCount, pRows, pXhr)
     this.method             = "GET";
     this.url                = null;
     this.header             = [];
     this.async              = true;     // true:비동기화,  false:동기화
+    this.isSuccess          = false;    // TODO: 비동기시 상태 갱신 시 옵서버 패턴 검토
 
 }
 (function() {   // prototype 상속
@@ -986,21 +999,59 @@ function RequestInfo(pOnwerAjaxAdapter) {
 
         var xhr             = this._onwer.xhr;
         var url             = "";
+        var text            = "";
+        var _this           = this;
+        var arrLine         = null;
 
         xhr.onreadystatechange = function(pEvent) {
+
+            var json    = {};
+            var xml     = null;
+            var result  = null;
+            var rows    = null;
+            var row     = null;
+            var count   = 0;
+
             if (this.readyState === 4 && this.status === 200) {
                 
                 
-                // rStr = this.responseText;
-                // alert(rStr);
-                var count, rows;
+                // XML => JSON 변환
+                if (this.responseXML) {
+                    xml = this.responseXML;
+                    json = $.xml2json(xml);
 
-                if (typeof this.fnCallback === "function") {
-                    this.fnCallback.call(this, pEvent, count, rows);
+                    json.result =  json.result || {};
+                
+                // 텍스트 => JSON 변환
+                } else {
+                    
+                    arrLine = this.responseText.split("\n");
+                    
+                    json.result = {};
+                    json.result.rows = [];
+
+                    // TODO: 줄 밑에 공백 제거 필요함
+                    for (var i = 0; i < arrLine.length; i++) {
+                        row = _this.stringToJson(arrLine[i]);
+                        if (row) json.result.rows.push(row);
+                    }
+                    json.result.count = json.result.rows.length;
+                }
+
+                count   = json.result.count || 0;
+                rows    = json.result.rows || [];
+
+                if (typeof _this.fnCallback === "function") {
+                    _this.isSuccess = _this.fnCallback.call(_this, pEvent, count, rows, xhr);  // pEvent, count, rows
+                } else {
+                    _this.isSuccess = Number(json.count) > 0 ? true : false;
                 }
             }
         };
         
+        // 랜덤 경로 (캐쉬방지) TODO:  이후에 상위로 빼던지 해야 함
+        this.url = this.url + "?t=" + Math.random();
+
         if (this.url.indexOf("?") > 0) {
             url = this.url + "&" + pCollection;
         } else {
@@ -1038,6 +1089,9 @@ function RequestInfo(pOnwerAjaxAdapter) {
         var bodyCollection  = this.LArrayToQueryString(this._bodyCollection);
         var collection      = headCollection ? headCollection + "&" + bodyCollection : bodyCollection;
 
+        // 결과 초기화
+        this.isSuccess = false;
+
         // TODO: 동기화 및 여러개 실행시 관련 검토 필요
         if (!this.url) {
             throw new Error('url 에러 발생 url:' + this.url);
@@ -1069,7 +1123,6 @@ function RequestInfo(pOnwerAjaxAdapter) {
             default:
                 throw new Error('method 에러 발생 method:' + this.method, this.async);
         }
-
     };
 
     // row 컬렉션 설정
@@ -1151,16 +1204,22 @@ function RequestInfo(pOnwerAjaxAdapter) {
         
         var list        = null;
         var listSub     = null;
-        var json        = {};
+        var json        = null;
         
         pRowSeparator   = pRowSeparator || "&";
         pSeparator      = pSeparator || "=";
         
-        list        = pQueryString.split(pRowSeparator);
+        if (pStr === "") return null;
+        // console.log('stringToJson.공백.');
+
+        list        = pStr.split(pRowSeparator);
 
         for (var i = 0; i < list.length; i++) {
             listSub = list[i].split(pSeparator);
-            if (listSub[0]) json[listSub[0]] = listSub[1] ? listSub[1] : "";
+            if (listSub[0].length > 0 && listSub.length > 0) {
+                json = json || {};
+                json[listSub[0]] = listSub[1] ? listSub[1] : "";
+            }
         }
         return json;
     };

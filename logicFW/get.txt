@@ -1,2 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<root>OK</root>
+version=1.0&encoding=utf-8
+version=2.0&encoding=utf-16
+version=2.0&encoding=utf-16
+version=2.0&encoding=utf-16
+version=2.0&encoding=utf-16

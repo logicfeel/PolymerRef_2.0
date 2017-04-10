@@ -601,13 +601,19 @@ a.push('abc');
     var AA1 = new AjaxAdapter();
 
     AA1.insertTable("head");
-    // AA1.tables["head"].insert.url = "get.txt?b";    // .txt
-    AA1.tables["head"].insert.url = "xmldoc.xml";    // .xml
+    AA1.tables["head"].insert.url = "get.txt";    // .txt
+    // AA1.tables["head"].insert.url = "xmldoc.xml?v2";    // .xml
     // AA1.tables["head"].insert.async = false;
     // AA1.tables["head"].insert.setHeader("User-Agent","request");
     AA1.tables["head"].insert.setHeader("Authorization","Bearer logicfeel");
+    AA1.tables["head"].insert.fnCallback = function(pEvent, pCount, pRows, pXhr) {
+        console.log('fnCallback' + pCount);
+        return true;
+    };
 
     AA1.update(ds, "head");
+
+    // AA1.tables["head"].insert.isSuccess;  // 결과 검사
 }
 {
     // for (var prop in ds.tables) {
