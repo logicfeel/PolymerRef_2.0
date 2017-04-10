@@ -62,6 +62,7 @@
      *  - pValue : (필수) 값  
      *      +  구조만 만들경우에는 null 삽입
      *  - 객체는 필수, pAttrName : (선택) 속성명
+     * TODO : 키와 이름 위치 변경 검토?
      */
     LArray.prototype.pushAttr = function(pValue, pAttrName) {
         
@@ -93,6 +94,20 @@
         
         var idx = this._items.indexOf(this[pAttrName]);
         return idx;
+    };
+
+    // index 로 속성명 찾기
+    LArray.prototype.attributeOfIndex = function(pIndex) {
+
+        for (var prop in this) {
+            if ( this.hasOwnProperty(prop)){
+                if (!isFinite(prop) && this[prop] === this[pIndex]) {
+                    return prop;
+                }
+            }
+        }
+
+        return null;
     };
 
 

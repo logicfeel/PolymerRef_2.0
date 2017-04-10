@@ -845,11 +845,22 @@ function AjaxAdapter() {
 
     // ajax 객체 생성 (브라우저별)
     AjaxAdapter.prototype._createHttpRequestObject = function() {
-        if (window.XMLHttpRequest) {
-            this.xhr = new XMLHttpRequest();
-        } else {
-            // code for IE6, IE5
-            this.xhr = new ActiveXObject("Microsoft.XMLHTTP");
+
+        var i, xhr, activeXids = [
+            'MSXML2.XMLHTTP.3.0',
+            'MSXML2.XMLHTTP',
+            'Microsoft.XMLHTTP'
+        ];
+
+        if (typeof XMLHttpRequest === "function") { // native XHR
+            this.xhr =  new XMLHttpRequest();        
+        } else { // IE before 7
+            for (i = 0; i < activeXids.length; i += 1) {
+                try {
+                    this.xhr = new ActiveXObject(activeXids[i]);
+                    break;
+                } catch (e) {}
+            }
         }
     };
     
@@ -859,7 +870,7 @@ function AjaxAdapter() {
     };
 
     // 명령 공통 처리
-    AjaxAdapter.prototype._command = function(pTableName, pCommand) {
+    AjaxAdapter.prototype._command = function(pCommand, pTableName, pDataRow, pIdx) {
 
         // 일괄여부
         if (this.isTransSend) {
@@ -871,6 +882,8 @@ function AjaxAdapter() {
 
                 switch (pCommand) {
                     case "INSERT":   // update() commanad
+                        this.tables[pTableName].insert.addCollection({idx:pIdx});
+                        this.tables[pTableName].insert.setRowCollection(pDataRow);
                         this.tables[pTableName].insert.send();
                         break;
                     case "DELETE":   // update() commanad
@@ -915,7 +928,7 @@ function AjaxAdapter() {
     // ****************
     // 추상 메소드 구현
     AjaxAdapter.prototype.insertCommand = function(pTableName, pDataRow, pIdx) {
-        this._command(pTableName, "INSERT");
+        this._command("INSERT", pTableName, pDataRow, pIdx);
     };
     
     AjaxAdapter.prototype.deleteCommand = function(pTableName, pDataRow, pIdx) {
@@ -937,23 +950,21 @@ function AjaxAdapter() {
 // @종속성 : Ajax 관련
 function RequestInfo(pOnwerAjaxAdapter) {
     
-    this._onwer         = pOnwerAjaxAdapter;
-    this._collection    = [];
-    this._addCollection = [];
-    this.fnRowMap       = null;
-    this.fnRowFilter    = null;
-    this.fnCallback     = null;
-    this.method         = "GET";
-    this.url            = null;
-    this.header         = null;
-    this.async          = true;     // true:비동기화,  false:동기화
+    this._onwer             = pOnwerAjaxAdapter;
+    this._bodyCollection    = new LArray();
+    this._headCollection    = new LArray();
+    this.fnRowMap           = null;
+    this.fnRowFilter        = null;
+    this.fnCallback         = null;
+    this.method             = "GET";
+    this.url                = null;
+    this.header             = [];
+    this.async              = true;     // true:비동기화,  false:동기화
 
 }
 (function() {   // prototype 상속
 
-    // row 컬렉션 설정
-    RequestInfo.prototype._setRowCollection = function(pSetType) {};
-    
+
     // row 변형 콜백 후 리턴
     RequestInfo.prototype._rowsMap = function() {};
     
@@ -962,54 +973,126 @@ function RequestInfo(pOnwerAjaxAdapter) {
     
     // 콜백
     RequestInfo.prototype._callback = function() {};
-    
+
+    // xhr에 해더 설정
+    RequestInfo.prototype._header = function(pXhr) {
+        for (var i = 0; i < this.header.length; i++) {
+            pXhr.setRequestHeader(this.header[i].name, this.header[i].value);
+        }
+    };
+
+    // GET 방식으로 전송
+    RequestInfo.prototype._send_GET = function(pCollection) {
+
+        var xhr             = this._onwer.xhr;
+        var url             = "";
+
+        xhr.onreadystatechange = function() {
+            if (this.readyState === 4 && this.status === 200) {
+                rStr = this.responseText;
+                // alert(rStr);
+            }
+        };
+        
+        if (this.url.indexOf("?") > 0) {
+            url = this.url + "&" + pCollection;
+        } else {
+            url = this.url + "?" + pCollection;
+        }
+        url = encodeURI(url);                       // url = escape(url);
+
+        
+        xhr.open("GET", url, this.async);
+        this._header(xhr);
+        xhr.send();
+        // this._onwer.xhr.setRequestHeader()
+
+        if  (url.length > 2083) {
+            console.log(url);
+            console.log('GET URL 길이 2083 초과 length:'+url.length);                    
+        }
+    };
+
+    // POST 방식으로 전송
+    RequestInfo.prototype._send_POST = function() {
+    };
+
+    // JSONP 방식으로 전송
+    RequestInfo.prototype._send_JSONP = function() {
+    };
+
     // 전송
     RequestInfo.prototype.send = function() {
         
-        var xhr = this._onwer.xhr;
+        // var xhr             = this._onwer.xhr;
+        // var url             = "";
+
+        var headCollection  = this.LArrayToQueryString(this._headCollection);
+        var bodyCollection  = this.LArrayToQueryString(this._bodyCollection);
+        var collection      = headCollection ? headCollection + "&" + bodyCollection : bodyCollection;
 
         // TODO: 동기화 및 여러개 실행시 관련 검토 필요
-
         if (!this.url) {
             throw new Error('url 에러 발생 url:' + this.url);
             return null;
         }
 
         switch (this.method) {
+            
             case "GET":
-                var rStr = "1";
-
-                xhr.onreadystatechange = function() {
-                    if (this.readyState == 4 && this.status == 200) {
-                        rStr = this.responseText;
-                        alert(rStr);
-                    }
-                };
-                xhr.open("GET", this.url);
-                xhr.send();
-                // this._onwer.xhr.setRequestHeader()
-                
+                this._send_GET(collection);
                 break;
+
             case "POST":
                 
                 break;
+
             case "JSONP":
                 
                 break;
+
             case "PUT":
                 
                 break;
+
             case "DELETE":
                 
                 break;
+
             default:
                 throw new Error('method 에러 발생 method:' + this.method, this.async);
         }
 
     };
-    
+
+    // row 컬렉션 설정
+    // 
+    RequestInfo.prototype.setRowCollection = function(pRow) {
+
+        var key     = null;
+        var value   = null;
+
+        if (pRow instanceof LArray) {
+            for (var i = 0; i < pRow.length ; i++ ) {
+                key     = pRow.attributeOfIndex(i);
+                value   = pRow[i];
+                this._bodyCollection.pushAttr(value, key);
+            }
+        }
+    };
+
     // 헤더 설정
-    RequestInfo.prototype.setHeader = function(pHeaderType) {};
+    RequestInfo.prototype.setHeader = function(pHeaderName, pHeaderValue) {
+        
+        var header = {
+            name: pHeaderName,
+            value: pHeaderValue
+        };
+
+        this.header.push(header);
+    };
+
+
     
     // 전송방식 설정
     // pMethodName : GET, POST, PUT, DELETE, JSONP
@@ -1030,20 +1113,81 @@ function RequestInfo(pOnwerAjaxAdapter) {
     };
     
     // 전송 컬렉션 얻기
-    RequestInfo.prototype.getCollection = function() {};
-    
-    // 전송 추가 컬렉션 (_rowsMap, _rowsFilter 비 적용됨)
-    // pCollection : 배열  | 1차원 객체
-    RequestInfo.prototype.addCollection = function(pCollection) {
+    // TODO: 필요성 확인
+    RequestInfo.prototype.getCollection = function() {
         
-        // 배열의 경우
-
-        // 1차원 객체의 경우
+        var headCollection = this.LArrayToQueryString(this._headCollection);
+        var bodyCollection = this.LArrayToQueryString(this._bodyCollection);
+        var collection      = headCollection ? headCollection + "&" + bodyCollection : bodyCollection;
+        return collection;
     };
     
-    RequestInfo.prototype.queryStringToObject = function() {};
+    // 전송 추가 컬렉션 (_rowsMap, _rowsFilter 비 적용됨)
+    // pCollection : 객체 타입
+    RequestInfo.prototype.addCollection = function(pCollection) {
+        
+        if (!(pCollection instanceof Object)) {
+            throw new Error('pCollection 객체 타입 아님 오류 발생 pCollection:' + pCollection);
+            return null;            
+        }
+
+        for (var key in pCollection) {
+            if ( pCollection.hasOwnProperty(key)){
+                this._headCollection.pushAttr(pCollection[key], key);
+            }
+        }
+    };
+
+    // 문자열을 => JSON 변환
+    // TODO: 전역 메소드 검토
+    RequestInfo.prototype.stringToJson = function(pStr, pSeparator, pRowSeparator) {
+        
+        var list        = null;
+        var listSub     = null;
+        var json        = {};
+        
+        pRowSeparator   = pRowSeparator || "&";
+        pSeparator      = pSeparator || "=";
+        
+        list        = pQueryString.split(pRowSeparator);
+
+        for (var i = 0; i < list.length; i++) {
+            listSub = list[i].split(pSeparator);
+            if (listSub[0]) json[listSub[0]] = listSub[1] ? listSub[1] : "";
+        }
+        return json;
+    };
+
+    // queryString => JSON 변환
+    RequestInfo.prototype.queryStringToJson = function(pQueryString) {
+        return this.stringToJson(pQueryString, "&", "=");
+    };
     
-    RequestInfo.prototype.ObjectToQueryString = function() {};
+    RequestInfo.prototype.JsonToQueryString = function(pJSON) {
+
+        var queryString = "";
+
+        for (var key in pJSON) {
+            if ( pJSON.hasOwnProperty(key)){
+                queryString += key + "=" + pJSON[key].toString() + "&";
+            }
+        }        
+        return queryString;
+    };
+
+    RequestInfo.prototype.LArrayToQueryString = function(pLArray) {
+
+        var queryString = "";
+        var key         = null;
+        var value       = null;
+
+        for (var i = 0; i < pLArray.length; i++) {
+            key     = pLArray.attributeOfIndex(i);
+            value   = pLArray[i];
+            queryString += key + "=" + pLArray[key].toString() + "&";
+        }
+        return queryString;
+    };
 
 }());
 

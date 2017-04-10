@@ -109,13 +109,13 @@
         </tbody>
     </table>-->
 
-<script src="LogicArray.js?v9"></script>
+<script src="LogicArray.js?v10"></script>
 <script src="TransQueue.js?v0"></script>
 <!--<script src="logicTable.js?v18"></script>-->
 <!-- 분리됨 -->
 <script src="common.js?v4"></script>
 <script src="DataSet.js?v6"></script>
-<script src="DataAdapter.js?v16"></script>
+<script src="DataAdapter.js?v17"></script>
 <script src="DataContainer.js?v2"></script>
 
 <script>
@@ -596,10 +596,25 @@ a.push('abc');
     var AA1 = new AjaxAdapter();
 
     AA1.insertTable("head");
-    AA1.tables["head"].insert.url = "get.txt";
+    // AA1.tables["head"].insert.url = "get.txt?b";    // .txt
+    AA1.tables["head"].insert.url = "xmldoc.xml";    // .xml
     // AA1.tables["head"].insert.async = false;
+    // AA1.tables["head"].insert.setHeader("User-Agent","request");
+    AA1.tables["head"].insert.setHeader("Authorization","Bearer logicfeel");
+
     AA1.update(ds, "head");
 }
+{
+    // for (var prop in ds.tables) {
+    //     if ( ds.tables.hasOwnProperty(prop)){
+    //         if (!isFinite(prop) && ds.tables[prop] === ds.tables[11]) {
+    //             // var idx = ds.tables.indexOfAttr(prop);
+    //             console.log(prop);    
+    //         }
+    //     }
+    // }
+}
+
 </script>
 
 </body>
