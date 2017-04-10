@@ -953,9 +953,9 @@ function RequestInfo(pOnwerAjaxAdapter) {
     this._onwer             = pOnwerAjaxAdapter;
     this._bodyCollection    = new LArray();
     this._headCollection    = new LArray();
-    this.fnRowMap           = null;
-    this.fnRowFilter        = null;
-    this.fnCallback         = null;
+    this.fnRowMap           = null;     // fn(value, name, rows)
+    this.fnRowFilter        = null;     // fn(value, name, rows)
+    this.fnCallback         = null;     // fn(pEvent, count, rows, xhr)
     this.method             = "GET";
     this.url                = null;
     this.header             = [];
@@ -987,10 +987,17 @@ function RequestInfo(pOnwerAjaxAdapter) {
         var xhr             = this._onwer.xhr;
         var url             = "";
 
-        xhr.onreadystatechange = function() {
+        xhr.onreadystatechange = function(pEvent) {
             if (this.readyState === 4 && this.status === 200) {
-                rStr = this.responseText;
+                
+                
+                // rStr = this.responseText;
                 // alert(rStr);
+                var count, rows;
+
+                if (typeof this.fnCallback === "function") {
+                    this.fnCallback.call(this, pEvent, count, rows);
+                }
             }
         };
         
