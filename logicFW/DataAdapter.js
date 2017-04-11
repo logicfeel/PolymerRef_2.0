@@ -97,35 +97,20 @@ function DataAdapter() {
     // DS.tables.changes => A.D 반영
     DataAdapter.prototype.fill = function(pDataSet, pTableName) {
 
-        // var cTables = null;
+        var tableName = null;
         
-        // if (pTableName) {
-        //     cTables = pDataSet.tables[pTableName].getChanges();
-        //     cTables = [cTables];    // 이중배열 처리    
-        // } else {
-        //     cTables = pDataSet.getChanges();
-        // }
-
-        // for (var i = 0; i < cTables.length; i++) {
-        //     for (var ii = 0; ii < cTables[i].changes.length; ii++) {
-        //         switch (cTables[i].changes[ii].cmd) {
-        //             case "I":
-        //                 this.insertCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
-        //                 break;
-        //             case "D":
-        //                 this.updateCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
-        //                 break;
-        //             case "U":
-        //                 this.deleteCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
-        //                 break;
-        //             case "S":
-        //                 this.selectCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
-        //                 break;
-        //             default:
-        //                 throw new Error('cmd 에러 발생 cmd:' + cTables[i].cmd);
-        //         }
-        //     }
-        // }
+        // 분기: 지정 talble => DS 채움
+        if (pTableName) {
+            
+            this.selectCommand(pTableName, pDataSet.tables[pTableName]);
+        
+        // 분기: 전체 table => DS 채움
+        } else {
+            for (var i = 0; i < this.tables.length; i++) {
+                tableName = this.tables.attributeOfIndex(i);
+                this.selectCommand(tableName, pDataSet.tables[pTableName]);
+            }
+        }
     };
 
     // A.D  => D.S 전체 채움
@@ -133,9 +118,12 @@ function DataAdapter() {
 
         var cTables = null;
 
+        // DS 지정 테이블 update
         if (pTableName) {
             cTables = pDataSet.tables[pTableName].getChanges();
             cTables = [cTables];    // 이중배열 처리    
+        
+        // DS 전체 update
         } else {
             cTables = pDataSet.getChanges();
         }
@@ -572,7 +560,7 @@ function ContainerAdapter() {
         return true;
     };
 
-    ContainerAdapter.prototype.selectCommand = function(pTableName) {
+    ContainerAdapter.prototype.selectCommand = function(pTableName, pDataTable) {
         
         // TODO: 입력값을 뭐로 할지 선택
         this._selectContainer(pTableName, pDataRow, pIdx);
@@ -847,7 +835,7 @@ function AjaxAdapter() {
     this.statusqueue    = [];      // send 결과
     this.isTransSend    = false;        // command 별 일괄 처리 여부
     this.isForced       = false;        // 일괄처리시 강제 완료 여부
-
+    this.fnFillCallback = null;
     this._createHttpRequestObject();    // 객체 초기화 설정
 }
 (function() {   // prototype 상속
@@ -884,9 +872,10 @@ function AjaxAdapter() {
     // 명령 공통 처리
     AjaxAdapter.prototype._command = function(pCommand, pTableName, pDataRow, pIdx) {
 
-        // 일괄여부
+        // 분기 : 일괄 처리
         if (this.isTransSend) {
             
+        // 분기 : 단일 처리
         } else {
 
             // 명령 종류 검사 (동일타입)
@@ -894,7 +883,7 @@ function AjaxAdapter() {
 
                 switch (pCommand) {
                     case "INSERT":   // update() commanad
-                        this.tables[pTableName].insert.addCollection({idx:pIdx});
+                        this.tables[pTableName].insert.addCollection({idx: pIdx});
                         this.tables[pTableName].insert.setRowCollection(pDataRow);
                         this.tables[pTableName].insert.send();
                         break;
@@ -923,10 +912,10 @@ function AjaxAdapter() {
         
         var tableObject = {};
         
-        tableObject.insert = new RequestInfo(this);
-        tableObject.delete = new RequestInfo(this);
-        tableObject.update = new RequestInfo(this);
-        tableObject.select = new RequestInfo(this);
+        tableObject.insert = new RequestInfo(this, "INSERT");
+        tableObject.delete = new RequestInfo(this, "DELETE");
+        tableObject.update = new RequestInfo(this, "UPDATE");
+        tableObject.select = new RequestInfo(this, "SELECT");
         
         this.tables.pushAttr(tableObject, pTableName);
     };
@@ -950,8 +939,11 @@ function AjaxAdapter() {
 
     };
     
-    AjaxAdapter.prototype.selectCommand = function(pTableName, pDataRow, pIdx) {
-
+    AjaxAdapter.prototype.selectCommand = function(pTableName, pDataTable) {
+        
+        // var dr = pDataTable.newRow();
+        this.tables[pTableName].select._dataTable = pDataTable;
+        this.tables[pTableName].select.send();
     };
 
 }());
@@ -960,11 +952,13 @@ function AjaxAdapter() {
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // @종속성 : Ajax 관련, JQuery 
 // TODO : JQuery 종송성 끊어야 함
-function RequestInfo(pOnwerAjaxAdapter) {
+function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
     
     this._onwer             = pOnwerAjaxAdapter;
     this._bodyCollection    = new LArray();
     this._headCollection    = new LArray();
+    this._dataTable         = null;
+    this.command            = pCommandName;   
     this.fnRowMap           = null;     // fn(value, name, rows)
     this.fnRowFilter        = null;     // fn(value, name, rows)
     this.fnCallback         = null;     // fn(pEvent, pCount, pRows, pXhr)
@@ -972,7 +966,7 @@ function RequestInfo(pOnwerAjaxAdapter) {
     this.url                = null;
     this.header             = [];
     this.async              = true;     // true:비동기화,  false:동기화
-    this.isSuccess          = false;    // TODO: 비동기시 상태 갱신 시 옵서버 패턴 검토
+    this.success          = false;    // TODO: 비동기시 상태 갱신 시 옵서버 패턴 검토
 
 }
 (function() {   // prototype 상속
@@ -1011,6 +1005,7 @@ function RequestInfo(pOnwerAjaxAdapter) {
             var rows    = null;
             var row     = null;
             var count   = 0;
+            var dr      = null;
 
             if (this.readyState === 4 && this.status === 200) {
                 
@@ -1020,31 +1015,58 @@ function RequestInfo(pOnwerAjaxAdapter) {
                     xml = this.responseXML;
                     json = $.xml2json(xml);
 
-                    json.result =  json.result || {};
+                    // json.result =  json.result || {};
                 
                 // 텍스트 => JSON 변환
                 } else {
                     
+                    // TODO: 공백줄제거 기능 추가 
                     arrLine = this.responseText.split("\n");
                     
-                    json.result = {};
-                    json.result.rows = [];
+                    json = {};
+                    json.rows = [];
 
                     // TODO: 줄 밑에 공백 제거 필요함
                     for (var i = 0; i < arrLine.length; i++) {
                         row = _this.stringToJson(arrLine[i]);
-                        if (row) json.result.rows.push(row);
+                        if (row) json.rows.push(row);
                     }
-                    json.result.count = json.result.rows.length;
+                    json.count = json.rows.length;
                 }
 
-                count   = json.result.count || 0;
-                rows    = json.result.rows || [];
+                count   = json.count || 0;
+                rows    = json.rows || [];
 
+                // 분기 : 콜백으로 처리 
                 if (typeof _this.fnCallback === "function") {
-                    _this.isSuccess = _this.fnCallback.call(_this, pEvent, count, rows, xhr);  // pEvent, count, rows
+                    _this.success = _this.fnCallback.call(_this, pEvent, count, rows, _this._dataTable);  // pEvent, count, rows
+                
+                // 분기 : 내부 정해진 규칙으로 처리
                 } else {
-                    _this.isSuccess = Number(json.count) > 0 ? true : false;
+                    _this.success = Number(json.count) ? json.count : 0;
+
+// console.log('select-- 내부');
+
+                    // SELECT 모드일 경우
+                    if (_this.command === "SELECT") {
+                        for (var i = 0; i < json.rows.length; i++) {
+                            dr = _this._dataTable.newRow();
+                            for (var key in json.rows[i]) {
+                                if ( json.rows[i].hasOwnProperty(key)){
+                                    dr[key] = json.rows[i][key];
+                                }
+                            }
+                            _this._dataTable.rows.add(dr);                            
+                        }
+                    }
+                }
+                
+                // 동기화 이슈로 콜백으로 우회 처리
+                // TODO: 개선안 또는 구조 검토 필요
+                if (typeof _this._onwer.fnFillCallback === "function") {
+
+                    // TODO: 테이블 명 같은 거 필요 할듯 콜백에서
+                    _this.success = _this._onwer.fnFillCallback.call(_this);   
                 }
             }
         };
@@ -1090,7 +1112,7 @@ function RequestInfo(pOnwerAjaxAdapter) {
         var collection      = headCollection ? headCollection + "&" + bodyCollection : bodyCollection;
 
         // 결과 초기화
-        this.isSuccess = false;
+        this.success = 0;
 
         // TODO: 동기화 및 여러개 실행시 관련 검토 필요
         if (!this.url) {

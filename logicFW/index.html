@@ -9,6 +9,17 @@
 <h2>T. logicTable ver 2.x</h2>
 <h4>(DataSet그룹, TransQueue, Builder, Container, Template)</h4>
 
+<script src="LogicArray.js?v10"></script>
+<script src="TransQueue.js?v0"></script>
+<!--<script src="logicTable.js?v18"></script>-->
+<!-- 분리됨 -->
+<script src="common.js?v4"></script>
+<script src="DataSet.js?v6"></script>
+<script src="DataAdapter.js?v18"></script>
+<script src="DataContainer.js?v2"></script>
+<script src="jquery.min.js"></script>
+<script src="jquery.xml2json.js"></script>
+
 
 <div></div>
 <!--컨테이너-->
@@ -109,16 +120,7 @@
         </tbody>
     </table>-->
 
-<script src="LogicArray.js?v10"></script>
-<script src="TransQueue.js?v0"></script>
-<!--<script src="logicTable.js?v18"></script>-->
-<!-- 분리됨 -->
-<script src="common.js?v4"></script>
-<script src="DataSet.js?v6"></script>
-<script src="DataAdapter.js?v17"></script>
-<script src="DataContainer.js?v2"></script>
-<script src="jquery.min.js"></script>
-<script src="jquery.xml2json.js"></script>
+
 
 <!--TODO: jquery 에서 분리 작업필요 -->
 <!--<script src="xmlToJson.js?v0"></script>-->
@@ -482,7 +484,7 @@ a.push('abc');
         
 
     CD2.update(ds, "head");
-    CD2.update(ds, "body");
+    // CD2.update(ds, "body");
     // CD2.update(ds, "head");
     
     /*
@@ -597,23 +599,23 @@ a.push('abc');
 
 
 {
-    // ajax 기본 로딩 테스트
-    var AA1 = new AjaxAdapter();
+    // // ajax 기본 로딩 테스트
+    // var AA1 = new AjaxAdapter();
 
-    AA1.insertTable("head");
-    AA1.tables["head"].insert.url = "get.txt";    // .txt
-    // AA1.tables["head"].insert.url = "xmldoc.xml?v2";    // .xml
-    // AA1.tables["head"].insert.async = false;
-    // AA1.tables["head"].insert.setHeader("User-Agent","request");
-    AA1.tables["head"].insert.setHeader("Authorization","Bearer logicfeel");
-    AA1.tables["head"].insert.fnCallback = function(pEvent, pCount, pRows, pXhr) {
-        console.log('fnCallback' + pCount);
-        return true;
-    };
+    // AA1.insertTable("head");
+    // // AA1.tables["head"].insert.url = "get.txt";    // .txt
+    // AA1.tables["head"].insert.url = "xmldoc.xml";    // .xml
+    // // AA1.tables["head"].insert.async = false;
+    // // AA1.tables["head"].insert.setHeader("User-Agent","request");
+    // AA1.tables["head"].insert.setHeader("Authorization","Bearer logicfeel");
+    // AA1.tables["head"].insert.fnCallback = function(pEvent, pCount, pRows, pXhr) {
+    //     console.log('fnCallback' + pCount);
+    //     return pCount;
+    // };
 
-    AA1.update(ds, "head");
+    // AA1.update(ds, "head");
 
-    // AA1.tables["head"].insert.isSuccess;  // 결과 검사
+    // // AA1.tables["head"].insert.isSuccess;  // 결과 검사
 }
 {
     // for (var prop in ds.tables) {
@@ -624,6 +626,29 @@ a.push('abc');
     //         }
     //     }
     // }
+}
+
+{
+    // ajax 기본 로딩 테스트
+    var A2 = new AjaxAdapter();
+    A2.insertTable("body");
+    A2.tables["body"].select.url = "xmldoc.xml";    // .xml
+    // A2.tables["body"].select.url = "get.txt";    // .txt
+    // A2.tables["body"].insert.async = true;
+    // A2.tables["body"].select.fnCallback = function(pEvent, pCount, pRows, pXhr) {
+    //     console.log('fnCallback' + pCount);
+    //     return true;
+    // };
+
+    A2.fnFillCallback = function() {
+        CD2.update(ds, "body");
+    };
+
+    A2.fill(ds, "body");
+    // A2.update(ds, "body");
+
+
+    
 }
 
 </script>

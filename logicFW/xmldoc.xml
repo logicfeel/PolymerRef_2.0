@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <result>
     <count>100</count>
-    <rows></rows>
+    <rows>
+        <p1_name>ppp1</p1_name>
+        <p2_name>ppp2</p2_name>
+        <p3_name>ppp3</p3_name>
+    </rows>
+    <rows>
+        <p1_name>bbppp1</p1_name>
+        <p2_name>bbppp2</p2_name>
+        <p3_name>bbppp3</p3_name>
+    </rows>    
 </result>
