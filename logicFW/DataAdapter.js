@@ -1064,13 +1064,13 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
                 if (count > 0 && typeof _this.fnSuccess === "function") {
 
                     // TODO: 전달 항목 정의 필요
-                    _this.fnSuccess.call(_this);   
+                    _this.fnSuccess.call(_this, json);   
 
                 // 분기 : 실패시 콜백
                 } else if ( typeof _this.fnFailed === "function") {
 
                     // TODO: 전달 항목 정의 필요
-                    _this.fnFailed.call(_this);   
+                    _this.fnFailed.call(_this, json);   
                 }
             }
         };
