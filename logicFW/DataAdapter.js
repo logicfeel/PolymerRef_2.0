@@ -140,9 +140,9 @@ function DataAdapter() {
                     case "U":       // update() commanad
                          this.deleteCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
                         break;
-                    case "S":       // fill() commanad
-                         this.selectCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
-                        break;
+                    // case "S":       // fill() commanad
+                    //      this.selectCommand(cTables[i].table, cTables[i].changes[ii].row, cTables[i].changes[ii].idx);
+                    //     break;
                     default:
                         throw new Error('cmd 에러 발생 cmd:' + cTables[i].cmd);
                 }
@@ -887,14 +887,20 @@ function AjaxAdapter() {
                         this.tables[pTableName].insert.send();
                         break;
                     case "DELETE":   // update() commanad
+                        this.tables[pTableName].delete.addCollection({idx: pIdx});
+                        this.tables[pTableName].delete.setRowCollection(pDataRow);
                         this.tables[pTableName].delete.send();
                         break;
                     case "UPDATE":   // update() commanad
+                        this.tables[pTableName].update.addCollection({idx: pIdx});
+                        this.tables[pTableName].update.setRowCollection(pDataRow);
                         this.tables[pTableName].update.send();
-                        break;
-                    case "SELECT":   // fill() commanad
-                        this.tables[pTableName].select.send();
-                        break;
+                    //     break;
+                    // case "SELECT":   // fill() commanad
+                    //     this.tables[pTableName].select.addCollection({idx: pIdx});
+                    //     this.tables[pTableName].select.setRowCollection(pDataRow);
+                    //     this.tables[pTableName].select.send();
+                    //     break;
                     default:
                         throw new Error('cmd 에러 발생 cmd:' + cTables[i].cmd);
                 }                
@@ -940,8 +946,12 @@ function AjaxAdapter() {
     
     AjaxAdapter.prototype.selectCommand = function(pTableName, pDataTable) {
         
-        // var dr = pDataTable.newRow();
         this.tables[pTableName].select._dataTable = pDataTable;
+
+        // 놀리적으로 삭제가 맞을듯
+        // TODO: 검토는 필요
+        // this.tables[pTableName].select.addCollection({idx: pIdx});   
+        // this.tables[pTableName].select.setRowCollection(pDataRow);        
         this.tables[pTableName].select.send();
     };
 
@@ -959,11 +969,11 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
     this._dataTable         = null;
     this._method            = "GET";
     this.command            = pCommandName;   
-    this.fnRowMap           = null;     // fn(value, name, rows)
-    this.fnRowFilter        = null;     // fn(value, name, rows)
+    this.fnRowMap           = null;     // fn(value, name, rows) return Value
+    this.fnRowFilter        = null;     // fn(value, name, rows) return Boolean
     this.fnCallback         = null;     // fn(pEvent, pCount, pRows, pXhr)
-    this.fnSuccess          = null;     // TODO:
-    this.fnFailed           = null;     // TODO:
+    this.fnSuccess          = null;     // TODO: send 성공 콜백
+    this.fnFailed           = null;     // TODO: send 실패 콜백
     this.url                = null;
     this.header             = [];
     this.async              = true;     // true:비동기화,  false:동기화
@@ -1134,7 +1144,29 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
     };
 
     // JSONP 방식으로 전송
-    RequestInfo.prototype._send_JSONP = function() {
+    RequestInfo.prototype._send_JSONP = function(pCollection) {
+
+        var script = document.createElement("script");
+        var url             = "";
+        
+        // 캐쉬방지  TODO:  이후에 상위로 빼던지 해야 함
+        this.url = this.url + "?t=" + Math.floor((Math.random() * 10000) + 1);
+
+        if (this.url.indexOf("?") > 0) {
+            url = this.url + "&" + pCollection;
+        } else {
+            url = this.url + "?" + pCollection;
+        }
+        url = encodeURI(url);                       // url = escape(url);
+        
+        script.type = "text/javascript";
+        script.src =url;
+        document.head.appendChild(script);
+
+        if  (url.length > 2083) {
+            console.log(url);
+            console.log('GET URL 길이 2083 초과 length:'+url.length);
+        }
     };
 
     // 전송
@@ -1167,11 +1199,13 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
                 break;
 
             case "POST":
-                this._send_POST(headCollection, bodyCollection);
+                
+                this._send_POST(collection);
+                // this._send_POST(headCollection, bodyCollection);
                 break;
 
             case "JSONP":
-                
+                this._send_JSONP(collection);
                 break;
 
             case "PUT":
@@ -1191,17 +1225,42 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
     // 
     RequestInfo.prototype.setRowCollection = function(pRow) {
 
-        var key     = null;
-        var value   = null;
+        var key         = null;
+        var value       = null;
+        var isInclude   = true;
 
         if (pRow instanceof LArray) {
             for (var i = 0; i < pRow.length ; i++ ) {
                 key     = pRow.attributeOfIndex(i);
                 value   = pRow[i];
-                this._bodyCollection.pushAttr(value, key);
+                
+                // 전송 row 필터 콜백
+                if (typeof this.fnRowFilter === "function" ) {
+                    isInclude = this.fnRowFilter.call(this, value, key, pRow);
+                }
+                
+                // 전송 row 변형 코랩ㄱ
+                if (typeof this.fnRowMap === "function" ) {
+                    value = this.fnRowMap.call(this, value, key, pRow);
+                }
+
+                if (isInclude) {
+                    this._bodyCollection.pushAttr(value, key);
+                }
+                
             }
         }
     };
+    
+    //
+    RequestInfo.prototype.setJSONPCallback = function(pCallbackName, pCallback) {
+        
+        if (pCallbackName && typeof pCallback === "function") {
+            // TODO: window 변경 필요  global...
+            window[pCallbackName] = pCallback;
+        }
+    };
+
 
     // 헤더 설정
     RequestInfo.prototype.setHeader = function(pHeaderName, pHeaderValue) {

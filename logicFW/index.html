@@ -15,7 +15,7 @@
 <!-- 분리됨 -->
 <script src="common.js?v4"></script>
 <script src="DataSet.js?v6"></script>
-<script src="DataAdapter.js?v20"></script>
+<script src="DataAdapter.js?v22"></script>
 <script src="DataContainer.js?v2"></script>
 <script src="jquery.min.js"></script>
 <script src="jquery.xml2json.js"></script>
@@ -613,9 +613,18 @@ a.push('abc');
     //     return pCount;
     // };
 
+    // // AA1.tables["head"].insert.fnRowFilter  = function(value, key, pRow) {
+    // //     return (key === "p1_name") ? true : false;      // 하나만 통과
+    // // };
+
+    // AA1.tables["head"].insert.fnRowMap  = function(value, key, pRow) {
+    //     return value + "[변형]";
+    // };
+
+
     // AA1.update(ds, "head");
 
-    // // AA1.tables["head"].insert.isSuccess;  // 결과 검사
+    // AA1.tables["head"].insert.isSuccess;  // 결과 검사
 }
 {
     // for (var prop in ds.tables) {
@@ -629,36 +638,38 @@ a.push('abc');
 }
 
 {
-    // ajax 기본 로딩 테스트
-    var A2 = new AjaxAdapter();
-    A2.insertTable("body");
-    // A2.tables["body"].select.url = "xmldoc.xml";    // .xml
-    // A2.tables["body"].select.url = "get.txt";    // .txt
-    A2.tables["body"].select.url = "post.html";    // .html
-    A2.tables["body"].select.url = "post.asp";    // .asp
-    A2.tables["body"].select.setHeader("Content-type","application/x-www-form-urlencoded");
-    // A2.tables["body"].insert.async = true;
-    // A2.tables["body"].select.fnCallback = function(pEvent, pCount, pRows, pXhr) {
-    //     console.log('fnCallback' + pCount);
-    //     return true;
+    // // ajax 기본 로딩 테스트
+    // var A2 = new AjaxAdapter();
+    // A2.insertTable("body");
+    // // A2.tables["body"].select.url = "xmldoc.xml";    // .xml
+    // // A2.tables["body"].select.url = "get.txt";    // .txt
+    // A2.tables["body"].select.url = "post.html";    // .html
+    // A2.tables["body"].select.url = "post.asp";    // .asp
+    // A2.tables["body"].select.setHeader("Content-type","application/x-www-form-urlencoded");
+    // // A2.tables["body"].insert.async = true;
+    // // A2.tables["body"].select.fnCallback = function(pEvent, pCount, pRows, pXhr) {
+    // //     console.log('fnCallback' + pCount);
+    // //     return true;
+    // // };
+    // A2.tables["body"].select.addCollection({
+    //     p_id: "input->post->.asp file...",
+    //     u_id: "CCC"
+    // });
+
+    // // A2.tables["body"].select.setMethod("POST");     // POST 로 설정
+
+    // // !! SELECT 에는 필요가 없음 전달이 아니도니까.
+    // A2.tables["body"].select.fnRowFilter  = function(value, key, pRow) {
+    //     return (key === "p1_name") ? true : false;      // 하나만 통과
     // };
-    A2.tables["body"].select.addCollection({
-        p_id: "input->post->.asp file...",
-        u_id: "CCC"
-    });
-
-    // A2.tables["body"].select.setMethod("POST");     // POST 로 설정
-    
-
-    A2.tables["body"].select.fnSuccess  = function() {
-        CD2.update(ds, "body");
-    };
-
-    A2.fill(ds, "body");
-    // A2.update(ds, "body");
 
 
-    
+    // A2.tables["body"].select.fnSuccess  = function() {
+    //     CD2.update(ds, "body");
+    // };
+
+    // A2.fill(ds, "body");
+    // // A2.update(ds, "body");
 }
 
 {
@@ -697,7 +708,28 @@ a.push('abc');
     // // A2.update(ds, "body");
 }
 
+{
+    // ajax JSONP 테스트
+    var A4 = new AjaxAdapter();
+    A4.insertTable("body");
+    A4.tables["body"].select.url = "http://logicfeel.iptime.org/json/json.asp";    // .xml
+    A4.tables["body"].select.setMethod("JSONP");
+    // A2.tables["body"].insert.async = true;
+    // A2.tables["body"].select.fnCallback = function(pEvent, pCount, pRows, pXhr) {
+    //     console.log('fnCallback' + pCount);
+    //     return true;
+    // };
+    A4.tables["body"].select.addCollection({
+        ping_url: "2"
+    });
 
+    A4.tables["body"].select.setJSONPCallback("callback", function(){
+        console.log('JSONP 테스트');
+    });
+
+    A4.fill(ds, "body");
+    // A2.update(ds, "body");
+}
 
 </script>
 
