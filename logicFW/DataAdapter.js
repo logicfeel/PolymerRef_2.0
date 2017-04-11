@@ -835,7 +835,6 @@ function AjaxAdapter() {
     this.statusqueue    = [];      // send 결과
     this.isTransSend    = false;        // command 별 일괄 처리 여부
     this.isForced       = false;        // 일괄처리시 강제 완료 여부
-    this.fnFillCallback = null;
     this._createHttpRequestObject();    // 객체 초기화 설정
 }
 (function() {   // prototype 상속
@@ -958,15 +957,17 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
     this._bodyCollection    = new LArray();
     this._headCollection    = new LArray();
     this._dataTable         = null;
+    this._method            = "GET";
     this.command            = pCommandName;   
     this.fnRowMap           = null;     // fn(value, name, rows)
     this.fnRowFilter        = null;     // fn(value, name, rows)
     this.fnCallback         = null;     // fn(pEvent, pCount, pRows, pXhr)
-    this.method             = "GET";
+    this.fnSuccess          = null;     // TODO:
+    this.fnFailed           = null;     // TODO:
     this.url                = null;
     this.header             = [];
     this.async              = true;     // true:비동기화,  false:동기화
-    this.success          = false;    // TODO: 비동기시 상태 갱신 시 옵서버 패턴 검토
+    this.success            = false;    // TODO: 비동기시 상태 갱신 시 옵서버 패턴 검토
 
 }
 (function() {   // prototype 상속
@@ -987,12 +988,10 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
             pXhr.setRequestHeader(this.header[i].name, this.header[i].value);
         }
     };
-
-    // GET 방식으로 전송
-    RequestInfo.prototype._send_GET = function(pCollection) {
+    
+    RequestInfo.prototype._sendConfig = function() {
 
         var xhr             = this._onwer.xhr;
-        var url             = "";
         var text            = "";
         var _this           = this;
         var arrLine         = null;
@@ -1045,8 +1044,6 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
                 } else {
                     _this.success = Number(json.count) ? json.count : 0;
 
-// console.log('select-- 내부');
-
                     // SELECT 모드일 경우
                     if (_this.command === "SELECT") {
                         for (var i = 0; i < json.rows.length; i++) {
@@ -1056,23 +1053,41 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
                                     dr[key] = json.rows[i][key];
                                 }
                             }
-                            _this._dataTable.rows.add(dr);                            
+                            _this._dataTable.rows.add(dr);
                         }
                     }
                 }
                 
                 // 동기화 이슈로 콜백으로 우회 처리
                 // TODO: 개선안 또는 구조 검토 필요
-                if (typeof _this._onwer.fnFillCallback === "function") {
+                // 분기 : 성공시 콜백
+                if (count > 0 && typeof _this.fnSuccess === "function") {
 
-                    // TODO: 테이블 명 같은 거 필요 할듯 콜백에서
-                    _this.success = _this._onwer.fnFillCallback.call(_this);   
+                    // TODO: 전달 항목 정의 필요
+                    _this.fnSuccess.call(_this);   
+
+                // 분기 : 실패시 콜백
+                } else if ( typeof _this.fnFailed === "function") {
+
+                    // TODO: 전달 항목 정의 필요
+                    _this.fnFailed.call(_this);   
                 }
             }
         };
+    };
+
+    // GET 방식으로 전송
+    RequestInfo.prototype._send_GET = function(pCollection) {
         
-        // 랜덤 경로 (캐쉬방지) TODO:  이후에 상위로 빼던지 해야 함
-        this.url = this.url + "?t=" + Math.random();
+        var xhr             = this._onwer.xhr;
+        var url             = "";
+        
+        // send 공통 구성
+        this._sendConfig();
+        
+        // 캐쉬방지  TODO:  이후에 상위로 빼던지 해야 함
+        this.url = this.url + "?t=" + Math.floor((Math.random() * 10000) + 1);
+
 
         if (this.url.indexOf("?") > 0) {
             url = this.url + "&" + pCollection;
@@ -1080,12 +1095,10 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
             url = this.url + "?" + pCollection;
         }
         url = encodeURI(url);                       // url = escape(url);
-
         
         xhr.open("GET", url, this.async);
         this._header(xhr);
         xhr.send();
-        // this._onwer.xhr.setRequestHeader()
 
         if  (url.length > 2083) {
             console.log(url);
@@ -1094,7 +1107,30 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
     };
 
     // POST 방식으로 전송
-    RequestInfo.prototype._send_POST = function() {
+    RequestInfo.prototype._send_POST = function(pCollection) {
+        
+        var xhr             = this._onwer.xhr;
+        var url             = "";
+
+        // send 공통 구성
+        this._sendConfig();
+        
+        // 캐쉬방지  TODO:  이후에 상위로 빼던지 해야 함
+        url = this.url + "?t=" + Math.floor((Math.random() * 10000) + 1);
+        url = this.url;
+
+
+        // if (pHeadCollection.indexOf("?") > 0) {
+        //     url = this.url + "&" + pHeadCollection;
+        // } else {
+        //     url = this.url + "?" + pHeadCollection;
+        // }
+        url = encodeURI(url);                       // url = escape(url);
+        
+        xhr.open("POST", url, this.async);
+        this._header(xhr);
+        xhr.send(pCollection);
+        // xhr.send();
     };
 
     // JSONP 방식으로 전송
@@ -1111,6 +1147,10 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
         var bodyCollection  = this.LArrayToQueryString(this._bodyCollection);
         var collection      = headCollection ? headCollection + "&" + bodyCollection : bodyCollection;
 
+        if (collection.endsWith("&")) {
+            collection = collection.substring(0, collection.length - 1);
+        }
+
         // 결과 초기화
         this.success = 0;
 
@@ -1120,14 +1160,14 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
             return null;
         }
 
-        switch (this.method) {
+        switch (this._method) {
             
             case "GET":
                 this._send_GET(collection);
                 break;
 
             case "POST":
-                
+                this._send_POST(headCollection, bodyCollection);
                 break;
 
             case "JSONP":
@@ -1143,7 +1183,7 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
                 break;
 
             default:
-                throw new Error('method 에러 발생 method:' + this.method, this.async);
+                throw new Error('method 에러 발생 method:' + this._method, this.async);
         }
     };
 
@@ -1188,8 +1228,10 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
             return (valeu === pMethodName) ? true : false;
         });
 
-        if (!isMethed) {
-            throw new Error('method 에러 발생 cmd:' + pMethodName);
+        if (isMethed)  {
+            this._method = pMethodName;
+        } else {
+            throw new Error('method 에러 발생 method:' + pMethodName);
             return null;
         }
     };
@@ -1274,6 +1316,11 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
             value   = pLArray[i];
             queryString += key + "=" + pLArray[key].toString() + "&";
         }
+
+        if (queryString.endsWith("&")) {
+            queryString = queryString.substring(0, queryString.length - 1);
+        }
+        
         return queryString;
     };
 

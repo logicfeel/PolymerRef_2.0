@@ -15,7 +15,7 @@
 <!-- 분리됨 -->
 <script src="common.js?v4"></script>
 <script src="DataSet.js?v6"></script>
-<script src="DataAdapter.js?v18"></script>
+<script src="DataAdapter.js?v20"></script>
 <script src="DataContainer.js?v2"></script>
 <script src="jquery.min.js"></script>
 <script src="jquery.xml2json.js"></script>
@@ -632,15 +632,25 @@ a.push('abc');
     // ajax 기본 로딩 테스트
     var A2 = new AjaxAdapter();
     A2.insertTable("body");
-    A2.tables["body"].select.url = "xmldoc.xml";    // .xml
+    // A2.tables["body"].select.url = "xmldoc.xml";    // .xml
     // A2.tables["body"].select.url = "get.txt";    // .txt
+    A2.tables["body"].select.url = "post.html";    // .html
+    A2.tables["body"].select.url = "post.asp";    // .asp
+    A2.tables["body"].select.setHeader("Content-type","application/x-www-form-urlencoded");
     // A2.tables["body"].insert.async = true;
     // A2.tables["body"].select.fnCallback = function(pEvent, pCount, pRows, pXhr) {
     //     console.log('fnCallback' + pCount);
     //     return true;
     // };
+    A2.tables["body"].select.addCollection({
+        p_id: "input->post->.asp file...",
+        u_id: "CCC"
+    });
 
-    A2.fnFillCallback = function() {
+    // A2.tables["body"].select.setMethod("POST");     // POST 로 설정
+    
+
+    A2.tables["body"].select.fnSuccess  = function() {
         CD2.update(ds, "body");
     };
 
