@@ -1,3 +1,7 @@
+<head>
+    <meta charset="UTF-8">
+</head>
+
 <srcript src="bower_components/jsonp/index.js"></srcript>
 
 <h2>외부 : webmodules/jsonp 테스트</h2>
@@ -75,20 +79,26 @@ function jsonp(url, opts, fn){
   return cancel;
 }
 
-    var opts = {};
-    opts.param = "ccc";
+    var opt = {};
+    // opt.param = "ccc";
+    // opt.name = "ccc";
 
-    jsonp("http://logicfeel.iptime.org/json/json.json", "", function(err, data) {
-    // jsonp("http://logicfeel.iptime.org/json/json.asp", "", function(err, data) {
+    // jsonp("http://logicfeel.iptime.org/json/json.asp", opt, function(err, data) {
+    //     console.log('load jsonp');
+    // });
+
+    jsonp("http://logicfeel.iptime.org/json/json.json", opt, function(err, data) {
         console.log('load jsonp');
     });
 
+    // jsonp("http://logicfeel.iptime.org/json/json.json");
+
 function callback(err, data) {
-    console.log('load callback');
+    console.log('load callback()');
 }
 
 function ccc(err, data) {
-    console.log('load ccc');
+    console.log('load ccc()');
 }
 
 </script>

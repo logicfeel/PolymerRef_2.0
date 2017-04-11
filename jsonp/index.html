@@ -1,5 +1,11 @@
 <div></div>
+<script src="jquery-3.1.1.js"></script>
 <script>
+
+
+    function abc(e) {
+        console.log('abc call')
+    }
 
     (function() {
         'use strict';
@@ -9,6 +15,8 @@
             script.type = "text/javascript";
             // script.src = "http://logicfeel.iptime.org/json/json.json?callback=load";
             script.src = url;
+            script.id = 'logicfeel';
+            script.onload = abc;
             document.head.appendChild(script);
 
         }
@@ -42,8 +50,11 @@
          **/
 
     }());
-    
+    var div = document.querySelector("div");
+    div.innerText = "..";
+
     this.loadJSONP("http://logicfeel.iptime.org/json/json.asp");
+    // this.loadJSONP("http://logicfeel.iptime.org/json/json.json");
 
     function callback(data) {
         var div = document.querySelector("div");
@@ -53,9 +64,22 @@
 </script>
 
 <script>
-    {a:1}
-</script>
+    // {a:1}
 
-<script>
-    for 
+    $.ajax({
+        dataType: "jsonp",
+        url: "http://logicfeel.iptime.org/json/json.json",
+        type: "GET",
+        data: {'s':'s'},
+        success: function(data){
+            // loadList(data);
+            console.log('ajax jsonp');
+        }
+    });    
+
+$.getJSON("http://logicfeel.iptime.org/json/json.asp?callback=?",
+  function(data) {
+    console.log('성공 - ', data);
+  }
+);    
 </script>
