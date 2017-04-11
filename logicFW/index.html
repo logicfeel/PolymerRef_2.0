@@ -9,6 +9,17 @@
 <h2>T. logicTable ver 2.x</h2>
 <h4>(DataSet그룹, TransQueue, Builder, Container, Template)</h4>
 
+<script src="LogicArray.js?v10"></script>
+<script src="TransQueue.js?v0"></script>
+<!--<script src="logicTable.js?v18"></script>-->
+<!-- 분리됨 -->
+<script src="common.js?v4"></script>
+<script src="DataSet.js?v6"></script>
+<script src="DataAdapter.js?v20"></script>
+<script src="DataContainer.js?v2"></script>
+<script src="jquery.min.js"></script>
+<script src="jquery.xml2json.js"></script>
+
 
 <div></div>
 <!--컨테이너-->
@@ -74,7 +85,7 @@
     </ul>--></p>    
 
     <p id="temp_3"><!--
-    <div>
+    <div class="a3">
     <ul class="list-group">
         <li class="list-group-item">
             <b></b>
@@ -109,14 +120,10 @@
         </tbody>
     </table>-->
 
-<script src="LogicArray.js?v9"></script>
-<script src="TransQueue.js?v0"></script>
-<!--<script src="logicTable.js?v18"></script>-->
-<!-- 분리됨 -->
-<script src="common.js?v4"></script>
-<script src="DataSet.js?v6"></script>
-<script src="DataAdapter.js?v10"></script>
-<script src="DataContainer.js?v1"></script>
+
+
+<!--TODO: jquery 에서 분리 작업필요 -->
+<!--<script src="xmlToJson.js?v0"></script>-->
 
 <script>
 
@@ -193,7 +200,6 @@ a.push('abc');
     var dc2 = new DataColumn("p2_name", "string");
     var dc3 = new DataColumn("p3_name", "string");
 
-
     // ds.tables["L_table"].columns.Add("컬럼명1");
 
     dt.columns.add(dc1);
@@ -241,7 +247,7 @@ a.push('abc');
     dr = dt2.newRow();
     dr["p1_name"] = 't2 100번내용';
     dr["p2_name"] = 't2 200번내용';
-    dr["p3_name"] = 't2 300번내용';
+    dr["p3_name"] = {abc:1};
     dt2.rows.add(dr);
 
     // var is = ds.acceptChanges();     // commit
@@ -289,18 +295,18 @@ a.push('abc');
 }
     
 {
-    // 컨테이너 어뎁터 fill 테스트
+    // 컨테이너 어뎁터 update 테스트
     // var CAD = new ContainerAdapter();
     // CAD.putElement = document.querySelector("div");
     // CAD.container = document.querySelector("div");
     // CAD.recordElement = document.querySelector("ul");
     // CAD.columnElement = document.querySelector("li");
 
-    // CAD.fill(ds, "l_table");
+    // CAD.update(ds, "l_table");
     // CAD.element = document.querySelector("b");
-    // CAD.fill(ds, "head");
+    // CAD.update(ds, "head");
     // CAD.element = null;
-    // CAD.fill(ds, "l_table");
+    // CAD.update(ds, "l_table");
 }
 {
     // var C_AD2 = new ContainerAdapter();
@@ -363,7 +369,7 @@ a.push('abc');
     // // select_elem = mainElem.querySelector("thead tr th");
     // // CD.tables["head"].columnElement.importTemplate(select_elem, "th");
 
-    // // CD.fill(ds, "head");
+    // // CD.update(ds, "head");
 
     // // body
     // // select_elem = tempElem.querySelector("tbody");
@@ -375,9 +381,9 @@ a.push('abc');
     // select_elem = mainElem.querySelector("tbody tr td");
     // CD.tables["body"].columnElement.importTemplate(select_elem, "td");
 
-    // CD.fill(ds, "body");
+    // CD.update(ds, "body");
 
-    console.log('-A.D 블럭..');
+    // console.log('-A.D 블럭..');
     /*
         CD.template._original.outerHTML
         CD.template._element.outerHTML
@@ -407,14 +413,20 @@ a.push('abc');
 }
 
 {
+    // TEST : 레코드 없음, 컬럼서브 슬롯 있음 : OK
     var CD2 = new ContainerAdapter();
+
     var CD2_sel = document.querySelector("#temp_2");
     CD2.putElement = document.querySelector("div");
 
-    CD2.template.importTemplate(CD2_sel.firstChild);
 
+    CD2.importTemplate(CD2_sel.firstChild);     // 위치 변경
+
+    
+    
     CD2.insertTable("head", "ul");
     CD2.insertTable("body", "ul");
+    // CD2.insertTable("head", "ul");
 
     // 셀렉터 참조
     mainElem = CD2.template._original;
@@ -427,45 +439,96 @@ a.push('abc');
     select_elem = common.querySelecotrOuter(mainElem, "ul li");
     CD2.tables["body"].columnElement.importTemplate(select_elem, "li");
 
-    CD2.fill(ds, "body");
+    //******************
+
+    // head 레코드 : 토글
+    // select_elem = common.querySelecotrOuter(mainElem, "ul");
+    // CD2.tables["head"].recordElement.importTemplate(select_elem, "ul");
+
+    // select_elem = common.querySelecotrOuter(mainElem, "ul li");
+    // CD2.tables["head"].columnElement.importTemplate(select_elem, "li");
+
+    // 콜백 함수 테스트  => OK
+    select_elem = common.querySelecotrOuter(mainElem, "ul li");
+    CD2.tables["head"].columnElement.importTemplate(select_elem, "li" ,
+        function(pValue, pIndex, pRow, pSlotElem) {
+            if ( pValue instanceof Object) pValue = "오브젝트여~~";
+            var columnValue = document.createTextNode(pValue + " D:" + pIndex);
+            // pSlotElem.setAttribute("class", "democlass");
+            return columnValue;
+        }
+    );
+
+    // // 수동으로 템플릿 접근 
+    // CD2_sel = document.querySelector("#temp_1");
+    // // var elem =  document.createElement('span');
+    // // elem.innerHTML = CD2_sel.nodeValue;
+    // // elem = elem.querySelector("*");
+    // var subSlot = [
+    //     {
+    //         name: "p1_name",
+    //         selector: "thead tr th"
+    //     },
+    //     {
+    //         name: "p2_name",
+    //         selector: "tbody tr td"
+    //     },
+    //     {
+    //         idx: 2,
+    //         selector: "tbody tr td"
+    //     },                
+
+    // ];
+
+    // CD2.tables["head"].columnElement.importTemplate(CD2_sel.firstChild, null, null, subSlot);
+        
+
+    CD2.update(ds, "head");
+    // CD2.update(ds, "body");
+    // CD2.update(ds, "head");
+    
+    /*
+    CD2.tables["body"].recoredCount
+    CD2.tables["head"].recoredCount
+    */
 }
 
 {
-    // // 요소와 슬롯이 다른 사례 (요소 하위에 슬롯)
-    // // 테이블 div :: ul
-    // // 레코드 li  :: b
-    // var CD3 = new ContainerAdapter();
-    // var CD3_sel = document.querySelector("#temp_3");
-    // CD3.putElement = document.querySelector("div");
+//     // 요소와 슬롯이 다른 사례 (요소 하위에 슬롯)
+//     // 테이블 div :: ul
+//     // 레코드 li  :: b
+//     var CD3 = new ContainerAdapter();
+//     var CD3_sel = document.querySelector("#temp_3");
+//     CD3.putElement = document.querySelector("div");
 
-    // CD3.template.importTemplate(CD3_sel.firstChild);
+//     CD3.template.importTemplate(CD3_sel.firstChild);
     
-    // mainElem = CD3.template._original;
+//     mainElem = CD3.template._original;
     
-    // CD3.insertTable("body", "div ul");
+//     CD3.insertTable("body", "div ul");
 
-    // // 테이블 슬롯이 같은 경우
-    // CD3.insertTable("head", "ul");
+//     // 테이블 슬롯이 같은 경우
+//     CD3.insertTable("head", "ul");
 
-    // // select_elem = mainElem.querySelector("ul");
-    // select_elem = common.querySelecotrOuter(mainElem, "ul li");
-    // CD3.tables["body"].recordElement.importTemplate(select_elem, "li");
+//     // select_elem = mainElem.querySelector("ul");
+//     select_elem = common.querySelecotrOuter(mainElem, "ul li");
+//     CD3.tables["body"].recordElement.importTemplate(select_elem, "li");
 
-    // // select_elem = mainElem.querySelector("ul li");
-    // select_elem = common.querySelecotrOuter(mainElem, "b");
-    // CD3.tables["body"].columnElement.importTemplate(select_elem, "b");
+//     // select_elem = mainElem.querySelector("ul li");
+//     select_elem = common.querySelecotrOuter(mainElem, "b");
+//     CD3.tables["body"].columnElement.importTemplate(select_elem, "b");
 
-    // CD3.fill(ds, "body");   // 테스트 완료 
+//     CD3.update(ds, "body");   // 테스트 완료 
     
-    // //  ###########    
-    // select_elem = common.querySelecotrOuter(mainElem, "ul li");
-    // CD3.tables["head"].recordElement.importTemplate(select_elem, "li");
+//     //  ###########    
+//     select_elem = common.querySelecotrOuter(mainElem, "ul li");
+//     CD3.tables["head"].recordElement.importTemplate(select_elem, "li");
 
-    // select_elem = common.querySelecotrOuter(mainElem, "b");
-    // CD3.tables["head"].columnElement.importTemplate(select_elem, "b");
+//     select_elem = common.querySelecotrOuter(mainElem, "b");
+//     CD3.tables["head"].columnElement.importTemplate(select_elem, "b");
     
-    // CD3.fill(ds, "head");
-    // // 테스트 완료 
+//     CD3.update(ds, "head");
+    // 테스트 완료 
 }
 /**
  * rows 는 정적 메소드
@@ -523,7 +586,7 @@ a.push('abc');
 //  string sql = "select * from 테이블명";
 //  SqlDataAdapter adapter = new SqlDataAdapter(sql, CreateConnection());
 //  DataSet ds = new DataSet();
-//  adapter.Fill(ds, "테이블명");
+//  adapter.update(ds, "테이블명");
 //  return ds
 // }
  
@@ -534,6 +597,69 @@ a.push('abc');
 // }
 // [출처] DataSet , DataTable , DataColumn , DataRow 사용|작성자 MyStyle
 
+
+{
+    // // ajax 기본 로딩 테스트
+    // var AA1 = new AjaxAdapter();
+
+    // AA1.insertTable("head");
+    // // AA1.tables["head"].insert.url = "get.txt";    // .txt
+    // AA1.tables["head"].insert.url = "xmldoc.xml";    // .xml
+    // // AA1.tables["head"].insert.async = false;
+    // // AA1.tables["head"].insert.setHeader("User-Agent","request");
+    // AA1.tables["head"].insert.setHeader("Authorization","Bearer logicfeel");
+    // AA1.tables["head"].insert.fnCallback = function(pEvent, pCount, pRows, pXhr) {
+    //     console.log('fnCallback' + pCount);
+    //     return pCount;
+    // };
+
+    // AA1.update(ds, "head");
+
+    // // AA1.tables["head"].insert.isSuccess;  // 결과 검사
+}
+{
+    // for (var prop in ds.tables) {
+    //     if ( ds.tables.hasOwnProperty(prop)){
+    //         if (!isFinite(prop) && ds.tables[prop] === ds.tables[11]) {
+    //             // var idx = ds.tables.indexOfAttr(prop);
+    //             console.log(prop);    
+    //         }
+    //     }
+    // }
+}
+
+{
+    // ajax 기본 로딩 테스트
+    var A2 = new AjaxAdapter();
+    A2.insertTable("body");
+    // A2.tables["body"].select.url = "xmldoc.xml";    // .xml
+    // A2.tables["body"].select.url = "get.txt";    // .txt
+    A2.tables["body"].select.url = "post.html";    // .html
+    A2.tables["body"].select.url = "post.asp";    // .asp
+    A2.tables["body"].select.setHeader("Content-type","application/x-www-form-urlencoded");
+    // A2.tables["body"].insert.async = true;
+    // A2.tables["body"].select.fnCallback = function(pEvent, pCount, pRows, pXhr) {
+    //     console.log('fnCallback' + pCount);
+    //     return true;
+    // };
+    A2.tables["body"].select.addCollection({
+        p_id: "input->post->.asp file...",
+        u_id: "CCC"
+    });
+
+    // A2.tables["body"].select.setMethod("POST");     // POST 로 설정
+    
+
+    A2.tables["body"].select.fnSuccess  = function() {
+        CD2.update(ds, "body");
+    };
+
+    A2.fill(ds, "body");
+    // A2.update(ds, "body");
+
+
+    
+}
 
 </script>
 
