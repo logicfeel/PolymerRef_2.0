@@ -14,8 +14,9 @@
 <!--<script src="logicTable.js?v18"></script>-->
 <!-- 분리됨 -->
 <script src="common.js?v4"></script>
+<script src="Observer.js?v1"></script>
 <script src="DataSet.js?v6"></script>
-<script src="DataAdapter.js?v22"></script>
+<script src="DataAdapter.js?v23"></script>
 <script src="DataContainer.js?v2"></script>
 <script src="jquery.min.js"></script>
 <script src="jquery.xml2json.js"></script>
@@ -24,6 +25,7 @@
 <div></div>
 <!--컨테이너-->
 
+<button name="AAA">aaa</button>
 <!--일반 사례 : 템플릿 -> 붙이는 방식 (deep = false)-->
 <ul><!--레코드-->
     <li></li><!--컬럼-->
@@ -723,14 +725,45 @@ a.push('abc');
         ping_url: "2"
     });
 
-    A4.tables["body"].select.setJSONPCallback("callback", function(){
-        console.log('JSONP 테스트');
+    A4.tables["body"].select.setJSONPCallback("callback", function(pJson){
+        console.log('JSONP callback() 호출');
     });
 
+    A4.onFilled = function() {
+        console.log('onFill call..')
+    };
+    
+    function sub0() {console.log('onEvent  call..')}
+    
+    A4.onEvent("fill", sub0);
+    A4.offEvent("fill", sub0);
+
     A4.fill(ds, "body");
-    // A2.update(ds, "body");
+    // A4.update(ds, "body");
 }
 
+
+{
+    function sub1() {console.log('sub1 call..')}
+    function sub2() {console.log('sub2 call..')}
+    function sub3(pOnwer) {
+        console.log('sub3 call..')
+    }
+    
+    var abc = {"aaa": 112};
+    // 옵서버 테스트
+    var o = new Observer(abc, abc);
+    o.subscribe(sub1, "abc");
+    o.subscribe(sub2);
+    o.subscribe(sub3);
+
+    // o.publish("abc");
+    o.publish();
+
+    o.unsubscribe(sub2);
+    o.publish();
+
+}
 </script>
 
 </body>

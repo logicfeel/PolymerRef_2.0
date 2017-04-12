@@ -85,7 +85,11 @@ var __send_Post = "key=2&value=34";
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // 추상 클래스 역활
 function DataAdapter() {
-
+    
+    this._event         = new Observer(this, this);
+    this.onFilled       = null;       // 완료후 호출 (pDataSet, pTableName)
+    this.onUpdated      = null;        // 완료후 호출 (pDataSet, pTableName)
+    this.eventList      = ["fill", "update"];
 }
 (function() {   // prototype 상속
 
@@ -111,6 +115,11 @@ function DataAdapter() {
                 this.selectCommand(tableName, pDataSet.tables[pTableName]);
             }
         }
+
+        if (typeof this.onFilled === "function" ) {
+            this.onFilled.call(this, pDataSet, pTableName);
+        }
+        this._event.publish("fill");
     };
 
     // A.D  => D.S 전체 채움
@@ -148,7 +157,30 @@ function DataAdapter() {
                 }
             }
         }
+
+        if (typeof this.onUpdated === "function" ) {
+            this.onUpdated.call(this, pDataSet, pTableName);
+        }
+        this._event.publish("update");
     };
+
+    // 이벤트 등록
+    DataAdapter.prototype.onEvent = function(pType, pFn) {
+        if (this.eventList.indexOf(pType) > -1) {
+            this._event.subscribe(pFn, pType);
+        } else {
+            throw new Error('pType 에러 발생 pType:' + pType);
+        }
+    }
+
+    // 이벤트 해제
+    DataAdapter.prototype.offEvent = function(pType, pFn) {
+        if (this.eventList.indexOf(pType) > -1) {
+            this._event.unsubscribe(pFn, pType);
+        } else {
+            throw new Error('pType 에러 발생 pType:' + pType);
+        }
+    }
 
 }());
 
@@ -167,6 +199,7 @@ function DataAdapter() {
 //      단점 : 복잡한 구조 사용에 코드가 지져분해짐
 // - 서버 가져오기
 function ContainerAdapter() {
+    DataAdapter.call(this);
 
     this.putElement     = null;                     // 붙일 위치
     this.element        = null;                     // TemplateElement : 컨테이너 
@@ -829,7 +862,8 @@ function TemplateElement(pOnwerContainerAdapter) {
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // @종속성 : DataAdapter, Ajax 관련, RequestInfo
 function AjaxAdapter() {
-    
+    DataAdapter.call(this);
+
     this.xhr            = null;         // XMLHttpRequest
     this.tables         = new LArray();     // 테이블별 명령
     this.statusqueue    = [];      // send 결과
@@ -972,12 +1006,13 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
     this.fnRowMap           = null;     // fn(value, name, rows) return Value
     this.fnRowFilter        = null;     // fn(value, name, rows) return Boolean
     this.fnCallback         = null;     // fn(pEvent, pCount, pRows, pXhr)
-    this.fnSuccess          = null;     // TODO: send 성공 콜백
-    this.fnFailed           = null;     // TODO: send 실패 콜백
     this.url                = null;
     this.header             = [];
     this.async              = true;     // true:비동기화,  false:동기화
-    this.success            = false;    // TODO: 비동기시 상태 갱신 시 옵서버 패턴 검토
+    this.resultCount       = false;    // TODO: 비동기시 상태 갱신 시 옵서버 패턴 검토
+
+    this.onSucceed          = null;     // TODO: send 성공 콜백
+    this.onFailed           = null;     // TODO: send 실패 콜백
 
 }
 (function() {   // prototype 상속
@@ -993,7 +1028,7 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
     RequestInfo.prototype._callback = function() {};
 
     // xhr에 해더 설정
-    RequestInfo.prototype._header = function(pXhr) {
+    RequestInfo.prototype._loadHeader = function(pXhr) {
         for (var i = 0; i < this.header.length; i++) {
             pXhr.setRequestHeader(this.header[i].name, this.header[i].value);
         }
@@ -1048,11 +1083,11 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
 
                 // 분기 : 콜백으로 처리 
                 if (typeof _this.fnCallback === "function") {
-                    _this.success = _this.fnCallback.call(_this, pEvent, count, rows, _this._dataTable);  // pEvent, count, rows
+                    _this.resultCount = _this.fnCallback.call(_this, pEvent, count, rows, _this._dataTable);  // pEvent, count, rows
                 
                 // 분기 : 내부 정해진 규칙으로 처리
                 } else {
-                    _this.success = Number(json.count) ? json.count : 0;
+                    _this.resultCount = Number(json.count) ? json.count : 0;
 
                     // SELECT 모드일 경우
                     if (_this.command === "SELECT") {
@@ -1071,16 +1106,16 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
                 // 동기화 이슈로 콜백으로 우회 처리
                 // TODO: 개선안 또는 구조 검토 필요
                 // 분기 : 성공시 콜백
-                if (count > 0 && typeof _this.fnSuccess === "function") {
+                if (count > 0 && typeof _this.onSucceed === "function") {
 
                     // TODO: 전달 항목 정의 필요
-                    _this.fnSuccess.call(_this, json);   
+                    _this.onSucceed.call(_this, json);   
 
                 // 분기 : 실패시 콜백
-                } else if ( typeof _this.fnFailed === "function") {
+                } else if ( typeof _this.onFailed === "function") {
 
                     // TODO: 전달 항목 정의 필요
-                    _this.fnFailed.call(_this, json);   
+                    _this.onFailed.call(_this, json);   
                 }
             }
         };
@@ -1107,7 +1142,7 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
         url = encodeURI(url);                       // url = escape(url);
         
         xhr.open("GET", url, this.async);
-        this._header(xhr);
+        this._loadHeader(xhr);
         xhr.send();
 
         if  (url.length > 2083) {
@@ -1138,7 +1173,7 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
         url = encodeURI(url);                       // url = escape(url);
         
         xhr.open("POST", url, this.async);
-        this._header(xhr);
+        this._loadHeader(xhr);
         xhr.send(pCollection);
         // xhr.send();
     };
@@ -1184,7 +1219,7 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
         }
 
         // 결과 초기화
-        this.success = 0;
+        this.resultCount = 0;
 
         // TODO: 동기화 및 여러개 실행시 관련 검토 필요
         if (!this.url) {
@@ -1281,13 +1316,8 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
     RequestInfo.prototype.setMethod = function(pMethodName) {
 
         var methodList = ["GET", "POST", "JSONP", "PUT", "DELETE"];
-        var isMethed = false;
 
-        isMethed = methodList.some(function(valeu, index, arr) {
-            return (valeu === pMethodName) ? true : false;
-        });
-
-        if (isMethed)  {
+        if (methodList.indexOf(pMethodName) > -1) {
             this._method = pMethodName;
         } else {
             throw new Error('method 에러 발생 method:' + pMethodName);
