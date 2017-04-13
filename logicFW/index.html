@@ -14,9 +14,9 @@
 <!--<script src="logicTable.js?v18"></script>-->
 <!-- 분리됨 -->
 <script src="common.js?v4"></script>
-<script src="Observer.js?v1"></script>
+<script src="Observer.js?v4"></script>
 <script src="DataSet.js?v6"></script>
-<script src="DataAdapter.js?v23"></script>
+<script src="DataAdapter.js?v27"></script>
 <script src="DataContainer.js?v2"></script>
 <script src="jquery.min.js"></script>
 <script src="jquery.xml2json.js"></script>
@@ -426,7 +426,7 @@ a.push('abc');
 
     
     
-    CD2.insertTable("head", "ul");
+    CD2.insertTable("thead", "ul");
     CD2.insertTable("body", "ul");
     // CD2.insertTable("head", "ul");
 
@@ -452,7 +452,7 @@ a.push('abc');
 
     // 콜백 함수 테스트  => OK
     select_elem = common.querySelecotrOuter(mainElem, "ul li");
-    CD2.tables["head"].columnElement.importTemplate(select_elem, "li" ,
+    CD2.tables["thead"].columnElement.importTemplate(select_elem, "li" ,
         function(pValue, pIndex, pRow, pSlotElem) {
             if ( pValue instanceof Object) pValue = "오브젝트여~~";
             var columnValue = document.createTextNode(pValue + " D:" + pIndex);
@@ -485,7 +485,7 @@ a.push('abc');
     // CD2.tables["head"].columnElement.importTemplate(CD2_sel.firstChild, null, null, subSlot);
         
 
-    CD2.update(ds, "head");
+    CD2.update(ds, "head", "thead");
     // CD2.update(ds, "body");
     // CD2.update(ds, "head");
     
@@ -735,8 +735,8 @@ a.push('abc');
     
     function sub0() {console.log('onEvent  call..')}
     
-    A4.onEvent("fill", sub0);
-    A4.offEvent("fill", sub0);
+    // A4.onEvent("fill", sub0);
+    // A4.offEvent("fill", sub0);
 
     A4.fill(ds, "body");
     // A4.update(ds, "body");
@@ -744,24 +744,24 @@ a.push('abc');
 
 
 {
-    function sub1() {console.log('sub1 call..')}
-    function sub2() {console.log('sub2 call..')}
-    function sub3(pOnwer) {
-        console.log('sub3 call..')
-    }
+    // function sub1() {console.log('sub1 call..')}
+    // function sub2() {console.log('sub2 call..')}
+    // function sub3(pOnwer) {
+    //     console.log('sub3 call..')
+    // }
     
-    var abc = {"aaa": 112};
-    // 옵서버 테스트
-    var o = new Observer(abc, abc);
-    o.subscribe(sub1, "abc");
-    o.subscribe(sub2);
-    o.subscribe(sub3);
+    // var abc = {"aaa": 112};
+    // // 옵서버 테스트
+    // var o = new Observer(abc, abc);
+    // o.subscribe(sub1, "abc");
+    // o.subscribe(sub2);
+    // o.subscribe(sub3);
 
-    // o.publish("abc");
-    o.publish();
+    // // o.publish("abc");
+    // o.publish();
 
-    o.unsubscribe(sub2);
-    o.publish();
+    // o.unsubscribe(sub2);
+    // o.publish();
 
 }
 </script>

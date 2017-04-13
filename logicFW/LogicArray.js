@@ -11,10 +11,9 @@
      */
     function LArray() {
 
-        this._items = [];
-        this._SCOPE = "LArray";
-        // this._init();
-        var ab = "3";
+        this.isDebug        = false;
+        this._items         = [];
+        this._SCOPE         = "LArray";
     }
     (function() {   // prototype 상속 정의
         LArray.prototype =  Object.create(Array.prototype); // Array 상속

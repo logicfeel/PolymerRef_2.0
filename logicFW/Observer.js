@@ -4,7 +4,8 @@
     // 옵서버 패턴 
     // @종속성 : 
     function Observer(pThis, pOnwer) {
-
+        
+        this.isDebug = true;
         this._this = pThis;
         this._onwer = pOnwer;
         this.subscribers = {
@@ -46,6 +47,11 @@
                     this.subscribers[pType][i].call(this._this, this._onwer);
                 }
             }
+            
+            if (this.isDebug) {
+                console.log("publish() 이벤트 발생 [" + this._this.constructor.name + "] type:" + pType);
+            }
+            
         };
     }());
 
