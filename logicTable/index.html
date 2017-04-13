@@ -60,12 +60,11 @@
 </div>
 
 
-
+<script src="common.js?v4"></script>
 <script src="LogicArray.js?v10"></script>
 <script src="TransQueue.js?v0"></script>
 <!--<script src="logicTable.js?v18"></script>-->
 <!-- 분리됨 -->
-<script src="common.js?v4"></script>
 <script src="Observer.js?v4"></script>
 <script src="DataSet.js?v6"></script>
 <script src="DataAdapter.js?v27"></script>
@@ -77,10 +76,9 @@
 <script>
 
     var ds = new DataSet("t_dataSet");
-
 {
     // 요약 가능함 블럭
-    var dt = ds.tables.add("M03_NoticeList");
+    var dt = ds.tables.add("Notice");
 
     var dc1 = new DataColumn("ntc_idx", "string");
     var dc2 = new DataColumn("noticeType_cd", "string");
@@ -99,31 +97,40 @@
 
 {
     var CD1 = new ContainerAdapter();
-    CD1.putElement = document.querySelector("#put");
+    {
+        CD1.putElement = document.querySelector("#put");
 
-    var CD1_sel = document.querySelector("#template");
+        var CD1_sel = document.querySelector("#template");
+    }
     CD1.importTemplate(CD1_sel);
 
-    CD1.insertTable("M03_NoticeList", "#template_sub2 tbody");
-    mainElem = CD1.template._original;
-    
-    select_elem = common.querySelecotrOuter(mainElem, "tbody tr");
-    CD1.tables["M03_NoticeList"].recordElement.importTemplate(select_elem, "tr");
-    
-    select_elem = common.querySelecotrOuter(mainElem, "tbody tr td");
-    CD1.tables["M03_NoticeList"].columnElement.importTemplate(select_elem, "td");
+    CD1.insertTable("Notice", "#template_sub2 tbody");
+    {
+        mainElem = CD1.template._original;                                      // 제거 가능
+    }
+    {
+        select_elem = common.querySelecotrOuter(mainElem, "tbody tr");          // 제거 가능
+    }
+    //CD1.tables["Notice"].record.import(select_elem, "tr");
+    CD1.tables["Notice"].recordElement.importTemplate(select_elem, "tr");   // 이름 recordElement => record
+    {    
+        select_elem = common.querySelecotrOuter(mainElem, "tbody tr td");       // 제거 가능
+    }
+    CD1.tables["Notice"].columnElement.importTemplate(select_elem, "td");   // 이름 importTemplate => import
 
-    // 위치 A1 으로 이동    
-    
+    // 위치 A1 으로 이동   =>
 }
 
 
 {
     var A1 = new AjaxAdapter();
-    A1.insertTable("M03_NoticeList");
-    A1.tables["M03_NoticeList"].select.url = "Notice_Lst.C.asp";
-    A1.tables["M03_NoticeList"].select.setMethod("GET");    
-    A1.tables["M03_NoticeList"].select.addCollection({
+    A1.insertTable("Notice");
+    A1.tables["Notice"].select.url = "Notice_Lst.C.asp";
+    {
+        A1.tables["Notice"].select.setMethod("GET");    
+    }
+    // string 형태로 요약 가능
+    A1.tables["Notice"].select.addCollection({
         cmd: "SELECT",
         selPage: 1,
         listCnt: 10,
@@ -132,7 +139,7 @@
 
 {
     // 요약 가능 스키마가 틀린 경우임
-    A1.tables["M03_NoticeList"].select.fnCallback = function(pEvent, json, rows, dataTable) {
+    A1.tables["Notice"].select.fnCallback = function(pEvent, json, rows, dataTable) {
         var ROW = json.db.row;
         for (var i = 0; i < ROW.length; i++) {
             dr = dataTable.newRow();
@@ -152,60 +159,61 @@
     };
 }
 
-    A1.fill(ds, "M03_NoticeList");
+    A1.fill(ds, "Notice");
 
-    A1.tables["M03_NoticeList"].select.onSucceed = function () {
-        CD1.update(ds, "M03_NoticeList");
+    A1.tables["Notice"].select.onSucceed = function () {
+        CD1.update(ds, "Notice");
     };
 
 
 }
 
+{
+    var page = 1;
 
-var page = 1;
+    function next() {
+        page = page + 1;
 
-function next() {
-    page = page + 1;
+        ds.tables["Notice"].rows.clear();
+        A1.tables["Notice"].select.initCollection();
 
-    ds.tables["M03_NoticeList"].rows.clear();
-    A1.tables["M03_NoticeList"].select.initCollection();
+        A1.tables["Notice"].select.addCollection({
+            cmd: "SELECT",
+            selPage: page,
+            listCnt: 10,
+            sto_id: "S00001"
+        });
+        A1.fill(ds, "Notice");
 
-    A1.tables["M03_NoticeList"].select.addCollection({
-        cmd: "SELECT",
-        selPage: page,
-        listCnt: 10,
-        sto_id: "S00001"
-    });
-    A1.fill(ds, "M03_NoticeList");
+        A1.tables["Notice"].select.onSucceed = function () {
+            CD1.element = null;
+            CD1.putElement.innerText = "";
+            CD1.update(ds, "Notice");
+        };
 
-    A1.tables["M03_NoticeList"].select.onSucceed = function () {
-        CD1.element = null;
-        CD1.putElement.innerText = "";
-        CD1.update(ds, "M03_NoticeList");
-    };
+    }
+
+    function prev() {
+        if (page > 1) page = page - 1;
+
+        ds.tables["Notice"].rows.clear();
+        A1.tables["Notice"].select.initCollection();
+        
+        A1.tables["Notice"].select.addCollection({
+            cmd: "SELECT",
+            selPage: page,
+            listCnt: 10,
+            sto_id: "S00001"
+        });
+        A1.fill(ds, "Notice");
+        A1.tables["Notice"].select.onSucceed = function () {
+            CD1.element = null;
+            CD1.putElement.innerText = "";
+            CD1.update(ds, "Notice");
+        };
+    }
 
 }
-
-function prev() {
-    if (page > 1) page = page - 1;
-
-    ds.tables["M03_NoticeList"].rows.clear();
-    A1.tables["M03_NoticeList"].select.initCollection();
-    
-    A1.tables["M03_NoticeList"].select.addCollection({
-        cmd: "SELECT",
-        selPage: page,
-        listCnt: 10,
-        sto_id: "S00001"
-    });
-    A1.fill(ds, "M03_NoticeList");
-    A1.tables["M03_NoticeList"].select.onSucceed = function () {
-        CD1.element = null;
-        CD1.putElement.innerText = "";
-        CD1.update(ds, "M03_NoticeList");
-    };
-}
-
 
 
 </script>
