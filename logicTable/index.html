@@ -1,0 +1,214 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+<body>
+
+<h2>T. logicTable ver 2.x</h2>
+<h4>(DataSet그룹, TransQueue, Builder, Container, Template)</h4>
+
+<!--컨테이너-->
+<div id="put"></div>
+
+        
+<!--컨테이너 템플릿-->
+<div class="container" id="template">
+
+    <!--검색 조건 템플릿-->
+    <div class="list-group" id="template_sub1">
+        <li href="#" class="list-group-item list-group-item-warning"></a>
+        
+        <div class="form-group col-sm-2">
+                        <select class="form-control" name="area_cd" id="area_cd" >
+                        <option value="">=전체=</option>
+                        <option value="A01">전국</option>
+                        </select>
+        </div>
+
+        <div class="input-group col-sm-4">
+            <input name="searchText" id="searchText"  type="text" class="form-control" placeholder="제목">
+            <span class="input-group-btn">
+            <button class="btn btn-default" type="button" id="btn_Search">
+            <span class="glyphicon glyphicon-search"></span>
+            </button>
+            </span>
+            </div>
+    </div> 	
+
+    <!--테이블 템플릿-->
+    <table class="table table-striped" id="template_sub2">
+        <thead>
+            <tr>
+                <th>헤더</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>내용</td>
+            </tr>        
+        </tbody>
+    </table>
+
+    <!--페이징 템플릿-->
+    <div class="center-block" style="width: 250px;padding:15px;" id="template_sub1">
+        <ul class="pager">
+        <li><a href="javascript:prev()">Previous</a></li>
+        <li><a href="javascript:next()">Next</a></li>
+        </ul>
+    </div>
+</div>
+
+
+
+<script src="LogicArray.js?v10"></script>
+<script src="TransQueue.js?v0"></script>
+<!--<script src="logicTable.js?v18"></script>-->
+<!-- 분리됨 -->
+<script src="common.js?v4"></script>
+<script src="Observer.js?v4"></script>
+<script src="DataSet.js?v6"></script>
+<script src="DataAdapter.js?v27"></script>
+<script src="DataContainer.js?v2"></script>
+<script src="jquery.min.js"></script>
+<script src="jquery.xml2json.js"></script>
+
+
+<script>
+
+    var ds = new DataSet("t_dataSet");
+
+{
+    // 요약 가능함 블럭
+    var dt = ds.tables.add("M03_NoticeList");
+
+    var dc1 = new DataColumn("ntc_idx", "string");
+    var dc2 = new DataColumn("noticeType_cd", "string");
+    var dc3 = new DataColumn("title", "string");
+    var dc4 = new DataColumn("writer", "string");
+    var dc5 = new DataColumn("create_dt", "string");
+    var dc6 = new DataColumn("cnt", "string");
+
+    dt.columns.add(dc1);   
+    dt.columns.add(dc2);
+    dt.columns.add(dc3);
+    dt.columns.add(dc4);
+    dt.columns.add(dc5);
+    dt.columns.add(dc6);
+}
+
+{
+    var CD1 = new ContainerAdapter();
+    CD1.putElement = document.querySelector("#put");
+
+    var CD1_sel = document.querySelector("#template");
+    CD1.importTemplate(CD1_sel);
+
+    CD1.insertTable("M03_NoticeList", "#template_sub2 tbody");
+    mainElem = CD1.template._original;
+    
+    select_elem = common.querySelecotrOuter(mainElem, "tbody tr");
+    CD1.tables["M03_NoticeList"].recordElement.importTemplate(select_elem, "tr");
+    
+    select_elem = common.querySelecotrOuter(mainElem, "tbody tr td");
+    CD1.tables["M03_NoticeList"].columnElement.importTemplate(select_elem, "td");
+
+    // 위치 A1 으로 이동    
+    
+}
+
+
+{
+    var A1 = new AjaxAdapter();
+    A1.insertTable("M03_NoticeList");
+    A1.tables["M03_NoticeList"].select.url = "Notice_Lst.C.asp";
+    A1.tables["M03_NoticeList"].select.setMethod("GET");    
+    A1.tables["M03_NoticeList"].select.addCollection({
+        cmd: "SELECT",
+        selPage: 1,
+        listCnt: 10,
+        sto_id: "S00001"
+    });
+
+{
+    // 요약 가능 스키마가 틀린 경우임
+    A1.tables["M03_NoticeList"].select.fnCallback = function(pEvent, json, rows, dataTable) {
+        var ROW = json.db.row;
+        for (var i = 0; i < ROW.length; i++) {
+            dr = dataTable.newRow();
+            for (var key in ROW[i]) {
+                if ( ROW[i].hasOwnProperty(key)){
+                    dr[key] = ROW[i][key];
+                }
+            }
+            dataTable.rows.add(dr);
+        }        
+        console.log('33');
+        
+        json.count = ROW.length;
+        json.rows =ROW;
+        
+        return ROW.length;
+    };
+}
+
+    A1.fill(ds, "M03_NoticeList");
+
+    A1.tables["M03_NoticeList"].select.onSucceed = function () {
+        CD1.update(ds, "M03_NoticeList");
+    };
+
+
+}
+
+
+var page = 1;
+
+function next() {
+    page = page + 1;
+
+    ds.tables["M03_NoticeList"].rows.clear();
+    A1.tables["M03_NoticeList"].select.initCollection();
+
+    A1.tables["M03_NoticeList"].select.addCollection({
+        cmd: "SELECT",
+        selPage: page,
+        listCnt: 10,
+        sto_id: "S00001"
+    });
+    A1.fill(ds, "M03_NoticeList");
+
+    A1.tables["M03_NoticeList"].select.onSucceed = function () {
+        CD1.element = null;
+        CD1.putElement.innerText = "";
+        CD1.update(ds, "M03_NoticeList");
+    };
+
+}
+
+function prev() {
+    if (page > 1) page = page - 1;
+
+    ds.tables["M03_NoticeList"].rows.clear();
+    A1.tables["M03_NoticeList"].select.initCollection();
+    
+    A1.tables["M03_NoticeList"].select.addCollection({
+        cmd: "SELECT",
+        selPage: page,
+        listCnt: 10,
+        sto_id: "S00001"
+    });
+    A1.fill(ds, "M03_NoticeList");
+    A1.tables["M03_NoticeList"].select.onSucceed = function () {
+        CD1.element = null;
+        CD1.putElement.innerText = "";
+        CD1.update(ds, "M03_NoticeList");
+    };
+}
+
+
+
+</script>
+
+</body>
+</html>

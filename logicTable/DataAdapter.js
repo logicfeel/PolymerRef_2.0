@@ -1212,7 +1212,7 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
                 }
 
                 count   = json.count || 0;
-                rows    = json.rows || [];
+                rows    = json.rows || [];                
 
                 // 동기화 이슈로 콜백으로 우회 처리
                 // TODO: 개선안 또는 구조 검토 필요
@@ -1456,9 +1456,11 @@ function RequestInfo(pOnwerAjaxAdapter, pCommandName) {
         }
     };
     
+    
     RequestInfo.prototype.initCollection = function() {
         this._headCollection = new LArray();
     };
+
 
     // 전송 컬렉션 얻기
     // TODO: 필요성 확인
