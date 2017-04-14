@@ -36,3 +36,6 @@ gulp.task(name [, deps, fn])
 [헨들바 연동]
 https://www.npmjs.com/package/gulp-compile-handlebars
 
+[맥 특정 폴더 및 파일 숨김]
+chflags hidden node   : 숨김
+chflags nohidden node   : 숨김 해제
