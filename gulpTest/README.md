@@ -33,4 +33,6 @@ gulp.task(name [, deps, fn])
     - fn    : 콜백 함수
 
 
+[헨들바 연동]
+https://www.npmjs.com/package/gulp-compile-handlebars
 
