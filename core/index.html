@@ -1,0 +1,74 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+<body>
+
+
+<h2>코어 v01</h2>
+
+
+<script>
+
+// ********************************************
+function EntitySchema() {
+
+}
+(function() {   // prototype 상속
+}());
+
+// ********************************************
+function Entity() {
+    EntitySchema.call(this);
+
+    this.entityNamespace = "M01.Notice";
+    this.entity = {};
+
+}
+(function() {   // prototype 상속
+    Entity.prototype =  Object.create(EntitySchema.prototype); // Array 상속
+    Entity.prototype.constructor = Entity;
+    Entity.prototype.parent = EntitySchema.prototype;
+}());
+
+
+// ********************************************
+function TemplateSchema() {
+    
+    this.entitySchema = null;
+}
+(function() {   // prototype 상속
+}());
+
+// ********************************************
+function Template() {
+    TemplateSchema.call(this);
+
+
+}
+(function() {   // prototype 상속
+    Template.prototype =  Object.create(TemplateSchema.prototype); // Array 상속
+    Template.prototype.constructor = Template;
+    Template.prototype.parent = TemplateSchema.prototype;
+}());
+
+// ********************************************
+function Instance() {
+    TemplateSchema.call(this);
+
+
+}
+(function() {   // prototype 상속
+    Instance.prototype =  Object.create(TemplateSchema.prototype); // Array 상속
+    Instance.prototype.constructor = Instance;
+    Instance.prototype.parent = TemplateSchema.prototype;
+}());
+
+
+
+</script>
+
+
+</body>
+</html>
