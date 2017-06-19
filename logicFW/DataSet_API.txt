@@ -36,7 +36,7 @@ DataSet API
             - copy() : 복사 (구조 + 데이터 복사)
             - load() : 탑재, 싣기  ?
                 데이터 + 스키마  가져오기
-                
+
             - merge() : 병합 ?
 
         * 조작
@@ -60,6 +60,14 @@ DataSet API
 
             - writeXML(pObject) : void
                 데이터 + 스키마 -> pObject에 쓰기
+
+            * 개선안
+            - load() :
+            - loadRow() :
+            - loadSchema() :
+            - get() :
+            - getRow() :
+            = getSchmea() :
 
         * 트렌젝션
             - AcceptChanges() : 커밋
