@@ -1,0 +1,71 @@
+
+
+DataSet API
+    # 설명
+        - 접근방법
+            * ###############################################################
+            * DataSet      Tcollection             Rcollection     DataRow       
+            * ----------------------------------------------------------------
+            * DataSet      .tables  [0]            .rows[0]        .[0]
+            * DataSet      .tables  ["tName"]                      .["cName"]
+            *              .tables.count
+            *                                      .rows.count
+            * ================================================================ 
+            * DataSet      Tcollection             Ccollection
+            * ----------------------------------------------------------------
+            * DataSet      .tables  [0]            .columns[0]
+            * DataSet                              .columns["cName"]
+            *                                      .columns.count
+            * ================================================================ 
+        - 트랜젝션 처리
+        - 데이터 추가/삭제/수정 
+        - 
+
+    # 생성자
+        -   var ds = new DataSet(pDataSetName)
+    
+    # 속성
+        - tables : DataTableCollection
+            데이터 테이블
+    
+    # 메소드
+        * 관리
+            - clear() : 데이터 초기화 (구조 유지)
+            - reset() : 데이터 + 테이블 초기화
+            - clone() : 복제 (구조 복사, 데이터 복사 X )
+            - copy() : 복사 (구조 + 데이터 복사)
+            - load() : 탑재, 싣기  ?
+                데이터 + 스키마  가져오기
+                
+            - merge() : 병합 ?
+
+        * 조작
+            * readXXX는 가져오는(import) 방법
+            * getXXX / writeXXX는  보내는(export) 방법
+
+            - readXmlSchema(pObject) : int (*읽은 타입)
+                pObject 스키마 -> ds에 채움
+
+            - readXML(pObject) : int (*읽은 타입)
+                pObject 데이터 -> ds에 채움
+
+            - getXmlSchema() : string
+                스키마 리턴
+
+            - getXML() : string
+                데이터 리턴
+
+            - writeSchema(pObject) : void
+                스키마 -> pObject에 쓰기
+
+            - writeXML(pObject) : void
+                데이터 + 스키마 -> pObject에 쓰기
+
+        * 트렌젝션
+            - AcceptChanges() : 커밋
+            - GetChanges() : 변경 내용 리턴
+            - RejectChanges() : 롤백
+
+
+    # 이벤트
+        - 
